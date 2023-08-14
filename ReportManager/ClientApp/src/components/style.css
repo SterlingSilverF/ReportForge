@@ -1,0 +1,139 @@
+:root {
+    --rpf-silver: #D6D6D6;
+    --rpf-gold: #c39857;
+    --rpf-red: #ce262c;
+}
+
+.rpf-silver {
+    color: #D6D6D6;
+}
+
+.rpf-gold {
+    color: #c39857;
+}
+
+.rpf-red {
+    color: #ce262c;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Verdana, sans-serif;
+    background-color: #F1F1F1;
+}
+
+a:hover {
+    color: #FFD700 !important;
+}
+
+
+.navbar {
+    background-color: black;
+}
+
+    .navbar a,
+    .navbar {
+        color: white !important;
+    }
+
+        .navbar a:hover {
+            color: var(--rpf-red) !important;
+        }
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+.form-div {
+    position: absolute; /* Absolute positioning */
+    top: 50%; /* Position at 50% from the top */
+    left: 50%; /* Position at 50% from the left */
+    transform: translate(-50%, -50%); /* Use the transform property to bring the div to the center */
+    width: 25vw; /* Adjust as needed */
+    max-width: 400px; /* To prevent form from becoming too wide on large screens */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box; /* To ensure padding and border are included in the width and height */
+    overflow-y: auto; /* To allow scrolling if contents exceed the container's height */
+}
+
+    .form-div > * {
+        margin: 10px 0;
+    }
+
+    .form-div input,
+    .form-div label,
+    .form-div button,
+    .form-div a {
+        padding: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .form-div label{
+        border: none;
+    }
+
+    .form-div a {
+        display: block;
+        text-align: center;
+        border: none;
+        text-decoration: none !important;
+        font-size: 15px;
+        color: var(--rpf-gold);
+        padding: 0;
+    }
+
+    .form-div button {
+        cursor: pointer;
+    }
+
+.btn {
+    background-color: var(--rpf-silver);
+    letter-spacing: 1px;
+    font-weight: bold;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    color: black;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+    .btn:hover {
+        background-color: var(--rpf-red);
+        color: white;
+    }
+
+.error-message{
+    color: var(--rpf-red);
+}
+
+.link-container {
+    padding-top: 5%;
+    padding-bottom: 5%;
+    display: block;
+}
+
+.form-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px black;
+}
