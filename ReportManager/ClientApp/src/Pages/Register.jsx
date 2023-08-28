@@ -1,72 +1,101 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Register = () => {
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [groupName, setGroupName] = useState('');
+    const [email, setEmail] = useState('');
+    const [permissionKey, setPermissionKey] = useState('');
 
     axios.defaults.baseURL = 'https://localhost:7280';
+
+    const canSubmit = username.length >= 3 && password.length >= 8;
 
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        axios.post('/api/auth/register', {
-            username: username,
-            password: password,
-            groupName: groupName,
-        })
-            .then(response => {
-                console.log("Registration successful");
+        if (canSubmit) {
+            axios.post('/api/auth/register', {
+                username,
+                password,
+                email,
+                permission_key: permissionKey
             })
-            .catch(error => {
-                console.log(error);
-            });
+                .then(response => {
+                    console.log("Registration successful");
+                    // TODO: Redirect to login or dashboard
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        } else {
+            console.log("Invalid form data");
+        }
     };
 
     return (
         <div className='form-div'>
             <h3><strong>Register</strong></h3>
             <form onSubmit={handleRegister}>
-                <div>
+                <div className="tooltipcon">
                     <label htmlFor="username">Username</label>
                     <input
                         type="text"
-                        className="form-control"
-                        placeholder="your-email@gmail.com"
+                        placeholder="Your_Display_Name"
                         autoComplete="off"
                         id="username"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                     />
+                    <span className="tooltiptext">Minimum 3 characters, no spaces or special characters</span>
                 </div>
-                <div>
-                    <label htmlFor="password">Password</label>
+                <div className="tooltipcon">
+                    <label htmlFor="password2">Password</label>
                     <input
                         type="password"
-                        className="form-control"
-                        placeholder="Your Password"
                         id="password"
+                        autoComplete="off"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                     />
+                    <span className="tooltiptext">Your secret access code. Shh!</span>
+                </div>
+                <div className="tooltipcon">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        autoComplete="off"
+                    />
+                    <span className="tooltiptext">Type it again, for good measure.</span>
                 </div>
                 <div>
-                    <label htmlFor="groupName">Group Name</label>
+                    <label htmlFor="email">Email</label>
                     <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Ex. DOMAIN.COM"
-                        id="groupName"
-                        value={groupName}
-                        onChange={e => setGroupName(e.target.value)}
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
                     />
                 </div>
-                <div>
-                <br></br>
-                    <a href="#" className="forgot-pass">Already Registered? Log In</a>
-                </div>
-                <input type="submit" value="Register" className="btn btn-block btn-primary" />
+                <div className="tooltipcon">
+                    <label htmlFor="permissionKey">Permission Key</label>
+                    <input
+                        type="text"
+                        id="permissionKey"
+                        autoComplete="off"
+                        value={permissionKey}
+                        onChange={e => setPermissionKey(e.target.value)}
+                    />
+                    <span className="tooltiptext">Given by a group owner or app administrator.</span>
+                </div><br /><br />
+                <input
+                    type="submit"
+                    value="Register"
+                    className="btn-one btn-block"
+                    disabled={!canSubmit}
+                />
             </form>
         </div>
     );

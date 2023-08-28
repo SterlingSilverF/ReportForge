@@ -51,6 +51,15 @@ html {
     }
 }
 
+p{
+    font-size: 14px;
+    color: var(--rpf-silver);
+}
+
+hr{
+    border-width: 8px;
+}
+
 .box-shadow {
     box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
@@ -60,7 +69,7 @@ html {
     top: 50%; /* Position at 50% from the top */
     left: 50%; /* Position at 50% from the left */
     transform: translate(-50%, -50%); /* Use the transform property to bring the div to the center */
-    width: 25vw; /* Adjust as needed */
+    width: 40vw; /* Adjust as needed */
     max-width: 400px; /* To prevent form from becoming too wide on large screens */
     background-color: #fff;
     border-radius: 8px;
@@ -102,11 +111,7 @@ html {
         padding: 0;
     }
 
-    .form-div button {
-        cursor: pointer;
-    }
-
-.btn {
+.btn-one {
     background-color: var(--rpf-silver);
     letter-spacing: 1px;
     font-weight: bold;
@@ -118,10 +123,32 @@ html {
     transition: background-color 0.3s;
 }
 
-    .btn:hover {
+    .btn-one:hover {
         background-color: var(--rpf-red);
         color: white;
     }
+
+.btn-two {
+    background-color: var(--rpf-silver);
+    letter-spacing: 1px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    color: black;
+    transition: background-color 0.1s;
+    font-size: 20px;
+}
+
+    .btn-two:hover {
+        background-color: var(--rpf-gold);
+        color: black;
+    }
+
+.inline-buttons {
+    display: flex;
+    gap: 25px;
+}
 
 .error-message{
     color: var(--rpf-red);
@@ -133,7 +160,73 @@ html {
     display: block;
 }
 
-.form-control:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px black;
+.form-control:focus .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    text-align: center;
+    border: 2px var(--rpf-gold);
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.get-started {
+    display: flex;
+    flex-direction: column;
+}
+
+.options-section {
+    padding: 20px;
+}
+
+.recent-reports {
+    padding: 20px;
+    flex: 1;
+}
+
+.sub-container {
+    border: 2px solid var(--rpf-gold);
+    margin: 20px;
+}
+
+.box {
+    border: 1.5px solid var(--rpf-silver);
+    padding: 10px;
+    margin: 10px;
+}
+
+.header {
+    background-color: black;
+    color: white;
+    padding: 10px;
+}
+
+.image-label-pair {
+    display: inline-block;
+    margin-right: 20px;
+    text-align: center;
+}
+    .image-label-pair label {
+        font-size: 14px;
+        display: block;
+    }
+
+.folder {
+    color: var(--rpf-gold);
+    cursor: pointer;
 }

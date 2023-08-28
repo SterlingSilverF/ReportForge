@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isManualAuthVisible, setIsManualAuthVisible] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const navigate = useNavigate();
 
     axios.defaults.baseURL = 'https://localhost:7280';
 
@@ -31,6 +34,8 @@ const Login = () => {
         })
             .then(response => {
                 console.log("Login successful");
+                localStorage.setItem('token', response.data.token);
+                navigate('/');
             })
             .catch(error => {
                 if (error.response && error.response.status === 401) {
@@ -53,8 +58,7 @@ const Login = () => {
                         <label htmlFor="username">Username</label>
                         <input
                             type="text"
-                            className="form-control"
-                            placeholder="your-email@gmail.com"
+                            placeholder="your-email@domain.com"
                             autoComplete="off"
                             id="username"
                             value={username}
@@ -65,7 +69,6 @@ const Login = () => {
                         <label htmlFor="password">Password</label>
                         <input
                             type="password"
-                            className="form-control"
                             placeholder="Your Password"
                             id="password"
                             value={password}
@@ -73,7 +76,7 @@ const Login = () => {
                         />
                     </div>
                     <br></br>
-                    <input type="submit" value="Log In" className="btn btn-block btn-primary" />
+                    <input type="submit" value="Log In" className="btn-one btn-block btn-primary" />
                     <div className="link-container">
                         <a href="/Register" className="forgot-pass">Register</a>
                         <a href="#" className="forgot-pass">Forgot Password</a>

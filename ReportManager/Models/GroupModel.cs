@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver.Core.Configuration;
+using ReportManager.Models.SettingsModels;
 
 namespace ReportManager.Models
 {
@@ -10,7 +11,7 @@ namespace ReportManager.Models
         public List<ObjectId> GroupOwners { get; set; }
         public List<ObjectId> GroupMembers { get; set; }
         public List<ObjectId> Folders { get; set; }
-        public List<ConnectionSettings> GroupConnectionStrings { get; set; }
-        public bool IsAdminGroup { get; set; }
+        public List<ObjectId>? GroupConnectionStrings { get; set; } // FK ServerConnectionModel.Id
+        public bool IsTopGroup { get; set; }
     }
 }

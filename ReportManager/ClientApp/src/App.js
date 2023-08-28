@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AppRoutes from './AppRoutes';
 import { Layout } from './components/Layout';
+import './components/dynamicIcons';
+
 
 export default class App extends Component {
     static displayName = App.name;

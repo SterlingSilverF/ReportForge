@@ -5,7 +5,7 @@ namespace ReportManager.Models
 {
     public class ReportConfigurationModel
     {
-        public int ReportID { get; set; }
+        public ObjectId ReportID { get; set; }
         public string ReportName { get; set; }
         public string? Description { get; set; }
         public DBConnectionModel SourceDB { get; set; }
@@ -26,7 +26,7 @@ namespace ReportManager.Models
 
     public class NormalReportConfiguration : ReportConfigurationModel
     {
-        public List<DatabaseObjectInfo> SelectedObjects { get; set; }
+        public List<DatabaseObjectInfoModel> SelectedObjects { get; set; }
         public List<ReportColumn> Columns { get; set; }
         public List<Filter>? Filters { get; set; }
         public List<string> OrderBy { get; set; }
@@ -34,7 +34,7 @@ namespace ReportManager.Models
 
     public class ReportColumn
     {
-        public DatabaseObjectInfo ParentObject { get; set; }
+        public DatabaseObjectInfoModel ParentObject { get; set; }
         public string ColumnName { get; set; }
         public int DisplayOrder { get; set; }
         public ColumnFormatting? ColumnFormatting { get; set; }

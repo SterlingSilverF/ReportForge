@@ -1,4 +1,4 @@
-﻿namespace ReportManager.Models
+﻿namespace ReportManager.Models.SettingsModels
 {
     public class ConnectionSettings
     {

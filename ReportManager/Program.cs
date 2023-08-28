@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Server.IISIntegration;
-using ReportManager.Models;
 using ReportManager.Services;
 using ReportManager.API;
 using Serilog;
 using Serilog.Events;
 using FluentValidation.AspNetCore;
+using ReportManager.Models.SettingsModels;
+using System.Configuration;
 
 var loggerConfiguration = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -32,12 +33,15 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddScoped<UserManagementService>();
-
-
-// CONNECTIONSETTINGS
 builder.Services.Configure<ConnectionSettings>(builder.Configuration.GetSection("ConnectionSettings"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWTSettings"));
 builder.Services.AddSingleton<ConnectionService>();
+builder.Services.AddScoped<AppDatabaseService>();
+builder.Services.AddScoped<SharedService>();
+builder.Services.AddScoped<FolderManagementService>();
+builder.Services.AddScoped<ReportManagementService>();
+builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<GroupManagementService>();
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
     .AddNegotiate();
 

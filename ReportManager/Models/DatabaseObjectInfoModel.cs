@@ -1,6 +1,6 @@
 ﻿namespace ReportManager.Models
 {
-    public class DatabaseObjectInfo
+    public class DatabaseObjectInfoModel
     {
         public string ObjName { get; set; }
         public ObjectType ObjType { get; set; }

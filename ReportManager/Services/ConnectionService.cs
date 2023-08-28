@@ -10,6 +10,8 @@ using System;
 using ReportManager.Models;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using ReportManager.Models.SettingsModels;
+using System.Collections;
 
 public class ConnectionService
 {
@@ -22,45 +24,46 @@ public class ConnectionService
         _database = _client.GetDatabase(settings.Value.MongoDbName);
     }
 
+    public IMongoCollection<ServerConnectionModel> GetServerCollection(ServerConnectionModel conn)
+    {
+        string collectionName = conn.OwnerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        return _database.GetCollection<ServerConnectionModel>(collectionName);
+    }
+
+    public IMongoCollection<DBConnectionModel> GetDBCollection(ServerConnectionModel conn)
+    {
+        string collectionName = conn.OwnerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
+        return _database.GetCollection<DBConnectionModel>(collectionName);
+    }
+
     // First step in creating a new connection is to provide the server information.
     // Password should be encrypted before reaching this
-    public string ServerConnection(ServerConnectionModel serverConnection, bool saveConnection)
+    public ObjectId? ServerConnection(ServerConnectionModel serverConnection, bool saveConnection)
     {
         var (isSuccessful, message) = PreviewConnection(serverConnection);
         if (!isSuccessful)
         {
-            return message;
+            return null;
         }
 
         if (!saveConnection)
         {
-            return serverConnection.ServerId;
+            return serverConnection.ConnectionID;
         }
 
-        var collection = _database.GetCollection<BsonDocument>(serverConnection.ConnectionGroupName);
-        Console.WriteLine($"New server connection saved for {serverConnection.ServerId}");
-        var document = new BsonDocument
-        {
-        {"ServerId", BsonValue.Create(serverConnection.ServerId)},
-        {"Server", BsonValue.Create(serverConnection.Server)},
-        {"Instance", BsonValue.Create(serverConnection.Instance)},
-        {"Port", BsonValue.Create(serverConnection.Port)},
-        {"DatabaseType", BsonValue.Create(serverConnection.DbType)},
-        {"Username", BsonValue.Create(serverConnection.Username)},
-        {"Password", BsonValue.Create(serverConnection.Password)},
-        {"AuthType", BsonValue.Create(serverConnection.AuthType)},
-        };
-        collection.InsertOne(document);
-        return serverConnection.ServerId;
+        var collection = GetServerCollection(serverConnection);
+        collection.InsertOne(serverConnection);
+        Console.WriteLine($"New server connection saved for {serverConnection.ConnectionID} under {serverConnection.OwnerID}");
+        return serverConnection.ConnectionID;
     }
 
-    public void SaveNewDBConnection(DBConnectionModel connectionModel)
+    public ObjectId SaveNewDBConnection(DBConnectionModel connectionModel)
     {
         connectionModel.Password = connectionModel.Password;
-
-        var collection = _database.GetCollection<DBConnectionModel>(connectionModel.ConnectionGroupName);
+        var collection = GetDBCollection(connectionModel);
         collection.InsertOne(connectionModel);
-        Console.WriteLine($"New DB connection saved for {connectionModel.ServerId} under group {connectionModel.ConnectionGroupName}");
+        Console.WriteLine($"New DB connection saved for {connectionModel.ConnectionID} under {connectionModel.OwnerID}");
+        return connectionModel.ConnectionID;
     }
 
     public static string BuildConnectionString(DBConnectionModel dbConnection)
@@ -200,26 +203,30 @@ public class ConnectionService
         }
     }
 
-    public List<ServerConnectionModel> GetGroupServerConnections(string connectionGroupName)
+    public List<ServerConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
     {
-        var collection = _database.GetCollection<ServerConnectionModel>(connectionGroupName);
-        return collection.Find(new BsonDocument()).ToList();
+        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        var collection = _database.GetCollection<ServerConnectionModel>(collectionName);
+        var filter = Builders<ServerConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
+        return collection.Find(filter).ToList();
     }
 
-    public List<DBConnectionModel> GetGroupDBConnections(string connectionGroupName)
+    public List<DBConnectionModel> GetDBConnections(string ownerID, OwnerType ownerType)
     {
-        var collection = _database.GetCollection<DBConnectionModel>(connectionGroupName);
-        return collection.Find(new BsonDocument()).ToList();
+        string collectionName = ownerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
+        var collection = _database.GetCollection<DBConnectionModel>(collectionName);
+        var filter = Builders<DBConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
+        return collection.Find(filter).ToList();
     }
 
-    public ServerConnectionModel? FetchServerConnection(List<ServerConnectionModel> serverConnections, string serverId)
+    public ServerConnectionModel? FetchServerConnection(List<ServerConnectionModel> serverConnections, ObjectId connectionId)
     {
-        return serverConnections.FirstOrDefault(sc => sc.ServerId == serverId);
+        return serverConnections.FirstOrDefault(sc => sc.ConnectionID == connectionId);
     }
 
-    public DBConnectionModel? FetchDBConnection(List<DBConnectionModel> dbConnections, string databaseName)
+    public DBConnectionModel? FetchDBConnection(List<DBConnectionModel> dbConnections, ObjectId serverId, string databaseName)
     {
-        return dbConnections.FirstOrDefault(db => db.DatabaseName == databaseName);
+        return dbConnections.FirstOrDefault(db => db.DatabaseName == databaseName && db.ConnectionID == serverId);
     }
 
     public IEnumerable<dynamic> FetchDataFromMongoDB(string objectName)

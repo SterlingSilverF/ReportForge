@@ -3,10 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
-using static ReportManager.API.AuthController;
 using ReportManager.Models;
+using static ReportManager.API.AuthController;
 
 namespace ReportManager.Services
 {
@@ -14,30 +13,15 @@ namespace ReportManager.Services
     {
         private readonly IConfiguration _config;
         private IMongoCollection<User> _usersDB;
-        private readonly MongoClient client;
-        private readonly SharedUtils _sharedUtils;
 
         public bool IsSSOEnabled() => _config.GetValue<bool>("AuthenticationMethods:SSO_Enabled");
         public bool IsWindowsAuthEnabled() => _config.GetValue<bool>("AuthenticationMethods:Windows_Auth_Enabled");
         public bool IsManualAuthEnabled() => _config.GetValue<bool>("AuthenticationMethods:Manual_Auth_Enabled");
 
-        public UserManagementService(IConfiguration config, SharedUtils sharedUtils)
+        public UserManagementService(IConfiguration config, AppDatabaseService databaseService)
         {
             _config = config;
-            _sharedUtils = sharedUtils;
-
-            try
-            {
-                var connectionString = _config.GetValue<string>("ConnectionSettings:MongoConnectionString");
-                client = new MongoClient(connectionString);
-                var _database = client.GetDatabase("ReportForge");
-                _usersDB = _database.GetCollection<User>("Users");
-            }
-            catch (Exception ex)
-            {
-                // TODO: Handle or log the exception
-                throw new ApplicationException("Error initializing database connection", ex);
-            }
+            _usersDB = databaseService.GetCollection<User>("Users");
         }
 
         public bool DoesUserExist(string username)
@@ -46,14 +30,20 @@ namespace ReportManager.Services
             return userExists != null;
         }
 
-        public string RegisterUser(User user, ObjectId groupId)
+        public User GetUserByUsername(string username)
         {
-            if  (user.UserType != UserType.Admin) 
-            {
-                if (!_sharedUtils.DoesGroupExist(groupId))
-                    return "Group does not exist.";
-            }
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            return _usersDB.Find(filter).FirstOrDefault();
+        }
 
+        public string RegisterUser(User user)
+        {
+            _usersDB.InsertOne(user);
+            return "User created successfully.";
+        }
+
+        public string RegisterAdminUser(User user)
+        {
             if (DoesUserExist(user.Username))
                 return "Username already taken.";
 
@@ -61,10 +51,15 @@ namespace ReportManager.Services
             return "User created successfully.";
         }
 
+        public bool UpdateUser(User updatedUser)
+        {
+            var filter = Builders<User>.Filter.Eq(g => g.Id, updatedUser.Id);
+            var result = _usersDB.ReplaceOne(filter, updatedUser);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
         public bool IsValidPermissionKey(string permissionKey)
         {
-            // TODO: This is for licensing
-            // Will need to account for an already used key
             return true;
         }
 
@@ -73,14 +68,13 @@ namespace ReportManager.Services
             int minLength = _config.GetValue<int>("PasswordRequirements:MinLength");
             string characterRegex = _config.GetValue<string>("PasswordRequirements:CharacterRegex");
 
-            if (password.Length < minLength) 
+            if (password.Length < minLength)
                 return false;
-            if (!string.IsNullOrEmpty(characterRegex) && !Regex.IsMatch(password, characterRegex)) 
+            if (!string.IsNullOrEmpty(characterRegex) && !Regex.IsMatch(password, characterRegex))
                 return false;
-            
+
             return true;
         }
-
 
         public bool AuthenticateManualUser(LoginRequest request)
         {

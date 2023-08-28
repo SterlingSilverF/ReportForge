@@ -21,7 +21,7 @@ public enum DBObjectType
 
 public interface IObjectReaderService
 {
-    List<DatabaseObjectInfo> GetObjectStructure(DBConnectionModel DBConnection, DBObjectType objectType = DBObjectType.All);
+    List<DatabaseObjectInfoModel> GetObjectStructure(DBConnectionModel DBConnection, DBObjectType objectType = DBObjectType.All);
     IEnumerable<dynamic> ReadData(DBConnectionModel DBConnection, string objectName);
 }
 
@@ -34,9 +34,9 @@ public class ObjectReaderService : IObjectReaderService
         _connectionService = connectionService;
     }
 
-    public List<DatabaseObjectInfo> GetObjectStructure(DBConnectionModel DBConnection, DBObjectType objectType = DBObjectType.All)
+    public List<DatabaseObjectInfoModel> GetObjectStructure(DBConnectionModel DBConnection, DBObjectType objectType = DBObjectType.All)
     {
-        List<DatabaseObjectInfo> objects = new List<DatabaseObjectInfo>();
+        List<DatabaseObjectInfoModel> objects = new List<DatabaseObjectInfoModel>();
         IDbConnection dbConnection;
 
         switch (DBConnection.DbType)
@@ -46,19 +46,19 @@ public class ObjectReaderService : IObjectReaderService
 
                 if (objectType.HasFlag(DBObjectType.Table))
                 {
-                    var mssqlTables = dbConnection.Query<DatabaseObjectInfo>("SELECT TABLE_NAME as ObjName, 'Table' as ObjType FROM INFORMATION_SCHEMA.TABLES");
+                    var mssqlTables = dbConnection.Query<DatabaseObjectInfoModel>("SELECT TABLE_NAME as ObjName, 'Table' as ObjType FROM INFORMATION_SCHEMA.TABLES");
                     objects.AddRange(mssqlTables);
                 }
 
                 if (objectType.HasFlag(DBObjectType.View))
                 {
-                    var mssqlViews = dbConnection.Query<DatabaseObjectInfo>("SELECT TABLE_NAME as ObjName, 'View' as ObjType FROM INFORMATION_SCHEMA.VIEWS");
+                    var mssqlViews = dbConnection.Query<DatabaseObjectInfoModel>("SELECT TABLE_NAME as ObjName, 'View' as ObjType FROM INFORMATION_SCHEMA.VIEWS");
                     objects.AddRange(mssqlViews);
                 }
 
                 if (objectType.HasFlag(DBObjectType.Procedure))
                 {
-                    var mssqlProcedures = dbConnection.Query<DatabaseObjectInfo>("SELECT NAME as ObjName, 'Procedure' as ObjType FROM sys.procedures");
+                    var mssqlProcedures = dbConnection.Query<DatabaseObjectInfoModel>("SELECT NAME as ObjName, 'Procedure' as ObjType FROM sys.procedures");
                     objects.AddRange(mssqlProcedures);
                 }
                 break;
@@ -68,19 +68,19 @@ public class ObjectReaderService : IObjectReaderService
 
                 if (objectType.HasFlag(DBObjectType.Table))
                 {
-                    var oracleTables = dbConnection.Query<DatabaseObjectInfo>("SELECT TABLE_NAME as ObjName, 'Table' as ObjType FROM USER_TABLES");
+                    var oracleTables = dbConnection.Query<DatabaseObjectInfoModel>("SELECT TABLE_NAME as ObjName, 'Table' as ObjType FROM USER_TABLES");
                     objects.AddRange(oracleTables);
                 }
 
                 if (objectType.HasFlag(DBObjectType.View))
                 {
-                    var oracleViews = dbConnection.Query<DatabaseObjectInfo>("SELECT VIEW_NAME as ObjName, 'View' as ObjType FROM USER_VIEWS");
+                    var oracleViews = dbConnection.Query<DatabaseObjectInfoModel>("SELECT VIEW_NAME as ObjName, 'View' as ObjType FROM USER_VIEWS");
                     objects.AddRange(oracleViews);
                 }
 
                 if (objectType.HasFlag(DBObjectType.Procedure))
                 {
-                    var oracleProcedures = dbConnection.Query<DatabaseObjectInfo>("SELECT OBJECT_NAME as ObjName, 'Procedure' as ObjType FROM USER_PROCEDURES WHERE OBJECT_TYPE = 'PROCEDURE'");
+                    var oracleProcedures = dbConnection.Query<DatabaseObjectInfoModel>("SELECT OBJECT_NAME as ObjName, 'Procedure' as ObjType FROM USER_PROCEDURES WHERE OBJECT_TYPE = 'PROCEDURE'");
                     objects.AddRange(oracleProcedures);
                 }
                 break;
@@ -90,19 +90,19 @@ public class ObjectReaderService : IObjectReaderService
 
                 if (objectType.HasFlag(DBObjectType.Table))
                 {
-                    var mySqlTables = dbConnection.Query<DatabaseObjectInfo>("SHOW TABLES;");
-                    objects.AddRange(mySqlTables.Select(t => new DatabaseObjectInfo { ObjName = t.ObjName, ObjType = ObjectType.Table }));
+                    var mySqlTables = dbConnection.Query<DatabaseObjectInfoModel>("SHOW TABLES;");
+                    objects.AddRange(mySqlTables.Select(t => new DatabaseObjectInfoModel { ObjName = t.ObjName, ObjType = ObjectType.Table }));
                 }
 
                 if (objectType.HasFlag(DBObjectType.View))
                 {
-                    var mySqlViews = dbConnection.Query<DatabaseObjectInfo>("SELECT TABLE_NAME as ObjName, 'View' as ObjType FROM information_schema.VIEWS WHERE TABLE_SCHEMA = @DatabaseName", new { DatabaseName = DBConnection.DatabaseName });
+                    var mySqlViews = dbConnection.Query<DatabaseObjectInfoModel>("SELECT TABLE_NAME as ObjName, 'View' as ObjType FROM information_schema.VIEWS WHERE TABLE_SCHEMA = @DatabaseName", new { DatabaseName = DBConnection.DatabaseName });
                     objects.AddRange(mySqlViews);
                 }
 
                 if (objectType.HasFlag(DBObjectType.Procedure))
                 {
-                    var mySqlProcedures = dbConnection.Query<DatabaseObjectInfo>("SELECT ROUTINE_NAME as ObjName, 'Procedure' as ObjType FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = @DatabaseName AND ROUTINE_TYPE = 'PROCEDURE'", new { DatabaseName = DBConnection.DatabaseName });
+                    var mySqlProcedures = dbConnection.Query<DatabaseObjectInfoModel>("SELECT ROUTINE_NAME as ObjName, 'Procedure' as ObjType FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = @DatabaseName AND ROUTINE_TYPE = 'PROCEDURE'", new { DatabaseName = DBConnection.DatabaseName });
                     objects.AddRange(mySqlProcedures);
                 }
                 break;
@@ -112,19 +112,19 @@ public class ObjectReaderService : IObjectReaderService
 
                 if (objectType.HasFlag(DBObjectType.Table))
                 {
-                    var postgresTables = dbConnection.Query<DatabaseObjectInfo>("SELECT table_name as ObjName, 'Table' as ObjType FROM information_schema.tables WHERE table_schema = 'public';");
+                    var postgresTables = dbConnection.Query<DatabaseObjectInfoModel>("SELECT table_name as ObjName, 'Table' as ObjType FROM information_schema.tables WHERE table_schema = 'public';");
                     objects.AddRange(postgresTables);
                 }
 
                 if (objectType.HasFlag(DBObjectType.View))
                 {
-                    var postgresViews = dbConnection.Query<DatabaseObjectInfo>("SELECT table_name as ObjName, 'View' as ObjType FROM information_schema.views WHERE table_schema = 'public';");
+                    var postgresViews = dbConnection.Query<DatabaseObjectInfoModel>("SELECT table_name as ObjName, 'View' as ObjType FROM information_schema.views WHERE table_schema = 'public';");
                     objects.AddRange(postgresViews);
                 }
 
                 if (objectType.HasFlag(DBObjectType.Procedure))
                 {
-                    var postgresProcedures = dbConnection.Query<DatabaseObjectInfo>("SELECT routine_name as ObjName, 'Procedure' as ObjType FROM information_schema.routines WHERE routine_schema = 'public';");
+                    var postgresProcedures = dbConnection.Query<DatabaseObjectInfoModel>("SELECT routine_name as ObjName, 'Procedure' as ObjType FROM information_schema.routines WHERE routine_schema = 'public';");
                     objects.AddRange(postgresProcedures);
                 }
                 break;
@@ -142,11 +142,11 @@ public class ObjectReaderService : IObjectReaderService
 
                     if (bsonDocument.Contains("type") && bsonDocument["type"] == "view" && objectType.HasFlag(DBObjectType.View))
                     {
-                        objects.Add(new DatabaseObjectInfo { ObjName = bsonDocument["name"].ToString(), ObjType = ObjectType.View });
+                        objects.Add(new DatabaseObjectInfoModel { ObjName = bsonDocument["name"].ToString(), ObjType = ObjectType.View });
                     }
                     else if (objectType.HasFlag(DBObjectType.Table))
                     {
-                        objects.Add(new DatabaseObjectInfo { ObjName = bsonDocument["name"].ToString(), ObjType = ObjectType.Table });
+                        objects.Add(new DatabaseObjectInfoModel { ObjName = bsonDocument["name"].ToString(), ObjType = ObjectType.Table });
                     }
                 }
                 break;

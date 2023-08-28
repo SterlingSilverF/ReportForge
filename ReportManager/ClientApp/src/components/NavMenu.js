@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './style.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear } from '@fortawesome/free-solid-svg-icons';
+
 
 export class NavMenu extends Component {
     static displayName = NavMenu.name;
@@ -19,6 +22,11 @@ export class NavMenu extends Component {
         this.setState({
             collapsed: !this.state.collapsed
         });
+    }
+
+    handleLogout = () => {
+        localStorage.removeItem('token');
+        this.props.history.push('/login');
     }
 
     render() {
@@ -39,10 +47,10 @@ export class NavMenu extends Component {
                                 <NavLink tag={Link} className="text-dark" to="/groups">Groups</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink tag={Link} className="text-dark" to="/settings"><i className="fas fa-cog"></i></NavLink>
+                                <NavLink tag={Link} className="text-dark" to="/settings"><FontAwesomeIcon icon={faGear} /></NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink tag={Link} className="text-dark" to="/signout">Sign Out</NavLink>
+                                <NavLink tag={Link} className="text-dark" to="/login" onClick={this.handleLogout}>Sign Out</NavLink>
                             </NavItem>
                         </ul>
                     </Collapse>

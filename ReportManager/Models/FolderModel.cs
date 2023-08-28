@@ -12,6 +12,6 @@ namespace ReportManager.Models
 
     public class PersonalFolder: FolderModel
     {
-        public string Owner { get; set; }
+        public ObjectId Owner { get; set; } // FK user Id
     }
 }
