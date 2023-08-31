@@ -28,10 +28,10 @@ const Dashboard = () => {
                         <h2>Get Started</h2>
                         <hr></hr>
                         <div className="inline-buttons">
-                            <button className="btn-two">Add a new connection</button>
-                            <button className="btn-two">Create a new report</button>
-                            <button className="btn-two">Create a new folder</button>
-                            <button className="btn-two">Create a new group</button>
+                            <button className="btn-two" onClick={() => navigate('/createconnection')}>Add a new connection</button>
+                            <button className="btn-two" onClick={() => navigate('/createreport')}>Create a new report</button>
+                            <button className="btn-two" onClick={() => navigate('/createfolder')}>Create a new folder</button>
+                            <button className="btn-two" onClick={() => navigate('/creategroup')}>Create a new group</button>
                         </div>
                     </section>
                     <br/><br/><br/>
@@ -54,7 +54,7 @@ const Dashboard = () => {
                 </div>
             </div>
             <div className="sub-container">
-                <h3>Recently ran reports</h3>
+                <h3>Report History</h3>
                 <hr></hr>
             </div>
         </div>

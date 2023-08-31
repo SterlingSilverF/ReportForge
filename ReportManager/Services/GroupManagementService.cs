@@ -92,5 +92,14 @@ namespace ReportManager.Services
             var filter = Builders<_Group>.Filter.Eq(g => g.IsTopGroup, true);
             return _groupsDB.Find(filter).FirstOrDefault();
         }
+
+        public string ModifyGroupOwnership(ObjectId groupId, List<ObjectId> newOwners)
+        {
+            var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
+            var update = Builders<_Group>.Update.Set(g => g.GroupOwners, newOwners);
+            var result = _groupsDB.UpdateOne(filter, update);
+
+            return result.IsAcknowledged && result.ModifiedCount > 0 ? "Group ownership updated" : "Update failed";
+        }
     }
 }

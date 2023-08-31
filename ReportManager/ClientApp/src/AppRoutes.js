@@ -4,6 +4,14 @@ import Register from "./Pages/Register";
 import RegisterAdmin from "./Pages/RegisterAdmin";
 import Settings from "./Pages/Settings";
 import Groups from "./Pages/Groups";
+import GroupFolders from "./Pages/GroupFolders";
+import CreateGroup from "./Pages/CreateGroup";
+import ModifyGroup from "./Pages/ModifyGroup";
+import GroupConnections from "./Pages/GroupConnections";
+import CreateConnection from "./Pages/CreateConnection";
+import ModifyConnection from "./Pages/ModifyConnection";
+import CreateReport from "./Pages/CreateReport";
+import ModifyReport from "./Pages/ModifyReport";
 import { Counter } from "./components/Counter";
 
 const AppRoutes = [
@@ -30,6 +38,38 @@ const AppRoutes = [
     {
         path: '/groups',
         element: <Groups />
+    },
+    {
+        path: '/groupfolders',
+        element: <GroupFolders />
+    },
+    {
+        path: '/groupconnections',
+        element: <GroupConnections />
+    },
+    {
+        path: '/creategroup',
+        element: <CreateGroup />
+    },
+    {
+        path: '/modifygroup',
+        element: <ModifyGroup />
+    },
+    {
+        path: '/createconnection',
+        element: <CreateConnection />
+    },
+    {
+        path: '/modifyconnection',
+        element: <ModifyConnnection />
+    },
+    {
+        path: '/createreport',
+        element: <CreateReport />
+    },
+    {
+        path: '/modifyreport',
+        element: <ModifyReport />
     },
     {
         path: '/counter',

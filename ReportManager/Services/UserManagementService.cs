@@ -36,6 +36,11 @@ namespace ReportManager.Services
             return _usersDB.Find(filter).FirstOrDefault();
         }
 
+        public List<string> GetAllUsernames()
+        {
+            return _usersDB.Find(user => true).Project(user => user.Username).ToList();
+        }
+
         public string RegisterUser(User user)
         {
             _usersDB.InsertOne(user);
@@ -87,6 +92,15 @@ namespace ReportManager.Services
 
             var hashedPasswordToCheck = Encryptor.PasswordHelper.HashPassword(request.password, user.Salt);
             return hashedPasswordToCheck == user.HashedPassword;
+        }
+
+        public string UpdateUserType(string username, UserType userType)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            var update = Builders<User>.Update.Set(u => u.UserType, userType);
+            var result = _usersDB.UpdateOne(filter, update);
+
+            return result.IsAcknowledged && result.ModifiedCount > 0 ? "User type updated" : "Update failed";
         }
     }
 }

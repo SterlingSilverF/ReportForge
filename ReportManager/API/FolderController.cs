@@ -4,6 +4,7 @@ using ReportManager.Models;
 using ReportManager.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using MongoDB.Driver;
 
 namespace ReportManager.API
 {
@@ -102,20 +103,33 @@ namespace ReportManager.API
             return Ok(personalFolders);
         }
 
-        [HttpGet("getUserGroupFolders")]
-        public IActionResult GetUserGroupFolders(string username)
+        [HttpGet("getFoldersByGroupId")]
+        public IActionResult GetFoldersByGroupId(string groupId)
         {
-            var user = _userManagementService.GetUserByUsername(username);
-            var groups = _groupManagementService.GetGroupsByUser(user.Id);
-            List<FolderModel> groupFolders = new List<FolderModel>();
+            var id = _sharedService.StringToObjectId(groupId);
+            var folders = _folderManagementService.GetFoldersByGroup(id);
 
-            foreach (var group in groups)
+            if (folders == null || !folders.Any())
             {
-                var folders = _folderManagementService.GetFoldersByGroup(group.Id);
-                groupFolders.AddRange(folders);
+                return NotFound("No folders found for the given group ID.");
             }
 
-            return Ok(groupFolders);
+            return Ok(folders);
+        }
+
+        [HttpGet("getSubFoldersByParentId")]
+        public ActionResult<List<FolderModel>> GetSubFoldersByParentId(string parentId)
+        {
+            try
+            {
+                ObjectId parentIdObj = new ObjectId(parentId);
+                var subFolders = _folderManagementService.GetSubFoldersByParentId(parentIdObj);
+                return Ok(subFolders);
+            }
+            catch
+            {
+                return BadRequest("Invalid Parent ID");
+            }
         }
 
         [HttpGet("getAllUserFolders")]

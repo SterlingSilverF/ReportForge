@@ -95,3 +95,10 @@ System.InvalidOperationException: Unable to resolve service for type 'ReportMana
 2023-08-28 01:23:34.202 -05:00 [INF] Application Starting
 2023-08-28 01:26:07.731 -05:00 [INF] Application Starting
 2023-08-28 01:34:18.544 -05:00 [INF] Application Starting
+2023-08-28 10:10:08.183 -05:00 [INF] Application Starting
+2023-08-28 13:20:10.968 -05:00 [INF] Application Starting
+2023-08-28 13:22:44.167 -05:00 [INF] Application Starting
+2023-08-28 13:23:21.948 -05:00 [INF] Application Starting
+2023-08-28 13:31:27.692 -05:00 [INF] Application Starting
+2023-08-28 14:03:13.063 -05:00 [INF] Application Starting
+2023-08-28 19:24:29.698 -05:00 [INF] Application Starting

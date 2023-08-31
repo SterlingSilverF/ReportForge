@@ -2,6 +2,8 @@
     --rpf-silver: #D6D6D6;
     --rpf-gold: #c39857;
     --rpf-red: #ce262c;
+    --rpf-darkred: #850505;
+    --rpf-silverblue: #8f99ba;
 }
 
 .rpf-silver {
@@ -21,6 +23,10 @@ body, html {
     margin: 0;
     font-family: Verdana, sans-serif;
     background-color: #F1F1F1;
+}
+
+h1, h2, h3, h4, h5{
+    font-family: Calibri;
 }
 
 a:hover {
@@ -145,6 +151,23 @@ hr{
         color: black;
     }
 
+.btn-three {
+    background-color: var(--rpf-silver);
+    letter-spacing: 1px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    color: black;
+    transition: background-color 0.1s;
+    font-size: 14px;
+}
+
+    .btn-three:hover {
+        background-color: var(--rpf-gold);
+        color: black;
+    }
+
 .inline-buttons {
     display: flex;
     gap: 25px;
@@ -229,4 +252,49 @@ hr{
 .folder {
     color: var(--rpf-gold);
     cursor: pointer;
+}
+
+.centered-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-box {
+    width: 50%;
+    margin: 0 auto;
+    background-color: white;
+    display: grid;
+}
+
+.form-box button{
+    margin-left: 35%;
+    width: 30%;
+}
+
+.standard-select {
+    width: 30%;
+}
+
+.form-element {
+    margin-bottom: 1em;
+}
+
+.result-label {
+    margin-top: 1em;
+}
+
+.outer{
+    background-color: var(--rpf-darkred);
+}
+
+.multi-select {
+    width: 100%;
+    padding: 0.5em;
+    margin: 0.5em 0;
+}
+
+.form-element {
+    margin-bottom: 1em;
 }

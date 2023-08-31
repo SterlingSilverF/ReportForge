@@ -249,4 +249,32 @@ public class ConnectionService
         dbConnection.Password = serverConnection.Password;
         return dbConnection;
     }
+
+    public bool DeleteServerConnection(ObjectId connectionId)
+    {
+        var collection = _database.GetCollection<ServerConnectionModel>("ServerConnections");
+        var result = collection.DeleteOne(x => x.ConnectionID == connectionId);
+        return result.IsAcknowledged && result.DeletedCount > 0;
+    }
+
+    public bool DeleteDBConnection(ObjectId connectionId)
+    {
+        var collection = _database.GetCollection<DBConnectionModel>("DBConnections");
+        var result = collection.DeleteOne(x => x.ConnectionID == connectionId);
+        return result.IsAcknowledged && result.DeletedCount > 0;
+    }
+
+    public bool UpdateServerConnection(ServerConnectionModel updatedServer)
+    {
+        var collection = GetServerCollection(updatedServer);
+        var result = collection.ReplaceOne(x => x.ConnectionID == updatedServer.ConnectionID, updatedServer);
+        return result.IsAcknowledged && result.ModifiedCount > 0;
+    }
+
+    public bool UpdateDBConnection(DBConnectionModel updatedDB)
+    {
+        var collection = GetDBCollection(updatedDB);
+        var result = collection.ReplaceOne(x => x.ConnectionID == updatedDB.ConnectionID, updatedDB);
+        return result.IsAcknowledged && result.ModifiedCount > 0;
+    }
 }

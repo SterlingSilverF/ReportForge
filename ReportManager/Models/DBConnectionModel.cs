@@ -2,7 +2,7 @@
 {
     public class DBConnectionModel : ServerConnectionModel
     {
-        public string ?FriendlyName { get; set; }
+        public string? FriendlyName { get; set; }
         public string DatabaseName { get; set; }
     }
 }

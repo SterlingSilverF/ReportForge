@@ -7,6 +7,7 @@ import { faFolder } from '@fortawesome/free-solid-svg-icons';
 
 
 const UserGroups = ({ }) => {
+    const navigate = useNavigate();
     const [groups, setGroups] = useState([]);
 
     axios.defaults.baseURL = 'https://localhost:7280';
@@ -33,7 +34,7 @@ const UserGroups = ({ }) => {
                 {groups.map((group, index) => (
                     <div key={index}>
                         <div className="image-label-pair">
-                            <FontAwesomeIcon icon={faFolder} size="6x" className="folder" onClick={() => navigate('/groups/')/>
+                            <FontAwesomeIcon icon={faFolder} size="6x" className="folder" onClick={() => navigate('/groupfolders?groupId=' + group.Id)} />
                             <label className="rpf-red">{group.groupName}</label>
                         </div>
                     </div>

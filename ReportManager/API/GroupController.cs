@@ -16,17 +16,6 @@ namespace ReportManager.API
         private readonly UserManagementService _userManagementService;
         private readonly SharedService _sharedService;
 
-        public class CreateGroupRequest
-        {
-            [Required]
-            public string GroupId { get; set; }
-            [Required]
-            public string groupname { get; set; }
-            [Required]
-            public string username { get; set; }
-            public string? parentId { get; set; }
-        }
-
         public class UpdateGroupRequest
         {
             [Required]
@@ -48,44 +37,64 @@ namespace ReportManager.API
             _sharedService = sharedService;
         }
 
+        public class CreateGroupRequest
+        {
+            [Required]
+            public string groupname { get; set; }
+            [Required]
+            public string username { get; set; }
+            [Required]
+            public string parentId { get; set; }
+            public List<string> additionalOwners { get; set; }
+            public List<string> additionalMembers { get; set; }
+        }
+
         [HttpPost("createGroup")]
         public IActionResult CreateGroup(CreateGroupRequest request)
         {
             try
             {
-                FolderModel folder = new FolderModel();
-                if (request.parentId != null)
-                {
-                    string folderPath = "/" + request.groupname;
-                    folder.FolderName = request.groupname;
-                    folder.FolderPath = folderPath;
-                    _folderManagementService.CreateFolder(folder);
-                }
-                else
-                {
-                    ObjectId parsedId = _sharedService.StringToObjectId(request.parentId);
-                    FolderModel parent = _folderManagementService.GetFolderById(parsedId);
-                    string folderPath = parent.FolderPath + "/" + request.groupname + "/";
+                ObjectId parsedId = _sharedService.StringToObjectId(request.parentId);
+                FolderModel parent = _folderManagementService.GetFolderById(parsedId);
+                string folderPath = parent.FolderPath + "/" + request.groupname + "/";
 
-                    folder.FolderName = request.groupname;
-                    folder.FolderPath = folderPath;
-                    folder.ParentId = parsedId;
-                    _folderManagementService.CreateFolder(folder);
+                FolderModel folder = new FolderModel
+                {
+                    FolderName = request.groupname,
+                    FolderPath = folderPath,
+                    ParentId = parsedId
+                };
+
+                _folderManagementService.CreateFolder(folder);
+
+                User initialUser = _userManagementService.GetUserByUsername(request.username);
+
+                List<ObjectId> owners = new List<ObjectId> { initialUser.Id };
+                List<ObjectId> members = new List<ObjectId> { initialUser.Id };
+
+                if (request.additionalOwners != null)
+                {
+                    owners.AddRange(request.additionalOwners.Select(x => _userManagementService.GetUserByUsername(x).Id));
                 }
 
-                User user = _userManagementService.GetUserByUsername(request.username);
+                if (request.additionalMembers != null)
+                {
+                    members.AddRange(request.additionalMembers.Select(x => _userManagementService.GetUserByUsername(x).Id));
+                }
+
                 _Group group = new _Group
                 {
                     GroupName = request.groupname,
-                    GroupOwners = { user.Id },
-                    GroupMembers = { user.Id },
-                    Folders = { folder.Id },
+                    GroupOwners = owners,
+                    GroupMembers = members,
+                    Folders = new List<ObjectId> { folder.Id },
                     IsTopGroup = false
                 };
-               _groupManagementService.CreateGroup(group);
+
+                _groupManagementService.CreateGroup(group);
                 return Ok(new { message = "Group created successfully." });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

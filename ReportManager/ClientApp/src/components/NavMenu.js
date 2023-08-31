@@ -3,8 +3,9 @@ import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from '
 import { Link } from 'react-router-dom';
 import './style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear } from '@fortawesome/free-solid-svg-icons';
-
+import {
+    faGear
+} from '@fortawesome/free-solid-svg-icons';
 
 export class NavMenu extends Component {
     static displayName = NavMenu.name;

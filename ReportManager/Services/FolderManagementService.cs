@@ -69,5 +69,13 @@ namespace ReportManager.Services
             }
             return new List<FolderModel>();
         }
+
+        public List<FolderModel> GetSubFoldersByParentId(ObjectId parentId)
+        {
+            var filter = Builders<FolderModel>.Filter.Eq("ParentId", parentId);
+            var subFolders = _folders.Find(filter).ToList();
+            return subFolders;
+            // TODO: Expand for personal folders
+        }
     }
 }
