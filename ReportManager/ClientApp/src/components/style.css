@@ -237,6 +237,13 @@ hr{
     background-color: black;
     color: white;
     padding: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.title-style-one{
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .image-label-pair {
@@ -273,6 +280,13 @@ hr{
     width: 30%;
 }
 
+.input-style {
+    outline: 0;
+    border-width: 0 0 2px;
+    border-color: var(--rpf-gold);
+    width: 300px;
+}
+
 .standard-select {
     width: 30%;
 }
@@ -293,8 +307,4 @@ hr{
     width: 100%;
     padding: 0.5em;
     margin: 0.5em 0;
-}
-
-.form-element {
-    margin-bottom: 1em;
 }

@@ -9,19 +9,51 @@ import { } from '@fortawesome/free-solid-svg-icons';
 
 const CreateGroup = () => {
     const [groupname, setGroupName] = useState('');
+    const [userGroups, setUserGroups] = useState([]);
     const [username, setUserName] = useState('');
     const [usernames, setUsernames] = useState([]);
     const [selectedOwners, setSelectedOwners] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
-    const [parentId, setParentId] = useState(null);
+    const [parentGroupId, setParentGroupId] = useState(null);
+    const [adminId, setAdminId] = useState('');
+
     const navigate = useNavigate();
     const [env, setEnv] = useState('');
-
     axios.defaults.baseURL = 'https://localhost:7280';
+
+    // Get top group id
+    useEffect(() => {
+        axios.get('/api/group/getTopGroup')
+            .then(response => {
+                // Set both, for the dropdown and default
+                setAdminId(response.data);
+                setParentGroupId(response.data);
+            })
+            .catch(error => {
+                console.error('Could not fetch top group:', error);
+            });
+    }, []);
+
+    // Get groups for parent dropdown
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const decoded = jwt_decode(token);
+        const username = decoded.sub;
+
+        axios.get(`/api/group/getUserGroups?username=${username}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(response => {
+                setUserGroups(response.data);
+            })
+            .catch(error => {
+                console.error('Could not fetch user groups:', error);
+            });
+    }, []);
 
     // Get usernames for combobox
     useEffect(() => {
-        axios.get('/api/Shared/getAllUsernames')
+        axios.get('/api/shared/getAllUsernames')
             .then(response => {
                 setUsernames(response.data);
             })
@@ -29,7 +61,6 @@ const CreateGroup = () => {
                 console.error('Could not fetch usernames:', error);
             });
     }, []);
-
     const options = usernames.map(username => ({ value: username, label: username }));
 
     // Get auth token
@@ -47,21 +78,22 @@ const CreateGroup = () => {
 
     // Form submit command
     const handleCreateGroup = () => {
-        if (groupname && username && parentId) {
-            axios.post('/api/Group/createGroup', {
+        if (groupname && username && parentGroupId) {
+            axios.post('/api/group/createGroup', {
                 groupname,
                 username,
-                parentId
+                parentGroupId
             })
                 .then(response => {
                     console.log(response.data);
-                    navigate('/dashboard');
+                    navigate('/');
                 })
                 .catch(error => {
                     console.error('Could not create group:', error);
                 });
         } else {
             console.error('All required fields must be filled.');
+            console.log(groupname, username, parentGroupId, adminId);
         }
     };
 
@@ -81,11 +113,16 @@ const CreateGroup = () => {
                 </div>
                 <div className="form-element">
                     <label>Underneath Group:</label><br />
-                    <select value={parentId} onChange={e => setParentId(e.target.value)} className="input-style standard-select" style={{ fontSize: "1em" }}>
-                        <option value="">None</option>
-                        {/* You can map your parent group options here */}
+                    <select
+                        value={parentGroupId}
+                        onChange={e => setParentGroupId(e.target.value)}
+                        className="input-style standard-select"
+                        style={{ fontSize: "1em" }}>
+                        {userGroups.map(group => (
+                            <option key={group.id} value={group.id}>{group.groupName}</option>
+                        ))}
                     </select>
-                </div>
+                </div><br/>
                 <section className="form-box">
                     <label>Group Owners</label>
                     <DualListBox

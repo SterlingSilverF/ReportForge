@@ -120,7 +120,7 @@ namespace ReportManager.API
                     _authService.UpdateUser(_user);
 
                     _Group topGroup = _groupManagementService.GetTopGroup();
-                    topGroup.GroupMembers.Add(_user.Id);
+                    topGroup.GroupMembers.Add(request.username);
                     _groupManagementService.UpdateGroup(topGroup);
 
                     if (groupname != null)
@@ -128,7 +128,7 @@ namespace ReportManager.API
                         _Group? group = _groupManagementService.GetGroupByName(groupname);
                         if (group != null)
                         {
-                            group.GroupMembers.Add(_user.Id);
+                            group.GroupMembers.Add(request.username);
                             _groupManagementService.UpdateGroup(group);
                         }
                         return BadRequest(new { message = "Group does not exist." });
@@ -236,8 +236,8 @@ namespace ReportManager.API
             {
                 GroupName = request.groupname,
                 Folders = new List<ObjectId>{ folder.Id },
-                GroupOwners = new List<ObjectId> { adminUser.Id },
-                GroupMembers = new List<ObjectId> { adminUser.Id },
+                GroupOwners = new List<string> { request.username },
+                GroupMembers = new List<string> { request.username },
                 IsTopGroup = true
             };
             adminGroup = _groupManagementService.CreateAdminGroup(adminGroup);

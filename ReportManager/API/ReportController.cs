@@ -4,6 +4,7 @@ using ReportManager.Models;
 using ReportManager.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace ReportManager.API
 {
@@ -16,10 +17,11 @@ namespace ReportManager.API
         private readonly GroupManagementService _groupManagementService;
         private readonly SharedService _sharedService;
         private readonly FolderManagementService _folderManagementService;
-        private readonly ObjectId _userId;
 
         public class CreateReportRequest
         {
+            [Required]
+            public string _userId { get; set; }
             [Required]
             public string ReportName { get; set; }
             public string Description { get; set; }
@@ -61,7 +63,6 @@ namespace ReportManager.API
             _groupManagementService = groupManagementService;
             _sharedService = sharedService;
             _folderManagementService = folderManagementService;
-            _userId = ObjectId.Parse(User.Claims.First(c => c.Type == "UserId").Value);
         }
 
         [HttpPost("createOrUpdateNormalReport")]
@@ -69,6 +70,7 @@ namespace ReportManager.API
         {
             ObjectId folderid = _sharedService.StringToObjectId(request.FolderId);
             var folder = _folderManagementService.GetFolderById(folderid);
+            ObjectId _userId = _sharedService.StringToObjectId(request._userId);
             if (folder == null)
             {
                 return BadRequest("Invalid Folder ID");
@@ -120,6 +122,7 @@ namespace ReportManager.API
         {
             ObjectId folderid = _sharedService.StringToObjectId(request.FolderId);
             var folder = _folderManagementService.GetFolderById(folderid);
+            ObjectId _userId = _sharedService.StringToObjectId(request._userId);
             if (folder == null)
             {
                 return BadRequest("Invalid Folder ID");
@@ -164,8 +167,9 @@ namespace ReportManager.API
         }
 
         [HttpGet("getUserReports")]
-        public IActionResult GetUserReports()
+        public IActionResult GetUserReports([FromQuery] string userId)
         {
+            ObjectId _userId = _sharedService.StringToObjectId(userId);
             var reports = _reportManagementService.GetPersonalReportsByUserId(_userId);
             return Ok(reports);
         }
@@ -173,12 +177,17 @@ namespace ReportManager.API
         [HttpGet("getFolderReports")]
         public IActionResult GetFolderReports([FromQuery] string folderId, [FromQuery] bool isPersonal)
         {
-            if (string.IsNullOrEmpty(folderId))
+            ObjectId folderObjectId;
+            // If none specified, do highest group folder
+            if (folderId == "null")
             {
-                return BadRequest("Folder ID is required.");
+                var group = _groupManagementService.GetTopGroup();
+               folderObjectId = group.Folders.FirstOrDefault();
             }
-
-            ObjectId folderObjectId = _sharedService.StringToObjectId(folderId);
+            else {
+                folderObjectId = _sharedService.StringToObjectId(folderId);
+            }
+            
             var folder = _folderManagementService.GetFolderById(folderObjectId);
             if (folder == null)
             {

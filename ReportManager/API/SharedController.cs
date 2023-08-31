@@ -45,7 +45,7 @@ namespace ReportManager.API
         }
 
         [HttpPut("modifyGroupOwnership")]
-        public IActionResult ModifyGroupOwnership(ObjectId groupId, List<ObjectId> newOwners)
+        public IActionResult ModifyGroupOwnership(ObjectId groupId, List<string> newOwners)
         {
             try
             {

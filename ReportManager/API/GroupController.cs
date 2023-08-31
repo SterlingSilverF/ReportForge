@@ -44,9 +44,9 @@ namespace ReportManager.API
             [Required]
             public string username { get; set; }
             [Required]
-            public string parentId { get; set; }
-            public List<string> additionalOwners { get; set; }
-            public List<string> additionalMembers { get; set; }
+            public string parentGroupId { get; set; }
+            public List<string>? additionalOwners { get; set; }
+            public List<string>? additionalMembers { get; set; }
         }
 
         [HttpPost("createGroup")]
@@ -54,39 +54,44 @@ namespace ReportManager.API
         {
             try
             {
-                ObjectId parsedId = _sharedService.StringToObjectId(request.parentId);
-                FolderModel parent = _folderManagementService.GetFolderById(parsedId);
+                ObjectId parsedId = _sharedService.StringToObjectId(request.parentGroupId);
+                _Group parentGroup = _groupManagementService.GetGroup(parsedId);
+                FolderModel parent = _folderManagementService.GetFolderById(parentGroup.Folders[0]);
                 string folderPath = parent.FolderPath + "/" + request.groupname + "/";
 
                 FolderModel folder = new FolderModel
                 {
                     FolderName = request.groupname,
                     FolderPath = folderPath,
-                    ParentId = parsedId
+                    ParentId = parent.Id
                 };
 
                 _folderManagementService.CreateFolder(folder);
 
-                User initialUser = _userManagementService.GetUserByUsername(request.username);
-
-                List<ObjectId> owners = new List<ObjectId> { initialUser.Id };
-                List<ObjectId> members = new List<ObjectId> { initialUser.Id };
+                HashSet<string> owners = new HashSet<string> { request.username };
+                HashSet<string> members = new HashSet<string> { request.username };
 
                 if (request.additionalOwners != null)
                 {
-                    owners.AddRange(request.additionalOwners.Select(x => _userManagementService.GetUserByUsername(x).Id));
+                    foreach (var owner in request.additionalOwners)
+                    {
+                        owners.Add(owner);
+                    }
                 }
 
                 if (request.additionalMembers != null)
                 {
-                    members.AddRange(request.additionalMembers.Select(x => _userManagementService.GetUserByUsername(x).Id));
+                    foreach (var member in request.additionalMembers)
+                    {
+                        members.Add(member);
+                    }
                 }
 
                 _Group group = new _Group
                 {
                     GroupName = request.groupname,
-                    GroupOwners = owners,
-                    GroupMembers = members,
+                    GroupOwners = owners.ToList(),
+                    GroupMembers = members.ToList(),
                     Folders = new List<ObjectId> { folder.Id },
                     IsTopGroup = false
                 };
@@ -98,6 +103,12 @@ namespace ReportManager.API
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("getTopGroup")]
+        public string getTopGroup()
+        {
+            return _groupManagementService.GetTopGroup().Id.ToString();
         }
 
         [HttpPost("updateGroup")]
@@ -112,14 +123,15 @@ namespace ReportManager.API
         {
             var groupObjId = _sharedService.StringToObjectId(groupId);
             var user = _userManagementService.GetUserByUsername(username);
-            return _groupManagementService.RemoveUserFromGroup(groupObjId, user.Id) ? Ok("User removed from group.") : BadRequest("Update failed.");
+            return _groupManagementService.RemoveUserFromGroup(groupObjId, username) ? Ok("User removed from group.") : BadRequest("Update failed.");
         }
 
         [HttpGet("getUserGroups")]
-        public IActionResult GetUserGroups(ObjectId id)
+        public IActionResult GetUserGroups(string username)
         {
-            List<_Group> groups = _groupManagementService.GetGroupsByUser(id);
-            return Ok(groups);
+            List<_Group> groups = _groupManagementService.GetGroupsByUser(username);
+            List<GroupDTO> groupDTOs = groups.Select(g => new GroupDTO(g)).ToList();
+            return Ok(groupDTOs);
         }
     }
 }

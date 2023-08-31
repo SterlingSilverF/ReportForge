@@ -1,42 +1,62 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faFile, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 
-
-const UserGroups = ({ }) => {
+const Groups = () => {
+    const [folders, setFolders] = useState([]);
+    const [reports, setReports] = useState([]);
     const navigate = useNavigate();
-    const [groups, setGroups] = useState([]);
-
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const folderId = searchParams.get('folderId');
     axios.defaults.baseURL = 'https://localhost:7280';
     const token = localStorage.getItem('token');
     const decoded = jwt_decode(token);
-    //console.log('Decoded JWT:', decoded);
     const userId = decoded.UserId;
-    const usernameFromToken = decoded.sub;
 
     useEffect(() => {
-        axios.get(`/api/Group/getUserGroups?id=${userId}`)
-            .then(response => {
-                setGroups(response.data);
+        // Use folderId to fetch the corresponding sub-folders and reports
+        axios.all([
+            axios.get(`/api/folder/getSubFoldersByParentId?parentId=${folderId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            axios.get(`/api/report/getFolderReports?folderId=${folderId}&isPersonal=false`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             })
-            .catch(error => {
-                console.error('There was an error!', error);
-            });
-    }, [userId]);
+        ]).then(axios.spread((folderRes, reportRes) => {
+            setFolders(folderRes.data);
+            setReports(reportRes.data);
+        })).catch(err => console.error('There was an error!', err));
+    }, [folderId, userId]);
+
+    const goBack = () => {
+        navigate(-1);
+    };
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-container sub-container">
             <div className="options-section">
-                <div className="header">Your Groups</div>
-                {groups.map((group, index) => (
-                    <div key={index}>
-                        <div className="image-label-pair">
-                            <FontAwesomeIcon icon={faFolder} size="6x" className="folder" onClick={() => navigate('/groupfolders?groupId=' + group.Id)} />
-                            <label className="rpf-red">{group.groupName}</label>
-                        </div>
+                <div className="title-style-one">Group Explorer</div>
+                <button className="btn-three" onClick={goBack}>
+                    <FontAwesomeIcon icon={faCaretLeft} /> Back
+                </button>
+                <hr></hr>
+                {folders.map((folder, index) => (
+                    console.log(folder),
+                    <div key={index} className="centered-content image-label-pair">
+                        <FontAwesomeIcon className="folder" icon={faFolder} size="5x"
+                            onClick={() => navigate(`/groups?folderId=${folder.id}&isPersonal=false`)} />
+                        <label className="rpf-red">{folder.folderName}</label>
+                    </div>
+                ))}
+
+                {reports.map((report, index) => (
+                    <div key={index} className="centered-content">
+                        <FontAwesomeIcon icon={faFile} size="3x" />
+                        <label>{report.ReportName}</label>
                     </div>
                 ))}
             </div>
@@ -44,4 +64,4 @@ const UserGroups = ({ }) => {
     );
 };
 
-export default UserGroups;
+export default Groups;

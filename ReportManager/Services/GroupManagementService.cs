@@ -43,18 +43,18 @@ namespace ReportManager.Services
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
 
-        public bool AddUserToGroup(ObjectId groupId, ObjectId userId)
+        public bool AddUserToGroup(ObjectId groupId, string username)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
-            var update = Builders<_Group>.Update.AddToSet(g => g.GroupMembers, userId);
+            var update = Builders<_Group>.Update.AddToSet(g => g.GroupMembers, username);
             var result = _groupsDB.UpdateOne(filter, update);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool RemoveUserFromGroup(ObjectId groupId, ObjectId userId)
+        public bool RemoveUserFromGroup(ObjectId groupId, string username)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
-            var update = Builders<_Group>.Update.Pull(g => g.GroupMembers, userId);
+            var update = Builders<_Group>.Update.Pull(g => g.GroupMembers, username);
             var result = _groupsDB.UpdateOne(filter, update);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
@@ -81,9 +81,9 @@ namespace ReportManager.Services
             return _groupsDB.Find(_ => true).ToList();
         }
 
-        public List<_Group> GetGroupsByUser(ObjectId userId)
+        public List<_Group> GetGroupsByUser(string username)
         {
-            var filter = Builders<_Group>.Filter.AnyEq(g => g.GroupMembers, userId);
+            var filter = Builders<_Group>.Filter.AnyEq(g => g.GroupMembers, username);
             return _groupsDB.Find(filter).ToList();
         }
 
@@ -93,7 +93,7 @@ namespace ReportManager.Services
             return _groupsDB.Find(filter).FirstOrDefault();
         }
 
-        public string ModifyGroupOwnership(ObjectId groupId, List<ObjectId> newOwners)
+        public string ModifyGroupOwnership(ObjectId groupId, List<string> newOwners)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
             var update = Builders<_Group>.Update.Set(g => g.GroupOwners, newOwners);

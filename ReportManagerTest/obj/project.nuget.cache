@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "RHeuSjodNrUZldvM5tL4VYcSkvXAIoZLe0FWe9oLcSv4oiqZ9gko4bRLI8fCqVp3APnGDimkCKM6I7ReJladaQ==",
+  "dgSpecHash": "uccwzs3zNT1rNHVoUNk7HP8l0srVyPJRm9uhV6wq2V0fjQT7B++bsdzENCCWzdtzLejiLHnHFeTIg7mV7znhOQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManagerTest\\ReportManagerTest.csproj",
   "expectedPackageFiles": [
@@ -20,6 +20,7 @@
     "C:\\Users\\Silver\\.nuget\\packages\\k4os.compression.lz4.streams\\1.3.5\\k4os.compression.lz4.streams.1.3.5.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\k4os.hash.xxhash\\1.0.8\\k4os.hash.xxhash.1.0.8.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\log4net\\2.0.15\\log4net.2.0.15.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\7.0.10\\microsoft.aspnetcore.authentication.jwtbearer.7.0.10.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.aspnetcore.authentication.negotiate\\7.0.9\\microsoft.aspnetcore.authentication.negotiate.7.0.9.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\7.0.9\\microsoft.aspnetcore.connections.abstractions.7.0.9.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.aspnetcore.spaproxy\\6.0.19\\microsoft.aspnetcore.spaproxy.6.0.19.nupkg.sha512",
@@ -42,6 +43,8 @@
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.abstractions\\6.32.2\\microsoft.identitymodel.abstractions.6.32.2.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\6.32.2\\microsoft.identitymodel.jsonwebtokens.6.32.2.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.logging\\6.32.2\\microsoft.identitymodel.logging.6.32.2.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.protocols\\6.15.1\\microsoft.identitymodel.protocols.6.15.1.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\6.15.1\\microsoft.identitymodel.protocols.openidconnect.6.15.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.identitymodel.tokens\\6.32.2\\microsoft.identitymodel.tokens.6.32.2.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.net.test.sdk\\17.5.0\\microsoft.net.test.sdk.17.5.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.netcore.platforms\\2.0.0\\microsoft.netcore.platforms.2.0.0.nupkg.sha512",

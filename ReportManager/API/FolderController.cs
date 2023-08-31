@@ -33,11 +33,13 @@ namespace ReportManager.API
             public string FolderPath { get; set; }
         }
 
-        public FolderController(FolderManagementService folderManagementService, UserManagementService userManagementService, SharedService sharedService)
+        public FolderController(FolderManagementService folderManagementService, UserManagementService userManagementService,
+            SharedService sharedService, GroupManagementService groupManagementService)
         {
             _folderManagementService = folderManagementService;
             _userManagementService = userManagementService;
             _sharedService = sharedService;
+            _groupManagementService = groupManagementService;
         }
 
         [HttpPost("createFolder")]
@@ -118,13 +120,22 @@ namespace ReportManager.API
         }
 
         [HttpGet("getSubFoldersByParentId")]
-        public ActionResult<List<FolderModel>> GetSubFoldersByParentId(string parentId)
+        public ActionResult<List<FolderModel>> GetSubFoldersByParentId([FromQuery] string parentId)
         {
             try
             {
-                ObjectId parentIdObj = new ObjectId(parentId);
+                ObjectId parentIdObj;
+                if (parentId == "null")
+                {
+                    parentIdObj = _groupManagementService.GetTopGroup().Folders.FirstOrDefault();
+                }
+                else
+                {
+                    parentIdObj = new ObjectId(parentId);
+                }
                 var subFolders = _folderManagementService.GetSubFoldersByParentId(parentIdObj);
-                return Ok(subFolders);
+                List<FolderDTO> dtos = subFolders.Select(folder => new FolderDTO(folder)).ToList();
+                return Ok(dtos);
             }
             catch
             {
@@ -143,7 +154,7 @@ namespace ReportManager.API
             allFolders.AddRange(personalFolders.Cast<FolderModel>());
 
             // Get group folders
-            var groups = _groupManagementService.GetGroupsByUser(user.Id);
+            var groups = _groupManagementService.GetGroupsByUser(username);
             foreach (var group in groups)
             {
                 var groupFolders = _folderManagementService.GetFoldersByGroup(group.Id);

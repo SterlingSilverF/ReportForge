@@ -9,9 +9,6 @@ import CreateGroup from "./Pages/CreateGroup";
 import ModifyGroup from "./Pages/ModifyGroup";
 import GroupConnections from "./Pages/GroupConnections";
 import CreateConnection from "./Pages/CreateConnection";
-import ModifyConnection from "./Pages/ModifyConnection";
-import CreateReport from "./Pages/CreateReport";
-import ModifyReport from "./Pages/ModifyReport";
 import { Counter } from "./components/Counter";
 
 const AppRoutes = [
@@ -58,18 +55,6 @@ const AppRoutes = [
     {
         path: '/createconnection',
         element: <CreateConnection />
-    },
-    {
-        path: '/modifyconnection',
-        element: <ModifyConnnection />
-    },
-    {
-        path: '/createreport',
-        element: <CreateReport />
-    },
-    {
-        path: '/modifyreport',
-        element: <ModifyReport />
     },
     {
         path: '/counter',

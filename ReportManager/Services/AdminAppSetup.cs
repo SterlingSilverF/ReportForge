@@ -23,52 +23,59 @@ namespace ReportManager
             return setupKey == permissionKey;
         }
 
-        public async Task CreateDatabaseCollections()
+        public bool CreateDatabaseCollections()
         {
-            var database = _appDatabaseService.GetDatabase();
-
-            bool dropResult = await DropAllCollectionsAsync(database);
-            if (!dropResult)
+            try
             {
-                Console.WriteLine("No collections to drop");
+                var database = _appDatabaseService.GetDatabase();
+
+                bool dropResult = DropAllCollections(database);
+                if (!dropResult)
+                {
+                    Console.WriteLine("No collections to drop");
+                }
+
+                database.CreateCollection("Users");
+                database.CreateCollection("PermissionKeys");
+                database.CreateCollection("Groups");
+                database.CreateCollection("GroupFolders");
+                database.CreateCollection("GroupServerConnections");
+                database.CreateCollection("GroupDBConnections");
+                database.CreateCollection("GroupReports");
+                database.CreateCollection("PersonalFolders");
+                database.CreateCollection("PersonalServerConnections");
+                database.CreateCollection("PersonalDBConnections");
+                database.CreateCollection("PersonalReports");
+
+                // Indexing
+                // Group
+                var groupIndexKeysDefinition = Builders<_Group>.IndexKeys.Ascending(x => x.GroupName);
+                var groupIndexOptions = new CreateIndexOptions { Unique = true };
+                var groupIndexModel = new CreateIndexModel<_Group>(groupIndexKeysDefinition, groupIndexOptions);
+                _appDatabaseService.GetCollection<_Group>("Groups").Indexes.CreateOne(groupIndexModel);
+
+                // Permission Key
+                var permIndexKeysDefinition = Builders<PermissionKeyModel>.IndexKeys.Ascending(x => x.Timestamp);
+                var permIndexOptions = new CreateIndexOptions { Name = "TimestampIndex" };
+                var permIndexModel = new CreateIndexModel<PermissionKeyModel>(permIndexKeysDefinition, permIndexOptions);
+                _appDatabaseService.GetCollection<PermissionKeyModel>("PermissionKeys").Indexes.CreateOne(permIndexModel);
+                return true;
             }
-
-            database.CreateCollection("Users");
-            database.CreateCollection("PermissionKeys");
-            database.CreateCollection("Groups");
-            database.CreateCollection("GroupFolders");
-            database.CreateCollection("GroupServerConnections");
-            database.CreateCollection("GroupDBConnections");
-            database.CreateCollection("GroupReports");
-            database.CreateCollection("PersonalFolders");
-            database.CreateCollection("PersonalServerConnections");
-            database.CreateCollection("PersonalDBConnections");
-            database.CreateCollection("PersonalReports");
-
-            // Indexing
-            // Group
-            var groupIndexKeysDefinition = Builders<_Group>.IndexKeys.Ascending(x => x.GroupName);
-            var groupIndexOptions = new CreateIndexOptions { Unique = true };
-            var groupIndexModel = new CreateIndexModel<_Group>(groupIndexKeysDefinition, groupIndexOptions);
-            _appDatabaseService.GetCollection<_Group>("Groups").Indexes.CreateOne(groupIndexModel);
-
-            // Permission Key
-            var permIndexKeysDefinition = Builders<PermissionKeyModel>.IndexKeys.Ascending(x => x.Timestamp);
-            var permIndexOptions = new CreateIndexOptions { Name = "TimestampIndex" };
-            var permIndexModel = new CreateIndexModel<PermissionKeyModel>(permIndexKeysDefinition, permIndexOptions);
-            _appDatabaseService.GetCollection<PermissionKeyModel>("PermissionKeys").Indexes.CreateOne(permIndexModel);
+            catch
+            {
+                return false;
+            }
         }
 
-        public async Task<bool> DropAllCollectionsAsync(IMongoDatabase database)
+        public bool DropAllCollections(IMongoDatabase database)
         {
             try
             {
                 // Fetch all collection names in the database
-                var collectionNames = await database.ListCollectionNamesAsync();
+                var collectionNames = database.ListCollectionNames();
 
                 // Drop each collection
-                await collectionNames.ForEachAsync(async name => await database.DropCollectionAsync(name));
-
+                collectionNames.ForEachAsync(name => database.DropCollection(name));
                 return true;
             }
             catch (Exception e)
