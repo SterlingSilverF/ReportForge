@@ -1,8 +1,0 @@
-2023-08-25 21:58:44.508 -05:00 [INF] Application Starting
-2023-08-25 22:43:19.212 -05:00 [INF] Application Starting
-2023-08-25 22:47:33.651 -05:00 [INF] Application Starting
-2023-08-25 22:50:02.461 -05:00 [INF] Application Starting
-2023-08-25 22:50:53.546 -05:00 [INF] Application Starting
-2023-08-25 23:51:43.481 -05:00 [INF] Application Starting
-2023-08-25 23:55:05.276 -05:00 [INF] Application Starting
-2023-08-25 23:59:10.692 -05:00 [INF] Application Starting

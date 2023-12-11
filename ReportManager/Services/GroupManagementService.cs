@@ -59,6 +59,22 @@ namespace ReportManager.Services
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
+        public bool AddFolderToGroup(ObjectId groupId, ObjectId folderId)
+        {
+            var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
+            var update = Builders<_Group>.Update.AddToSet(g => g.Folders, folderId);
+            var result = _groupsDB.UpdateOne(filter, update);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
+        public bool RemoveFolderFromGroup(ObjectId groupId, ObjectId folderId)
+        {
+            var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
+            var update = Builders<_Group>.Update.Pull(g => g.Folders, folderId);
+            var result = _groupsDB.UpdateOne(filter, update);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
         public _Group GetGroup(ObjectId groupId)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);

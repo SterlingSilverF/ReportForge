@@ -1,0 +1,3 @@
+2023-11-11 19:34:03.075 -06:00 [INF] Application Starting
+2023-11-11 19:36:12.033 -06:00 [ERR] Unable to connect to the SPA development server at 'https://localhost:44462'.
+2023-11-11 21:35:03.542 -06:00 [INF] Application Starting

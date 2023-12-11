@@ -5,7 +5,7 @@ namespace ReportManager.Models
 {
     public class ReportConfigurationModel
     {
-        public ObjectId ReportID { get; set; }
+        public ObjectId Id { get; set; }
         public string ReportName { get; set; }
         public string? Description { get; set; }
         public DBConnectionModel SourceDB { get; set; }
@@ -17,6 +17,8 @@ namespace ReportManager.Models
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
         public ObjectId LastModifiedBy { get; set; }
+        public ObjectId OwnerID { get; set; }
+        public OwnerType OwnerType { get; set; }
     }
 
     public class CustomSQLReport : ReportConfigurationModel
@@ -76,6 +78,7 @@ namespace ReportManager.Models
     {
         public ScheduleType ScheduleType { get; set; }
         public int Iteration { get; set; } // every x [days, weeks]
+        public TimeOnly ExecuteTime { get; set; }
     }
 
     public enum ScheduleType

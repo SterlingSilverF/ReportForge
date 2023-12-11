@@ -16,10 +16,25 @@ const CreateGroup = () => {
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [parentGroupId, setParentGroupId] = useState(null);
     const [adminId, setAdminId] = useState('');
+    const [message, setMessage] = useState('');
+    const [success, setSuccess] = useState(false);
 
     const navigate = useNavigate();
     const [env, setEnv] = useState('');
     axios.defaults.baseURL = 'https://localhost:7280';
+
+    const handleSuccess = () => {
+        setSuccess(true);
+        setMessage('Group created successfully.');
+    };
+
+    const handleError = (err) => {
+        setSuccess(false);
+    };
+
+    const resetForm = () => {
+        window.location.reload();
+    };
 
     // Get top group id
     useEffect(() => {
@@ -85,21 +100,20 @@ const CreateGroup = () => {
                 parentGroupId
             })
                 .then(response => {
-                    console.log(response.data);
-                    navigate('/');
+                    handleSuccess();
                 })
                 .catch(error => {
-                    console.error('Could not create group:', error);
+                    handleError(error);
                 });
         } else {
-            console.error('All required fields must be filled.');
+            setMessage('All required fields must be filled.');
             console.log(groupname, username, parentGroupId, adminId);
         }
     };
 
     return (
-        <div className="sub-container centered-content outer">
-            <div className="header">
+        <div className="sub-container outer">
+            <div className="form-header">
                 <h2>Create a New Group</h2>
             </div>
             <section className="box form-box">
@@ -123,7 +137,7 @@ const CreateGroup = () => {
                         ))}
                     </select>
                 </div><br/>
-                <section className="form-box">
+                <section>
                     <label>Group Owners</label>
                     <DualListBox
                         options={options}
@@ -143,7 +157,14 @@ const CreateGroup = () => {
                 <br/><br/>
                 <button onClick={handleCreateGroup} className="btn-three">Create Group</button><br />
                 <label className="result-label"></label>
+                <p className="success-message">{message}</p>
             </section>
+            {success && (
+                <div>
+                    <button onClick={() => navigate('/')} className="btn-four inline-pad">Go to Dashboard</button>
+                    <button onClick={resetForm} className="btn-four">Reset Form</button><br />
+                </div>
+            )}
         </div>
     );
 };

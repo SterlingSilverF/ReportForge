@@ -1,17 +1,34 @@
 ﻿import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const FirstTimeAdminSetup = () => {
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [groupname, setGroupname] = useState('');
     const [email, setEmail] = useState('');
     const [permissionKey, setPermissionKey] = useState('');
+    const [message, setMessage] = useState('');
+    const [success, setSuccess] = useState(false);
 
     axios.defaults.baseURL = 'https://localhost:7280';
 
-    const canSubmit = username.length >= 3 && password.length >= 8 && password === confirmPassword;
+    const canSubmit = username.length >= 3 && password.length >= 8 && password === confirmPassword && groupname != "";
+
+    const handleSuccess = () => {
+        setSuccess(true);
+        setMessage('First time setup completed without errors.');
+    };
+
+    const handleError = (err) => {
+        setSuccess(false);
+    };
+
+    const resetForm = () => {
+        window.location.reload();
+    };
 
     const handleAdminSetup = async (e) => {
         e.preventDefault();
@@ -25,14 +42,14 @@ const FirstTimeAdminSetup = () => {
                 permission_key: permissionKey
             })
                 .then(response => {
-                    console.log("Admin setup successful");
-                    // TODO: Redirect to dashboard
+                    handleSuccess();
                 })
                 .catch(error => {
                     console.log(error);
+                    handleError(error);
                 });
         } else {
-            console.log("Invalid form data");
+            setMessage("Form input is incorrect or invalid.");
         }
     };
 
@@ -95,6 +112,13 @@ const FirstTimeAdminSetup = () => {
                     disabled={!canSubmit}
                 />
             </form>
+            <p className="success-message">{message}</p>
+            {success && (
+                <div>
+                    <button onClick={() => navigate('/')} className="btn-four">Go to Dashboard</button>
+                    <button onClick={resetForm} className="btn-four">Reset Form</button><br />
+                </div>
+            )}
         </div>
     );
 };

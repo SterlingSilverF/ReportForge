@@ -148,7 +148,6 @@ namespace ReportManager.API
             else
             {
                 return BadRequest(new { message = "Registration failed" });
-                // TODO: Log exception
             }
         }
 

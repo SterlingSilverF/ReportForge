@@ -45,28 +45,35 @@ namespace ReportManager.Services
 
         public ReportConfigurationModel GetReportById(ObjectId reportId, ReportType type)
         {
-            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.ReportID, reportId);
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
             return GetReportCollection(type).Find(filter).FirstOrDefault();
+        }
+
+        public List<ReportConfigurationModel> GetPersonalReportsByCreatorId(ObjectId userId)
+        {
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq("CreatorId", userId);
+            return _personalreports.Find(filter).ToList();
+        }
+
+        public List<ReportConfigurationModel> GetReportsByOwnerId(ObjectId ownerId, ReportType reportType)
+        {
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq("OwnerId", ownerId);
+            var reportCollection = GetReportCollection(reportType);
+            return reportCollection.Find(filter).ToList();
         }
 
         public bool UpdateReport(ReportConfigurationModel updatedReport, ReportType type)
         {
-            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.ReportID, updatedReport.ReportID);
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, updatedReport.Id);
             var result = GetReportCollection(type).ReplaceOne(filter, updatedReport);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
         public bool DeleteReport(ObjectId reportId, ReportType type)
         {
-            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.ReportID, reportId);
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
             var result = GetReportCollection(type).DeleteOne(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
-        }
-
-        public List<ReportConfigurationModel> GetPersonalReportsByUserId(ObjectId userId)
-        {
-            var filter = Builders<ReportConfigurationModel>.Filter.Eq("CreatorId", userId);
-            return _personalreports.Find(filter).ToList();
         }
     }
 }

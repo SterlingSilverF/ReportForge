@@ -1,67 +1,51 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faFile, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const Groups = () => {
-    const [folders, setFolders] = useState([]);
-    const [reports, setReports] = useState([]);
-    const navigate = useNavigate();
-    const location = useLocation();
-    const searchParams = new URLSearchParams(location.search);
-    const folderId = searchParams.get('folderId');
+const Groups = ({ }) => {
     axios.defaults.baseURL = 'https://localhost:7280';
+    const [userGroups, setUserGroups] = useState([]);
     const token = localStorage.getItem('token');
     const decoded = jwt_decode(token);
     const userId = decoded.UserId;
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Use folderId to fetch the corresponding sub-folders and reports
-        axios.all([
-            axios.get(`/api/folder/getSubFoldersByParentId?parentId=${folderId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            axios.get(`/api/report/getFolderReports?folderId=${folderId}&isPersonal=false`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+        console.log(token);
+        axios.get(`/api/group/getUserGroups?username=${decoded.sub}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(response => {
+                setUserGroups(response.data);
             })
-        ]).then(axios.spread((folderRes, reportRes) => {
-            setFolders(folderRes.data);
-            setReports(reportRes.data);
-        })).catch(err => console.error('There was an error!', err));
-    }, [folderId, userId]);
-
-    const goBack = () => {
-        navigate(-1);
-    };
+            .catch(error => {
+                console.error('Could not fetch user groups:', error);
+            });
+    }, [token, decoded.sub]);
 
     return (
-        <div className="dashboard-container sub-container">
-            <div className="options-section">
-                <div className="title-style-one">Group Explorer</div>
-                <button className="btn-three" onClick={goBack}>
-                    <FontAwesomeIcon icon={faCaretLeft} /> Back
-                </button>
-                <hr></hr>
-                {folders.map((folder, index) => (
-                    console.log(folder),
-                    <div key={index} className="centered-content image-label-pair">
-                        <FontAwesomeIcon className="folder" icon={faFolder} size="5x"
-                            onClick={() => navigate(`/groups?folderId=${folder.id}&isPersonal=false`)} />
-                        <label className="rpf-red">{folder.folderName}</label>
-                    </div>
-                ))}
-
-                {reports.map((report, index) => (
-                    <div key={index} className="centered-content">
-                        <FontAwesomeIcon icon={faFile} size="3x" />
-                        <label>{report.ReportName}</label>
-                    </div>
-                ))}
+        <div className="sub-container">
+            <div className="title-style-two grid-item">Your Groups</div>
+            <div className="padding-medium grid-container">
+                {userGroups.map((group, index) => {
+                    return (
+                        <div key={index} className="image-label-pair grid-item hover-icon clickable" onClick={() => navigate(`/groupinformation?groupId=${group.id}`)}>
+                            <FontAwesomeIcon
+                                icon={faUsers}
+                                size="4x"
+                            />
+                            <label className="group-name">
+                                {group.groupName}
+                            </label>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
-};
+}
 
 export default Groups;

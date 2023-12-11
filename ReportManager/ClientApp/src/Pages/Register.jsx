@@ -7,6 +7,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [permissionKey, setPermissionKey] = useState('');
+    const [message, setMessage] = useState('');
 
     axios.defaults.baseURL = 'https://localhost:7280';
 
@@ -23,11 +24,11 @@ const Register = () => {
                 permission_key: permissionKey
             })
                 .then(response => {
-                    console.log("Registration successful");
-                    // TODO: Redirect to login or dashboard
+                    setMessage("Registration successful.")
                 })
                 .catch(error => {
                     console.log(error);
+                    setMessage("An error was encountered during registration. Please try again or contact your administrator.")
                 });
         } else {
             console.log("Invalid form data");
@@ -97,6 +98,7 @@ const Register = () => {
                     disabled={!canSubmit}
                 />
             </form>
+            <p className="success-message">{message}</p>
         </div>
     );
 };

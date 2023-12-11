@@ -1,20 +1,39 @@
-﻿import { useState, useEffect } from 'react';
-import axios from 'axios';
-import qs from 'query-string';
+﻿import axios from 'axios';
+import jwt_decode from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
-const useApi = (controller, functionToCall, params) => {
-    const [data, setData] = useState([]);
+const API_Hook = {
+  baseURL: axios.defaults.baseURL = config.baseURL,
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const query = params ? '?' + qs.stringify(params) : '';
-            const url = `/api/${controller}/${functionToCall}${query}`;
-            const response = await axios.get(url);
-            setData(response.data);
-        };
+  getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token found');
+    return { headers: { 'Authorization': `Bearer ${token}` } };
+  },
 
-        fetchData();
-    }, [controller, functionToCall, params]);
+  decodeToken() {
+    const token = localStorage.getItem('token');
+    return token ? jwt_decode(token) : null;
+  },
 
-    return data;
+  async get(endpoint) {
+    try {
+      const response = await axios.get(endpoint, this.getAuthHeaders());
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  },
+
+  // ... Include other methods for POST, PUT, DELETE, etc.
+
+  handleError(error) {
+    console.error('API call error: ', error.response?.data || error.message);
+    if (error.response?.status === 401) {
+        navigate('/login');
+    }
+    throw error;
+  }
 };
+
+export default API_Hook;

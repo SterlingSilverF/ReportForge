@@ -8,6 +8,7 @@ namespace ReportManager.Models
         public ObjectId? ParentId { get; set; }
         public string FolderName { get; set; }
         public string FolderPath { get; set; }
+        public bool IsGroupTopFolder { get; set; }
     }
 
     public class PersonalFolder: FolderModel

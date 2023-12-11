@@ -37,6 +37,10 @@ namespace ReportManager.API
             public bool IsGroupReport { get; set; }
             [Required]
             public string Action { get; set; }
+            [Required]
+            public string OwnerId { get; set; }
+            [Required]
+            public string OwnerType { get; set; }
         }
 
         public class CreateNormalReport : CreateReportRequest
@@ -53,6 +57,14 @@ namespace ReportManager.API
         public class CreateSQLReport : CreateReportRequest
         {
             public string CustomSQL { get; set; }
+        }
+
+        public class ReportSubsetRequest
+        {
+            [Required]
+            public string OwnerId { get; set; }
+            [Required]
+            public string ReportType { get; set; }
         }
 
         public ReportController(ReportManagementService reportManagementService, UserManagementService userManagementService, 
@@ -77,6 +89,8 @@ namespace ReportManager.API
             }
             try
             {
+                OwnerType ownerType = Enum.TryParse(request.OwnerType, true, out OwnerType parsedType) ? parsedType : default(OwnerType);
+
                 var report = new NormalReportConfiguration
                 {
                     ReportName = request.ReportName,
@@ -92,7 +106,9 @@ namespace ReportManager.API
                     SelectedObjects = request.SelectedObjects,
                     Columns = request.Columns,
                     Filters = request.Filters,
-                    OrderBy = request.OrderBy
+                    OrderBy = request.OrderBy,
+                    OwnerID = _sharedService.StringToObjectId(request.OwnerId),
+                    OwnerType = ownerType
                 };
 
                 ReportType reportType = request.IsGroupReport ? ReportType.Group : ReportType.Personal;
@@ -170,8 +186,16 @@ namespace ReportManager.API
         public IActionResult GetUserReports([FromQuery] string userId)
         {
             ObjectId _userId = _sharedService.StringToObjectId(userId);
-            var reports = _reportManagementService.GetPersonalReportsByUserId(_userId);
+            var reports = _reportManagementService.GetPersonalReportsByCreatorId(_userId);
             return Ok(reports);
+        }
+
+        [HttpPost("GetReportCount")]
+        public int GetReportCount(ReportSubsetRequest subset)
+        {
+            ReportType reportType = (ReportType)Enum.Parse(typeof(ReportType), subset.ReportType);
+            var reports = _reportManagementService.GetReportsByOwnerId(_sharedService.StringToObjectId(subset.OwnerId), reportType);
+            return reports.Count;
         }
 
         [HttpGet("getFolderReports")]

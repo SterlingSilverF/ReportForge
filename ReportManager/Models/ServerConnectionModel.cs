@@ -4,8 +4,8 @@ namespace ReportManager.Models
 {
     public class ServerConnectionModel
     {
-        public ObjectId ConnectionID { get; set; }
-        public string? Server { get; set; }
+        public ObjectId Id { get; set; }
+        public string ServerName { get; set; }
         public int Port { get; set; }
         public string? Instance { get; set; }
         public string DbType { get; set; }
@@ -14,11 +14,5 @@ namespace ReportManager.Models
         public string AuthType { get; set; }
         public ObjectId OwnerID { get; set; }
         public OwnerType OwnerType { get; set; }
-    }
-
-    public enum OwnerType
-    {
-        User,
-        Group
     }
 }

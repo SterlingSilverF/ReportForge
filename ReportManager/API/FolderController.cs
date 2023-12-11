@@ -23,7 +23,10 @@ namespace ReportManager.API
             public string FolderName { get; set; }
             [Required]
             public string Username { get; set; }
-            public string? ParentId { get; set; }
+            public string ParentId { get; set; }
+            public string GroupId { get; set; }
+            [Required]
+            public bool IsGroupFolder { get; set; }
         }
 
         public class UpdateFolderRequest
@@ -51,14 +54,28 @@ namespace ReportManager.API
                 FolderModel folder = new FolderModel
                 {
                     FolderName = request.FolderName,
+                    IsGroupTopFolder = false
                 };
-
-                if (request.ParentId != null)
+                if (request.ParentId != "")
                 {
-                    folder.ParentId = _sharedService.StringToObjectId(request.ParentId);
+                    ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
+                    folder.ParentId = parentId;
+                    FolderModel parent = _folderManagementService.GetFolderById(parentId);
+                    folder.FolderPath = parent.FolderPath + request.FolderName + "/";
                 }
 
-                _folderManagementService.CreateFolder(folder);
+                if (request.IsGroupFolder)
+                {
+                    _folderManagementService.CreateFolder(folder);
+                    ObjectId groupId = _sharedService.StringToObjectId(request.GroupId);
+                    _groupManagementService.AddFolderToGroup(groupId, folder.Id);
+                }
+                else
+                {
+                    // TODO: create personal folder
+                    //_folderManagementService.CreatePersonalFolder(folder);
+                }
+                
                 return Ok(new { message = "Folder created successfully." });
             }
             catch (Exception ex)
@@ -97,8 +114,8 @@ namespace ReportManager.API
             return _folderManagementService.UpdateFolder(mappedFolder) ? Ok("Folder updated.") : BadRequest("Update failed.");
         }
 
-        [HttpGet("getUserFolders")]
-        public IActionResult GetUserFolders(string username)
+        [HttpGet("getPersonalFolders")]
+        public IActionResult GetPersonalFolders(string username)
         {
             var user = _userManagementService.GetUserByUsername(username);
             var personalFolders = _folderManagementService.GetPersonalFoldersByUser(user.Id);
@@ -109,14 +126,15 @@ namespace ReportManager.API
         public IActionResult GetFoldersByGroupId(string groupId)
         {
             var id = _sharedService.StringToObjectId(groupId);
-            var folders = _folderManagementService.GetFoldersByGroup(id);
+            var folderModels = _folderManagementService.GetFoldersByGroup(id);
 
-            if (folders == null || !folders.Any())
+            if (folderModels == null || !folderModels.Any())
             {
                 return NotFound("No folders found for the given group ID.");
             }
 
-            return Ok(folders);
+            var folderDTOs = folderModels.Select(model => new FolderDTO(model)).ToList();
+            return Ok(folderDTOs);
         }
 
         [HttpGet("getSubFoldersByParentId")]

@@ -1,47 +1,109 @@
-﻿import React, { Component } from 'react';
+﻿import React, { useState } from "react";
 
-class CreateReport extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            reportName: '',
-            // add other state variables here
-        };
-    }
+const ReportConfigurationForm = () => {
+    const [formData, setFormData] = useState({
+        ReportID: "",
+        ReportName: "",
+        Description: "",
+        SourceDB: "",
+        Schedule: { ScheduleType: "Daily", Iteration: 1, ExecuteTime: "00:00:00"},
+        ReportJobs: [],
+        PaginationLimit: 0,
+        FolderId: "",
+        CreatorId: "",
+        CreatedDate: "",
+        LastModifiedDate: "",
+        LastModifiedBy: "",
+    });
 
-    handleInputChange = (e) => {
-        const { name, value } = e.target;
-        this.setState({
-            [name]: value,
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData({ formData, [name]: value });
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        // Submit logic here
+    };
+
+    const handleScheduleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData(prevFormData => {
+            return {
+                ...prevFormData,
+                Schedule: {
+                    ...prevFormData.Schedule,
+                    [name]: value
+                }
+            };
         });
     };
 
-    handleSubmit = () => {
-        // Logic for creating report goes here
-    };
+    return (
+        <form onSubmit={handleSubmit}>
+            {/* ReportName, Description */}
+            <input
+                type="text"
+                name="ReportName"
+                value={formData.ReportName}
+                onChange={handleChange}
+                placeholder="Name This Report..."
+                required
+            />
+            <input
+                type="text"
+                name="Description"
+                value={formData.Description || ""}
+                onChange={handleChange}
+                placeholder="Description"
+            />
+            {/* Database Connections: To be populated via API */}
+            <select name="SourceDB" onChange={handleChange}>
+                <option value="" disabled selected>
+                    Select Source Database
+                </option>
+                {/* Populate this dropdown with API data */}
+            </select>
+            {/* ScheduleInfo */}
+            <select
+                name="ScheduleType"
+                value={formData.Schedule.ScheduleType}
+                onChange={handleScheduleChange}>
+                <option value="Daily">Daily</option>
+                <option value="Weekly">Weekly</option>
+                {/* Other options */}
+            </select>
+            <input
+                type="number"
+                name="Iteration"
+                value={formData.Schedule.Iteration}
+                onChange={handleScheduleChange}
+                placeholder="Iteration"/>
+            {/* PaginationLimit */}
+            <input
+                type="number"
+                name="PaginationLimit"
+                value={formData.PaginationLimit}
+                onChange={handleChange}
+                placeholder="Pagination Limit"/>
 
-    render() {
-        const { reportName } = this.state;
+            {/* ScheduleInfo */}
+            <select
+                name="ScheduleType"
+                value={formData.Schedule.ScheduleType}
+                onChange={handleScheduleChange}>
+                {/* Options here */}
+            </select>
+            <input
+                type="number"
+                name="Iteration"
+                value={formData.Schedule.Iteration}
+                onChange={handleScheduleChange}
+                placeholder="Iteration"
+            />
+            <button type="submit">Submit</button>
+        </form>
+    );
+};
 
-        return (
-            <div className="create-report-container">
-                <h2>Create Report</h2>
-                <form onSubmit={this.handleSubmit}>
-                    <div className="form-element">
-                        <label>Report Name:</label>
-                        <input
-                            type="text"
-                            name="reportName"
-                            value={reportName}
-                            onChange={this.handleInputChange}
-                        />
-                    </div>
-                    {/* Add other form elements here */}
-                    <button type="submit">Create Report</button>
-                </form>
-            </div>
-        );
-    }
-}
-
-export default CreateReport;
+export default ReportConfigurationForm;

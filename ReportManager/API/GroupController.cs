@@ -16,18 +16,6 @@ namespace ReportManager.API
         private readonly UserManagementService _userManagementService;
         private readonly SharedService _sharedService;
 
-        public class UpdateGroupRequest
-        {
-            [Required]
-            public string groupname { get; set; }
-            [Required]
-            public string username { get; set; }
-            public List<string> owners { get; set; }
-            public List<string> members { get; set; }
-            public List<string> folders { get; set; }
-            public List<string> connections { get; set; }
-        }
-
         public GroupController(GroupManagementService groupManagementService, FolderManagementService folderManagementService, 
             UserManagementService userManagementService, SharedService sharedService)
         {
@@ -49,6 +37,18 @@ namespace ReportManager.API
             public List<string>? additionalMembers { get; set; }
         }
 
+        public class UpdateGroupRequest
+        {
+            [Required]
+            public string groupname { get; set; }
+            [Required]
+            public string username { get; set; }
+            public List<string> owners { get; set; }
+            public List<string> members { get; set; }
+            public List<string> folders { get; set; }
+            public List<string> connections { get; set; }
+        }
+
         [HttpPost("createGroup")]
         public IActionResult CreateGroup(CreateGroupRequest request)
         {
@@ -63,7 +63,8 @@ namespace ReportManager.API
                 {
                     FolderName = request.groupname,
                     FolderPath = folderPath,
-                    ParentId = parent.Id
+                    ParentId = parent.Id,
+                    IsGroupTopFolder = true
                 };
 
                 _folderManagementService.CreateFolder(folder);
@@ -126,12 +127,30 @@ namespace ReportManager.API
             return _groupManagementService.RemoveUserFromGroup(groupObjId, username) ? Ok("User removed from group.") : BadRequest("Update failed.");
         }
 
-        [HttpGet("getUserGroups")]
+        [HttpGet("GetUserGroups")]
         public IActionResult GetUserGroups(string username)
         {
             List<_Group> groups = _groupManagementService.GetGroupsByUser(username);
             List<GroupDTO> groupDTOs = groups.Select(g => new GroupDTO(g)).ToList();
             return Ok(groupDTOs);
+        }
+
+        [HttpGet("GetGroupById")]
+        public ActionResult<GroupDTO> GetGroup(string groupId)
+        {
+            if (!ObjectId.TryParse(groupId, out var objectId))
+            {
+                return BadRequest("Invalid group ID.");
+            }
+
+            var group = _groupManagementService.GetGroup(objectId);
+            if (group == null)
+            {
+                return NotFound($"Group with ID {groupId} not found.");
+            }
+
+            var groupDTO = new GroupDTO(group);
+            return Ok(groupDTO);
         }
     }
 }
