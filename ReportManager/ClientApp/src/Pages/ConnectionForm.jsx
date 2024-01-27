@@ -1,10 +1,15 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
-import BaseForm from '../components/BaseForm';
+import { decryptData } from '../components/Cryptonator';
+import MessageDisplay from '../components/MessageDisplay';
 
-const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validateForm, connectionDetails }) => {
-    const navigate = useNavigate();
+const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
+    const location = useLocation();
+    const encryptedData = location.state?.data;
+    const connectionDetails = encryptedData ? decryptData(encryptedData) : null;
+    const [title, setTitle] = useState(isEditMode ? 'Edit Connection' : 'Create New Connection'); // TODO: Add connection type to title
+
     // Form Vars
     const [message, setMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
@@ -46,41 +51,41 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
         DB2: ['Credentials'],
     };
 
-    // Form data
-    const initialData = {
-        serverName: '',
-        port: '',
-        dbType: 'MSSQL',
-        username: '',
-        password: '',
-        authType: '',
-        ownerID: '',
-        ownerType: 'User',
-        friendlyName: '',
-        databaseName: '',
-    };
-    // Current states
-    const [formStateCurrent, setFormStateCurrent] = useState(initialData);
-
     // Models
-    const serverConnection = (state) => ({
-        Id: state.Id,
-        ServerName: state.serverName,
-        Port: state.port,
-        Instance: state.instance,
-        DbType: state.dbType,
-        Username: state.username,
-        Password: state.password,
-        AuthType: state.authType,
-        OwnerID: state.ownerID,
-        OwnerType: state.ownerType
+    const [formStateCurrent, setFormStateCurrent] = useState({
+        Id: '',
+        ServerName: '',
+        Port: 1433,
+        Instance: '',
+        DbType: 'MSSQL',
+        Username: '',
+        Password: '',
+        AuthType: 'Credentials',
+        OwnerID: userID,
+        OwnerType: 'User',
+        FriendlyName: '',
+        DatabaseName: '',
+        ConfigType: 'Server',
     });
+
+    const serverConnection = {
+        Id: formStateCurrent.Id,
+        ServerName: formStateCurrent.ServerName,
+        Port: formStateCurrent.Port,
+        Instance: formStateCurrent.Instance,
+        DbType: formStateCurrent.DbType,
+        Username: formStateCurrent.Username,
+        Password: formStateCurrent.Password,
+        AuthType: formStateCurrent.AuthType,
+        OwnerID: formStateCurrent.OwnerID,
+        OwnerType: formStateCurrent.OwnerType
+    };
 
     const dbConnection = {
         ServerID: selectedServerConnection,
-        CollectionCategory: formStateCurrent.ownerType,
-        FriendlyName: formStateCurrent.friendlyName,
-        DatabaseName: formStateCurrent.databaseName
+        CollectionCategory: formStateCurrent.OwnerType,
+        FriendlyName: formStateCurrent.FriendlyName,
+        DatabaseName: formStateCurrent.DatabaseName
     };
 
     const serverValidationRules = {
@@ -108,7 +113,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
 
     // Update passed object
     useEffect(() => {
-        if (connectionDetails.id) {
+        if (connectionDetails && connectionDetails.id) {
             const endpoint = connectionDetails.type === 'server'
                 ? `api/Connection/FetchServerConnection?connectionId=${connectionDetails.id}&ownerId=${connectionDetails.ownerId}&ownerType=${connectionDetails.ownerType}`
                 : `api/Connection/FetchDBConnection?connectionId=${connectionDetails.id}&ownerId=${connectionDetails.ownerId}&ownerType=${connectionDetails.ownerType}`;
@@ -123,29 +128,20 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
         }
     }, [connectionDetails, makeApiRequest]);
 
-    const specialInputLogic = (name, value) => {
+    const _handleChange = (e) => {
+        const { name, value } = e.target;
         setFormStateCurrent(prevState => {
-            let updateState = { ...prevState, [name]: value };
+            let newState = { ...prevState, [name]: value };
 
-            // Set deleteIden based on the updated configType in updateState
-            if (updateState.configType === 'Server') {
-                setDeleteIden('serverName');
-            } else {
-                setDeleteIden('friendlyName');
+            if (name === 'ConfigType') {
+                setDeleteIden(value === 'Server' ? 'ServerName' : 'FriendlyName');
+            } else if (name === 'OwnerType') {
+                newState.OwnerID = value === 'Group' ? '' : userID;
+            } else if (name === 'DbType') {
+                newState.Port = defaultPorts[value];
+                newState.AuthType = authTypesByDB[value][0];
             }
-
-            if (name === 'ownerType') {
-                updateState.ownerID = value === 'Group' ? '' : userID;
-            } else if (name === 'ownerID' && updateState.ownerType === 'Group') {
-                updateState.ownerID = value;
-            } else if (name === 'dbType') {
-                updateState = {
-                    ...updateState,
-                    port: defaultPorts[value],
-                    authType: authTypesByDB[value][0]
-                };
-            }
-            return updateState;
+            return newState;
         });
     };
 
@@ -180,7 +176,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
     const testConnection = async () => {
         try {
             const data = await makeApiRequest('post', '/api/connection/verify', serverConnection);
-            setTestResult(data.data);
+            setTestResult("Connection succeeded.");
         } catch (error) {
             console.error('Error verifying connection:', error.response ? error.response.data : error);
             setTestResult('Connection failed.');
@@ -194,10 +190,10 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
 
             if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
                 let filter = '';
-                if (formStateCurrent.ownerType === 'User') {
+                if (formStateCurrent.OwnerType === 'User') {
                     filter = `ownerId=${userID}&in_ownerType=User`;
-                } else if (formStateCurrent.ownerID !== '') {
-                    filter = `ownerId=${formStateCurrent.ownerID}&in_ownerType=Group`;
+                } else if (formStateCurrent.OwnerID !== '') {
+                    filter = `ownerId=${formStateCurrent.OwnerID}&in_ownerType=Group`;
                 } else {
                     return;
                 }
@@ -222,77 +218,99 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
     }, [showDbOptions, formStateCurrent, userID, username, makeApiRequest]);
 
     const handleSave = async () => {
-        const validationRules = formStateCurrent.configType === 'Server' ? serverValidationRules : dbValidationRules;
-        const { isValid, errors } = validateForm(formStateCurrent, validationRules);
-        if (!isValid) {
-            const errorMessages = Object.entries(errors)
-                .map(([field, error]) => `${field}: ${error}`)
-                .join(', ');
-            setMessage(`Form validation errors: ${errorMessages}`);
-            return;
+        let data = formStateCurrent.ConfigType === 'Server' ? serverConnection : dbConnection;
+        let endpoint = '';
+        let serverId = null;
+
+        if (formStateCurrent.OwnerType === 'User') {
+            data.OwnerID = userID;
         }
-        else {
-            let data = formStateCurrent.configType === 'Server' ? serverConnection : dbConnection;
-            let endpoint = '';
-            if (formStateCurrent.ownerType === 'Group') {
-                endpoint = isEditMode
-                    ? (formStateCurrent.configType === 'Server'
-                        ? '/api/connection/UpdateServerConnection'
-                        : '/api/connection/UpdateDBConnection')
-                    : (formStateCurrent.configType === 'Server'
-                        ? '/api/connection/AddServerConnection'
-                        : '/api/connection/AddDBConnection');
-            }
-            else {
-                setMessage('Invalid configuration type.');
-                return;
-            }
+        
+        endpoint = isEditMode
+            ? (formStateCurrent.ConfigType === 'Server'
+                ? '/api/connection/UpdateServerConnection'
+                : '/api/connection/UpdateDBConnection')
+            : (formStateCurrent.ConfigType === 'Server'
+                ? '/api/connection/AddServerConnection'
+                : '/api/connection/AddDBConnection');
+
+        if (formStateCurrent.ConfigType === 'Database' && (!dbConnection.ServerID || dbConnection.ServerID.trim() === '')) {
             try {
-                await makeApiRequest('post', endpoint, data);
-                setIsSuccess(true);
-                setMessage(formStateCurrent.configType === 'Server' ? 'Server connection saved.' : 'Database connection saved.');
+                const serverResponse = await makeApiRequest('post', '/api/connection/AddServerConnection', serverConnection);
+                serverId = serverResponse.data;
+                dbConnection.ServerID = serverId;
+                data = dbConnection;
             } catch (error) {
                 setIsSuccess(false);
-                // TODO: this was messed up by integrating the HOC
-                setMessage(`There was an error saving the ${formStateCurrent.configType === 'Server' ? 'server' : 'database'} connection: ${error.response ? error.response.data : error}`);
+                setMessage("Server connection creation failed.");
+                return;
+            }
+        }
+
+        try {
+            await makeApiRequest('post', endpoint, data);
+            setIsSuccess(true);
+            setMessage(formStateCurrent.ConfigType === 'Server' ? 'Server connection saved.' : 'Database connection saved.');
+        } catch (error) {
+            setIsSuccess(false);
+            setMessage("Saving failed.");
+            // If server was created but database creation failed, delete the server
+            if (dbConnection.ServerID) {
+                const isDeleted = await deleteConnection(serverId, 'Server');
+                if (isDeleted) {
+                    setMessage("Database creation failed. Created server connection has been deleted.");
+                } else {
+                    setMessage("Database creation failed, and an error occurred while attempting to delete the server connection.");
+                }
             }
         }
     };
 
-    const onDelete = async () => {
-        await makeApiRequest('delete', `/api/connection/delete`, serverConnection.id);
+    const deleteConnection = async (connectionId, connectionType) => {
+        let deleteEndpoint = '';
+        if (connectionType === 'Server') {
+            deleteEndpoint = `/api/connection/DeleteServerConnection/${connectionId}`;
+        } else if (connectionType === 'Database') {
+            deleteEndpoint = `/api/connection/DeleteDBConnection/${connectionId}`;
+        }
+
+        try {
+            await makeApiRequest('delete', deleteEndpoint);
+            return true;
+        } catch (error) {
+            console.error("Error deleting connection: ", error);
+            return false;
+        }
     };
 
     return (
         <div className='sub-container outer'>
             <div className='form-header'>
-                <h2>Create a New Connection</h2>
+                <h2>{title}</h2>
             </div>
             <section className='box form-box'>
-                <BaseForm
-                    initialData={initialData}
-                    isEditMode={isEditMode}
-                    onSubmit={handleSave}
-                    onCustomInputChange={specialInputLogic}
-                    onDelete={onDelete}
-                    deleteIdentifier={deleteIden}
-                >
                 {/* Configuration Type Selector */}
-                <div>
-                    <label>Select Configuration Type</label><br/>
-                    <select className='input-style standard-select' name='configType' onChange={specialInputLogic}>
-                        <option value='Server'>Server Configuration</option>
-                        <option value='Database'>DB Configuration</option>
-                    </select><br/><br/>
-                    <input
-                        type='checkbox'
-                        name='useExistingServer'
-                        checked={useExistingServer}
-                        onChange={(e) => setUseExistingServer(e.target.checked)}
-                    />
-                    <label>Use Existing Server Connection</label>
-                    <br/><br/>
+                <div className='form-element' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ width: '80%', textAlign: 'left', paddingBottom: '5px' }}>
+                        <label>Select Configuration Type</label>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%', alignItems: 'center' }}>
+                        <select className='input-style-default standard-select' name='ConfigType' onChange={_handleChange}>
+                            <option value='Server'>Server Configuration</option>
+                            <option value='Database'>DB Configuration</option>
+                        </select>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type='checkbox'
+                                name='useExistingServer'
+                                checked={useExistingServer}
+                                onChange={(e) => setUseExistingServer(e.target.checked)}
+                            />
+                            <label>Use Existing Server Connection</label>
+                        </div>
+                    </div>
                 </div>
+
 
                 {/* Existing Server Checkbox and Dropdown */}
                 {(useExistingServer) && (
@@ -322,11 +340,11 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                                 </label><br />
                             <select
                                 name='existingServer'
-                                onChange={specialInputLogic}
-                                    className='input-style standard-select'>
+                                onChange={_handleChange}
+                                    className='input-style-default standard-select'>
                                     <option value={null}>--Select a Connection--</option>
                                 {serverConnections.map((server, index) =>
-                                    <option key={index} value={server.id}>{server.serverName}</option>)}
+                                    <option key={index} value={server.id}>({server.dbType}): {server.serverName}</option>)}
                                 </select><br/><br/>
                             </div>
                         )}
@@ -339,9 +357,9 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                     <div>
                         <label>Database Provider</label><br/>
                         <select
-                            name='dbType'
-                            onChange={specialInputLogic}
-                            className='input-style standard-select'
+                            name='DbType'
+                            onChange={_handleChange}
+                            className='input-style-default standard-select'
                             style={{ fontSize: '1em' }}>
                             <option value='MSSQL'>Microsoft SQL Server</option>
                             <option value='Oracle'>Oracle</option>
@@ -353,43 +371,42 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                     </div><br/>
                         <div className='form-element'>
                             <label>Server Name or IP Address</label><br />
-                            <input name='serverName' onChange={specialInputLogic} className='input-style' />
+                            <input name='ServerName' onChange={_handleChange} className='input-style-default' />
                         </div>
-                        <div className='form-element' style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className='form-element' style={{ alignItems: 'center' }}>
                             <label style={{ marginRight: '10px' }}>Port:</label>
                             <input
                                 type='number'
-                                name='port'
-                                value={formStateCurrent.port}
-                                onChange={specialInputLogic}
-                                className='input-style-short'
+                                name='Port'
+                                value={formStateCurrent.Port}
+                                onChange={_handleChange}
+                                className='input-style-default-short'
                             />
                             {(formStateCurrent.dbType === 'MSSQL' || formStateCurrent.dbType === 'Oracle') && (
                                 <>
                                     <label style={{ marginLeft: '20px', marginRight: '10px' }}>Instance:</label>
-                                    <input name='instance' onChange={specialInputLogic} className='input-style-short' />
+                                    <input name='instance' onChange={_handleChange} className='input-style-default-short' />
                                 </>
                             )}
                         </div>
                         <div className='form-element'>
                             <label>Authentication Type</label><br />
                             <select
-                                name='authType'
-                                onChange={specialInputLogic}
-                                className='input-style standard-select'
-                            >
-                                {authTypesByDB[formStateCurrent.dbType].map(type => <option key={type} value={type}>{type}</option>)}
+                                name='AuthType'
+                                onChange={_handleChange}
+                                className='input-style-default standard-select'>
+                                {authTypesByDB[formStateCurrent.DbType].map(type => <option key={type} value={type}>{type}</option>)}
                             </select>
                         </div>
-                        {formStateCurrent.authType === 'Credentials' && (
+                        {formStateCurrent.AuthType === 'Credentials' && (
                             <>
                                 <div className='form-element'>
                                     <label>Username</label><br />
-                                    <input name='username' onChange={specialInputLogic} className='input-style' />
+                                    <input name='Username' onChange={_handleChange} className='input-style-default' />
                                 </div>
                                 <div className='form-element'>
                                     <label>Password</label><br />
-                                    <input type='password' name='password' onChange={specialInputLogic} className='input-style' />
+                                    <input type='Password' name='Password' onChange={_handleChange} className='input-style-default' />
                                 </div>
                             </>
                         )}
@@ -397,25 +414,25 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                 )}
 
                 {/* Database Fields */}
-                {formStateCurrent.configType === 'Database' && (
+                {formStateCurrent.ConfigType === 'Database' && (
                     <>
                     <br/>
                         <div className='form-element'>
                             <label>Database Name</label><br />
                             <input
-                                name='databaseName'
+                                name='DatabaseName'
                                 value={formStateCurrent.databaseName}
-                                onChange={specialInputLogic}
-                                className='input-style'
+                                onChange={_handleChange}
+                                className='input-style-default'
                             />
                         </div>
                         <div className='form-element'>
                             <label>Friendly Name</label><br />
                             <input
-                                name='friendlyName'
+                                name='FriendlyName'
                                 value={formStateCurrent.friendlyName}
-                                onChange={specialInputLogic}
-                                className='input-style'
+                                onChange={_handleChange}
+                                className='input-style-default'
                             />
                         </div>
                     </>
@@ -427,7 +444,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                         <div style={{ flex: 1 }}>
                             <label>Save Connection Under</label>
                         </div>
-                        {formStateCurrent.ownerType === 'Group' && (
+                        {formStateCurrent.OwnerType === 'Group' && (
                             <div style={{ flex: 1 }}>
                                 <label>Select Group</label>
                             </div>
@@ -436,19 +453,19 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                     <div style={{ display: 'flex' }}>
                         <div style={{ flex: 1 }}>
                             <select
-                                name='ownerType'
-                                onChange={specialInputLogic}
-                                className='input-style-medium'>
+                                name='OwnerType'
+                                onChange={_handleChange}
+                                className='input-style-short'>
                                 <option value='User'>Current User</option>
                                 <option value='Group'>Group</option>
                             </select>
                         </div>
-                        {formStateCurrent.ownerType === 'Group' && (
+                        {formStateCurrent.OwnerType === 'Group' && (
                             <div style={{ flex: 1 }}>
                                 <select
-                                    name='ownerID'
-                                    onChange={specialInputLogic}
-                                    className='input-style-medium'>
+                                    name='OwnerID'
+                                    onChange={_handleChange}
+                                    className='input-style-default'>
                                     <option value={null}>--Select a group--</option>
                                     {userGroups.map((group, index) =>
                                         <option key={index} value={group.id}>{group.groupName}</option>)}
@@ -462,10 +479,17 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode, validate
                 {!useExistingServer && (
                     <>
                         <button type='button' onClick={testConnection} className='btn-four'>Test Connection</button>
+                        <br/>
                         <label className='success-message'>{testResult}</label><br /><br />
                     </>
                 )}
-                </BaseForm>
+                    <button type="button" onClick={handleSave} className="btn-three">{isEditMode ? 'Update' : 'Save'}</button>
+                    {isEditMode && (
+                    <button type="button" onClick={deleteConnection} className="btn-three">
+                            Delete
+                        </button>
+                    )}
+                    {message && <MessageDisplay message={message} isSuccess={isSuccess} className="success-message"/>}
             </section>
         </div>
     );

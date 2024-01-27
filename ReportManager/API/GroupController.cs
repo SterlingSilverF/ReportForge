@@ -64,7 +64,7 @@ namespace ReportManager.API
                     FolderName = request.groupname,
                     FolderPath = folderPath,
                     ParentId = parent.Id,
-                    IsGroupTopFolder = true
+                    IsObjectFolder = true
                 };
 
                 _folderManagementService.CreateFolder(folder);

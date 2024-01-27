@@ -25,4 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ReportManager\ReportManager.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
 </Project>

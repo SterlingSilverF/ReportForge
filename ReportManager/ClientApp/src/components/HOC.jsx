@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 /* 
 HOC (Higher Order Component)
-Last Updated on 12/10/2023
+Last Updated on 1/16/2024
 */
-const HOC = (WrappedComponent) => {
+const HOC = (WrappedComponent, requireAuth = true) => {
     return function Shared(props) {
         // Common state variables
         const [env, setEnv] = useState('');
@@ -18,16 +18,22 @@ const HOC = (WrappedComponent) => {
         const [userID, setUserID] = useState('');
 
         useEffect(() => {
-            if (!token) {
-                navigate('/login');
-            } else {
-                // TODO: setenv
-                setEnv('Production');
-                const decoded = jwt_decode(token);
-                setUsername(decoded.sub);
-                setUserID(decoded.UserId);
+            if (requireAuth) {
+                if (!token) {
+                    navigate('/login');
+                } else {
+                    try {
+                        const decoded = jwt_decode(token);
+                        setUsername(decoded.sub);
+                        setUserID(decoded.UserId);
+                    } catch (error) {
+                        // If the token is invalid, redirect to login
+                        console.error('Error decoding token:', error);
+                        navigate('/login');
+                    }
+                }
             }
-        }, [navigate, token]);
+        }, [navigate, token, requireAuth]);
 
         const makeApiRequest = (method, endpoint, data = null) => {
             return axios({
@@ -38,36 +44,8 @@ const HOC = (WrappedComponent) => {
             });
         };
 
-        const validateForm = (formData, validationRules) => {
-            let isValid = true;
-            let errors = {};
-
-            const requiredFields = validationRules.requiredFields || [];
-            requiredFields.forEach(field => {
-                if (!formData[field] || formData[field].toString().trim() === '') {
-                    isValid = false;
-                    errors[field] = 'This field is required';
-                }
-            });
-
-            for (const field in validationRules) {
-                if (field === 'requiredFields') continue;
-                if (validationRules.hasOwnProperty(field)) {
-                    const value = formData[field];
-                    const rules = validationRules[field];
-
-                    if (rules.type && typeof value !== rules.type) {
-                        isValid = false;
-                        errors[field] = `Expected type ${rules.type}, but got ${typeof value}`;
-                    }
-
-                    if (rules.allowedValues && !rules.allowedValues.includes(value)) {
-                        isValid = false;
-                        errors[field] = `Value must be one of the following: ${rules.allowedValues.join(', ')}`;
-                    }
-                }
-            }
-            return { isValid, errors };
+        const goBack = () => {
+            navigate(-1);
         };
 
         const resetForm = () => {
@@ -82,7 +60,7 @@ const HOC = (WrappedComponent) => {
             username={username}
             userID={userID}
             makeApiRequest={makeApiRequest}
-            validateForm={validateForm}
+            goBack={goBack}
         />;
     }
 }

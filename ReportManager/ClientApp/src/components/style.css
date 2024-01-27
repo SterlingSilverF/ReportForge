@@ -50,6 +50,8 @@ p {
 
 hr {
     border-width: 8px;
+    color: var(--rpf-brown);
+    opacity: 80%;
 }
 
 label {
@@ -78,10 +80,21 @@ input, select {
             margin: 0;
         }
 
-input[type="checkbox"] + label {
-    position: relative;
-    padding-left: 7px;
-    cursor: pointer;
+    input[type="checkbox"] {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        vertical-align: middle;
+    }
+
+        input[type="checkbox"] + label {
+            margin: 0;
+            padding-left: 10px;
+            border: 0;
+            vertical-align: middle;
+        }
+
+.no-break {
     display: inline-block;
 }
 
@@ -155,7 +168,7 @@ input[type="checkbox"] + label {
     flex-direction: column;
     padding: 20px;
     box-sizing: border-box; /* To ensure padding and border are included in the width and height */
-    overflow-y: auto; /* To allow scrolling if contents exceed the container's height */
+    overflow: visible;
 }
 
     .form-div > * {
@@ -164,7 +177,6 @@ input[type="checkbox"] + label {
 
     .form-div input,
     .form-div label,
-    .form-div button,
     .form-div a {
         padding: 12px;
         width: 100%;
@@ -172,6 +184,7 @@ input[type="checkbox"] + label {
         border: 1px solid #ccc;
         border-radius: 4px;
         font-size: 16px;
+        height: 40px;
     }
 
     .form-div label{
@@ -190,20 +203,19 @@ input[type="checkbox"] + label {
 
 /* Button Styles */
 .btn-one {
-    background-color: var(--rpf-silver);
+    background-color: var(--rpf-darkbrown);
     letter-spacing: 1px;
     font-weight: bold;
     padding: 10px 15px;
     border: none;
     cursor: pointer;
-    color: black;
+    color: white;
     border-radius: 4px;
-    transition: background-color 0.3s;
+    height: 50px !important;
 }
 
     .btn-one:hover {
-        background-color: var(--rpf-red);
-        color: white;
+        background-color: var(--rpf-brown);
     }
 
 .btn-two {
@@ -350,21 +362,27 @@ input[type="checkbox"] + label {
     background-color: #000;
 }
 
-.form-control:focus .tooltiptext {
+.tooltipcon input:focus + .tooltiptext {
     visibility: visible;
     opacity: 1;
 }
 
+.tooltipcon {
+    position: relative;
+}
+
 .tooltiptext {
+    white-space: nowrap;
     visibility: hidden;
     text-align: center;
     border: 2px var(--rpf-gold);
     padding: 8px;
     position: absolute;
     z-index: 1;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -60px;
+    top: 70%; /* Position relative to parent's height */
+    left: 110%; /* Position it to the right of the input */
+    transform: translateY(-50%); /* Center it vertically relative to the input */
+    margin-left: 8px; /* Space between the input and tooltip */
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -428,7 +446,7 @@ input[type="checkbox"] + label {
     width: 30%;
 }
 
-.input-style {
+.input-style-default {
     outline: 0;
     border-width: 0 0 2px;
     border-color: var(--rpf-gold);
@@ -439,14 +457,21 @@ input[type="checkbox"] + label {
     outline: 0;
     border-width: 0 0 2px;
     border-color: var(--rpf-gold);
-    width: 80px;
+    width: 150px;
 }
 
-input-style-medium {
+.input-style-medium {
     outline: 0;
     border-width: 0 0 2px;
     border-color: var(--rpf-gold);
-    width: 180px;
+    width: 380px;
+}
+
+.input-style-long{
+    outline: 0;
+    border-width: 0 0 2px;
+    border-color: var(--rpf-gold);
+    width: 600px;
 }
 
 .standard-select {
@@ -502,6 +527,15 @@ input-style-medium {
     display: block;
 }
 
+.select-icon{
+    color: var(--rpf-gold);
+}
+
+.select-icon:hover{
+    cursor: pointer;
+    color: var(--rpf-brown);
+}
+
 .left-border {
     position: fixed;
     top: 0;
@@ -548,9 +582,10 @@ input[type="radio"] {
 }
 
 .sub-container {
-    border: 3px solid black;
+    border: 4px solid black;
     border-radius: 10px;
     margin: 20px;
+    text-align: center;
 }
 
 .right-bar{
@@ -594,11 +629,10 @@ input[type="radio"] {
 }
 
     .infobox .left-container {
-        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        height: 100%; /* Ensure it takes the full height of the container */
+        height: 100%;
     }
 
     .infobox h1 {
@@ -615,8 +649,8 @@ input[type="radio"] {
     }
 
     .infobox .edit-button {
-        background-color: var(--rpf-gold);
-        color: black;
+        background-color: black;
+        color: white;
         padding: 6px 10px; /* Padding inside the button */
         border: none; /* No border for the button */
         border-radius: 5px; /* Rounded corners for the button */
@@ -626,8 +660,8 @@ input[type="radio"] {
     }
 
         .infobox .edit-button:hover {
-            background-color: black;
-            color: white;
+            background-color: var(--rpf-gold);
+            color: black;
         }
 
     .infobox .image-label-pair {
@@ -655,14 +689,13 @@ input[type="radio"] {
         float: left;
     }
 
-/* HEADER STYLES */
+/* Sidebar */
 .header {
-    background-color: black;
     color: white;
     padding: 10px;
     position: fixed;
     left: 0;
-    top: 5%;
+    top: 5.5%;
     bottom: 0;
     width: 11%;
     background: var(--rpf-brown);
@@ -700,3 +733,56 @@ input[type="radio"] {
     padding: 10px;
     background-color: white;
 }
+
+.double-split {
+    width: 35%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid var(--rpf-darkbrown);
+}
+
+.merge-border-left {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.merge-border-right {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+/* Back button for "folder" nav */
+.back {
+    text-align: left;
+    display: block;
+    width: fit-content;
+}
+
+
+/* 2nd Report Style */
+.report-form-box {
+    padding: 10px;
+    margin: 0 auto;
+    background-color: white;
+    display: grid;
+    text-align: left
+}
+
+    .report-form-box label {
+        font-size: 1.2em;
+    }
+
+    .report-form-box button {
+        margin-left: 35%;
+        width: 30%;
+    }
+
+    .report-form-header {
+        text-align: center;
+        padding-top: 10px;
+    }
+        .report-form-header hr {
+            color: var(--rpf-darkred);
+        }

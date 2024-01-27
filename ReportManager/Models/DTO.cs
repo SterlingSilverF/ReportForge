@@ -15,7 +15,7 @@
             this.ParentId = model.ParentId?.ToString();
             this.FolderName = model.FolderName;
             this.FolderPath = model.FolderPath;
-            this.IsGroupFolder = model.IsGroupTopFolder;
+            this.IsGroupFolder = model.IsObjectFolder;
 
             if (model is PersonalFolder personalFolder)
             {

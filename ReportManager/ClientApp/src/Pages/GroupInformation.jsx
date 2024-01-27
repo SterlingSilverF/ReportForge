@@ -2,11 +2,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
+import HOC from '../components/HOC';
 
-const GroupInformation = () => {
+const GroupInformation = ({ goBack, navigate }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const groupId = queryParams.get('groupId');
@@ -19,11 +20,10 @@ const GroupInformation = () => {
     });
 
     const handleEditClick = () => {
-        navigate(`/edit-group?groupId=${groupId}`);
+        navigate(`/groupform?groupId=${groupId}`);
     };
 
     axios.defaults.baseURL = 'https://localhost:7280';
-    const navigate = useNavigate();
 
     const fetchReports = async () => {
         try {
@@ -78,6 +78,10 @@ const GroupInformation = () => {
                 <button className="edit-button" onClick={handleEditClick}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Edit This Group
                 </button>
+                <br/><br/>
+                <button className="btn-three back" onClick={goBack}>
+                    <FontAwesomeIcon icon={faCaretLeft} /> Back
+                </button>
             </div>
             <div className="group-info">
                 <p>Total group connections: {groupInfo.totalConnections}</p>
@@ -112,4 +116,4 @@ const GroupInformation = () => {
     );
 };
 
-export default GroupInformation;
+export default HOC(GroupInformation);

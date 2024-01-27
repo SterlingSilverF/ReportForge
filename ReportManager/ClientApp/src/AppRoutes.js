@@ -7,16 +7,16 @@ import Appearance from "./Pages/Appearance";
 import UserManager from "./Pages/UserManager";
 import GroupManager from "./Pages/GroupManager";
 import Metrics from "./Pages/Metrics";
-import BrowseReports from "./Pages/BrowseReports";
 import Reports from "./Pages/Reports";
 import Groups from "./Pages/Groups";
+import Connections from "./Pages/Connections";
+import Browse from "./Pages/Browse";
+import GroupForm from "./Pages/GroupForm";
 import GroupInformation from "./Pages/GroupInformation";
-import CreateGroup from "./Pages/CreateGroup";
-import ModifyGroup from "./Pages/ModifyGroup";
-import CreateFolder from "./Pages/CreateFolder";
-import CreateReport from "./Pages/CreateReport";
-import GroupConnections from "./Pages/GroupConnections";
 import ConnectionForm from "./Pages/ConnectionForm";
+import UserManagement from "./Pages/UserManager";
+import FolderForm from "./Pages/FolderForm";
+import ReportForm from "./Pages/ReportForm";
 
 /* DB Icons */
 import mssql from './components/mssql.png';
@@ -25,7 +25,7 @@ import mysql from './components/mysql.png';
 import postgres from './components/postgres.png';
 import mongodb from './components/mongoDB.png';
 import DB2 from './components/DB2_IBM.png';
-import UserManagement from "./Pages/UserManager";
+
 
 const dbIcons = {
     mssql,
@@ -39,80 +39,94 @@ const dbIcons = {
 const AppRoutes = [
     {
         path: '/',
-        element: <Dashboard dbIcons={dbIcons} />
+        element: <Dashboard dbIcons={dbIcons} />,
+        includeNavbar: true
+    },
+    {
+        path: '/browse',
+        element: <Browse />,
+        includeNavbar: true
     },
     {
         path: '/login',
-        element: <Login />
+        element: <Login />,
+        includeNavbar: false
     },
     {
         path: '/register',
-        element: <Register />
+        element: <Register />,
+        includeNavbar: false
     },
     {
         path: '/registeradmin',
-        element: <RegisterAdmin />
+        element: <RegisterAdmin />,
+        includeNavbar: false
     },
     {
         path: '/settings',
-        element: <Settings />
+        element: <Settings />,
+        includeNavbar: true
     },
     {
         path: '/appearance',
-        element: <Appearance />
+        element: <Appearance />,
+        includeNavbar: true
     },
     {
         path: '/usermanager',
-        element: <UserManager />
+        element: <UserManager />,
+        includeNavbar: true
     },
     {
         path: '/groupmanager',
-        element: <GroupManager />
+        element: <GroupManager />,
+        includeNavbar: true
     },
     {
         path: '/metrics',
-        element: <Metrics />
-    },
-    {
-        path: '/browse_reports',
-        element: <BrowseReports />
+        element: <Metrics />,
+        includeNavbar: true
     },
     {
         path: '/reports',
-        element: <Reports />
+        element: <Reports />,
+        includeNavbar: true
     },
     {
         path: '/groups',
-        element: <Groups />
+        element: <Groups />,
+        includeNavbar: true
+    },
+    {
+        path: '/connections',
+        element: <Connections dbIcons={dbIcons} />,
+        includeNavbar: true
     },
     {
         path: '/groupinformation',
-        element: <GroupInformation />
+        element: <GroupInformation />,
+        includeNavbar: true
     },
     {
-        path: '/groupconnections',
-        element: <GroupConnections />
-    },
-    {
-        path: '/creategroup',
-        element: <CreateGroup />
-    },
-    {
-        path: '/modifygroup',
-        element: <ModifyGroup />
+        path: '/groupform',
+        element: <GroupForm />,
+        includeNavbar: true
     },
     {
         path: '/connectionform',
-        element: <ConnectionForm />
+        element: <ConnectionForm />,
+        includeNavbar: true
     },
     {
-        path: '/createfolder',
-        element: <CreateFolder />
+        path: '/folderform',
+        element: <FolderForm />,
+        includeNavbar: true
     },
     {
-        path: '/creategroup',
-        element: <CreateGroup />
-    }
+        path: '/reportform',
+        element: <ReportForm />,
+        includeNavbar: true
+    },
 ];
 
 export default AppRoutes;

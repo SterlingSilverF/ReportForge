@@ -1,64 +1,51 @@
 ﻿import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
-import jwt_decode from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFile, faCaretLeft, faPeopleRoof } from '@fortawesome/free-solid-svg-icons';
+import HOC from '../components/HOC';
 
-const Reports = () => {
+const Reports = ({ env, token, username, userID, makeApiRequest, goBack, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [reports, setReports] = useState([]);
-    const navigate = useNavigate();
-    const location = useLocation();
-    const searchParams = new URLSearchParams(location.search);
+
+    const searchParams = new URLSearchParams(window.location.search);
     const isPersonal = searchParams.get('isPersonal');
     const folderId = searchParams.get('folderId');
-    axios.defaults.baseURL = 'https://localhost:7280';
-    const token = localStorage.getItem('token');
-    const decoded = jwt_decode(token);
-    const userId = decoded.UserId;
 
     useEffect(() => {
-        axios.all([
-            axios.get(`/api/folder/getSubFoldersByParentId?parentId=${folderId}&isPersonal=${isPersonal}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            axios.get(`/api/report/getFolderReports?folderId=${folderId}&isPersonal=${isPersonal}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+        // Fetch subfolders
+        makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&isPersonal=${isPersonal}`)
+            .then((folderRes) => {
+                setFolders(folderRes.data);
             })
-        ]).then(axios.spread((folderRes, reportRes) => {
-            setFolders(folderRes.data);
-            setReports(reportRes.data);
-        })).catch(err => console.error('There was an error!', err));
-    }, [folderId, userId]);
+            .catch((err) => console.error('There was an error fetching folders!', err));
 
-    const goBack = () => {
-        navigate(-1);
-    };
+        // Fetch reports
+        makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&isPersonal=${isPersonal}`)
+            .then((reportRes) => {
+                setReports(reportRes.data);
+            })
+            .catch((err) => console.error('There was an error fetching reports!', err));
+    }, [folderId, isPersonal, makeApiRequest]);
 
     return (
         <div className="sub-container padding-medium">
             <div className="title-style-one">Report Explorer</div>
-            <button className="btn-three" onClick={goBack}>
+            <button className="btn-three back" onClick={goBack}>
                 <FontAwesomeIcon icon={faCaretLeft} /> Back
             </button>
             <hr />
             <div className="grid-container">
-                {folders.map((folder, index) => {
-                    return (
-                        <div key={index} className="image-label-pair grid-item">
-                            <FontAwesomeIcon
-                                className="folder"
-                                icon={folder.isGroupFolder ? faPeopleRoof : faFolder}
-                                size="5x"
-                                onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=false`)}
-                            />
-                            <label className={folder.isGroupFolder ? "" : "rpf-red"}>
-                                {folder.folderName}
-                            </label>
-                        </div>
-                    );
-                })}
+                {folders.map((folder, index) => (
+                    <div key={index} className="image-label-pair grid-item">
+                        <FontAwesomeIcon
+                            className="folder"
+                            icon={folder.isGroupFolder ? faPeopleRoof : faFolder}
+                            size="5x"
+                            onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=false`)}
+                        />
+                        <label className={folder.isGroupFolder ? '' : 'rpf-red'}>{folder.folderName}</label>
+                    </div>
+                ))}
 
                 {reports.map((report, index) => (
                     <div key={index} className="centered-content">
@@ -69,6 +56,6 @@ const Reports = () => {
             </div>
         </div>
     );
-}
+};
 
-export default Reports;
+export default HOC(Reports);

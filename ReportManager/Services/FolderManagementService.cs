@@ -38,6 +38,12 @@ namespace ReportManager.Services
             return true;
         }
 
+        public bool CreatePersonalFolder(PersonalFolder folder)
+        {
+            _personalFolders.InsertOne(folder);
+            return true;
+        }
+
         public bool UpdateFolder(FolderModel updatedFolder)
         {
             var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, updatedFolder.Id);

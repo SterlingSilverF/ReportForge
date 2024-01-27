@@ -11,6 +11,7 @@ using System.Text;
 using System.Security.Claims;
 using ReportManager.Models.SettingsModels;
 using Microsoft.Extensions.Options;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace ReportManager.API
 {
@@ -117,7 +118,7 @@ namespace ReportManager.API
                 if (Encryptor.TryDecodePermissionKey(request.permission_key, out var createdusername, out var groupname, out var userType))
                 {
                     _user.UserType = userType;
-                    _authService.UpdateUser(_user);
+                    _authService.RegisterUser(_user);
 
                     _Group topGroup = _groupManagementService.GetTopGroup();
                     topGroup.GroupMembers.Add(request.username);
@@ -141,6 +142,16 @@ namespace ReportManager.API
             }
 
             string isRegistered = _authService.RegisterUser(_user);
+
+            PersonalFolder personalFolder = new PersonalFolder
+            {
+                FolderName = request.username,
+                FolderPath = "/Users/" + request.username,
+                IsObjectFolder = true,
+
+            };
+
+            string folderCreated = _folderManagementService.CreatePersonalFolder(personalFolder);
             if (isRegistered == "User successfully registered.")
             {
                 return Ok(new { message = "User successfully registered" });
@@ -203,11 +214,14 @@ namespace ReportManager.API
             AdminAppSetup adminAppSetup = new AdminAppSetup(_configuration, _appDatabaseService);
             adminAppSetup.CreateDatabaseCollections();
 
-            // Create the first folder
+            string basePath = _configuration.GetValue<string>("BasePath");
+
+            // Create the top folder
             FolderModel folder = new FolderModel
             {
                 FolderName = request.groupname,
-                FolderPath = "//" + request.groupname,
+                FolderPath = basePath + "/" + request.groupname + "/",
+                IsObjectFolder = false
             };
 
             _folderManagementService.CreateFolder(folder);
@@ -240,6 +254,17 @@ namespace ReportManager.API
                 IsTopGroup = true
             };
             adminGroup = _groupManagementService.CreateAdminGroup(adminGroup);
+
+            // Create admin user's personal folder
+            PersonalFolder personalFolder = new PersonalFolder
+            {
+                FolderName = request.username,
+                FolderPath = 
+                IsObjectFolder = true,
+                Owner = adminUser.Id
+            };
+
+            _folderManagementService.CreatePersonalFolder(personalFolder);
 
             return Ok(new { message = "First-time setup completed successfully" });
         }

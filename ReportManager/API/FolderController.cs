@@ -51,11 +51,17 @@ namespace ReportManager.API
             try
             {
                 User user = _userManagementService.GetUserByUsername(request.Username);
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
                 FolderModel folder = new FolderModel
                 {
                     FolderName = request.FolderName,
-                    IsGroupTopFolder = false
+                    IsObjectFolder = false
                 };
+
                 if (request.ParentId != "")
                 {
                     ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
@@ -72,10 +78,17 @@ namespace ReportManager.API
                 }
                 else
                 {
-                    // TODO: create personal folder
-                    //_folderManagementService.CreatePersonalFolder(folder);
+                    folder = new PersonalFolder
+                    {
+                        FolderName = folder.FolderName,  // Retain all previous properties
+                        ParentId = folder.ParentId,  
+                        FolderPath = folder.FolderPath,
+                        IsObjectFolder = folder.IsObjectFolder,
+                        Owner = user.Id
+                    };
+                    _folderManagementService.CreatePersonalFolder(folder as PersonalFolder);
                 }
-                
+
                 return Ok(new { message = "Folder created successfully." });
             }
             catch (Exception ex)

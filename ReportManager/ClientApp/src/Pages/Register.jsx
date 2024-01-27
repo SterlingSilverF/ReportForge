@@ -1,7 +1,8 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import HOC from '../components/HOC';
 
-const Register = () => {
+const Register = ({ navigate, makeApiRequest }) => {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -9,15 +10,13 @@ const Register = () => {
     const [permissionKey, setPermissionKey] = useState('');
     const [message, setMessage] = useState('');
 
-    axios.defaults.baseURL = 'https://localhost:7280';
-
     const canSubmit = username.length >= 3 && password.length >= 8;
 
     const handleRegister = async (e) => {
         e.preventDefault();
 
         if (canSubmit) {
-            axios.post('/api/auth/register', {
+            makeApiRequest('post', '/api/auth/register', {
                 username,
                 password,
                 email,
@@ -60,7 +59,7 @@ const Register = () => {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                     />
-                    <span className="tooltiptext">Your secret access code. Shh!</span>
+                    <span className="tooltiptext">Minimum 8 characters</span>
                 </div>
                 <div className="tooltipcon">
                     <label htmlFor="confirmPassword">Confirm Password</label>
@@ -85,11 +84,12 @@ const Register = () => {
                     <input
                         type="text"
                         id="permissionKey"
+                        className="form-control"
                         autoComplete="off"
                         value={permissionKey}
                         onChange={e => setPermissionKey(e.target.value)}
                     />
-                    <span className="tooltiptext">Given by a group owner or app administrator.</span>
+                    <span className="tooltiptext">Provided by a group owner or app administrator.</span>
                 </div><br /><br />
                 <input
                     type="submit"
@@ -103,4 +103,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default HOC(Register, false);

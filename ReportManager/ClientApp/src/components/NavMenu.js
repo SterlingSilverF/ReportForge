@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import './style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear } from '@fortawesome/free-solid-svg-icons';
+import Sidebar from './Sidebar';
 
 export class NavMenu extends Component {
     static displayName = NavMenu.name;
@@ -23,11 +24,6 @@ export class NavMenu extends Component {
         });
     }
 
-    handleLogout = () => {
-        localStorage.removeItem('token');
-        this.props.history.push('/login');
-    }
-
     render() {
         return (
             <header>
@@ -40,20 +36,21 @@ export class NavMenu extends Component {
                                 <NavLink tag={Link} className="text-dark" to="/">Dashboard</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink tag={Link} className="text-dark" to="/browse_reports">Reports</NavLink>
+                                <NavLink tag={Link} className="text-dark" to="/reports">Reports</NavLink>
                             </NavItem>
                             <NavItem>
                                 <NavLink tag={Link} className="text-dark" to="/groups">Groups</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink tag={Link} className="text-dark" to="/settings"><FontAwesomeIcon icon={faGear} /></NavLink>
+                                <NavLink tag={Link} className="text-dark" to="/connections">Connections</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink tag={Link} className="text-dark" to="/login" onClick={this.handleLogout}>Sign Out</NavLink>
+                                <NavLink tag={Link} className="text-dark" to="/settings"><FontAwesomeIcon icon={faGear} /></NavLink>
                             </NavItem>
                         </ul>
                     </Collapse>
                 </Navbar>
+                <Sidebar />
             </header>
         );
     }

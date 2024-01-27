@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import HOC from '../components/HOC';
 
-const Login = () => {
+const Login = ({ navigate, makeApiRequest, token }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isManualAuthVisible, setIsManualAuthVisible] = useState(false);
     const [loginError, setLoginError] = useState('');
-    const navigate = useNavigate();
-
-    axios.defaults.baseURL = 'https://localhost:7280';
 
     useEffect(() => {
         tryWindowsAuth();
@@ -17,17 +13,18 @@ const Login = () => {
 
     const tryWindowsAuth = async () => {
         try {
-            await axios.get('/api/auth/windows-auth');
+            await makeApiRequest('get', '/api/auth/windows-auth');
+            if (token) {
+                navigate('/');
+            }
         } catch (error) {
-            // If Windows Authentication fails, show the manual login form
             setIsManualAuthVisible(true);
         }
     };
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
-        axios.post('/api/auth/login', {
+        makeApiRequest('post', '/api/auth/login', {
             username: username,
             password: password
         })
@@ -42,7 +39,6 @@ const Login = () => {
                 }
                 else {
                     setLoginError('Something went wrong. Check server logs.');
-                    // TODO: log here
                 }
             });
     };
@@ -57,8 +53,7 @@ const Login = () => {
                         <label htmlFor="username">Username</label>
                         <input
                             type="text"
-                            placeholder="your-email@domain.com"
-                            autoComplete="off"
+                            autoComplete="on"
                             id="username"
                             value={username}
                             onChange={e => setUsername(e.target.value)}
@@ -68,16 +63,15 @@ const Login = () => {
                         <label htmlFor="password">Password</label>
                         <input
                             type="password"
-                            placeholder="Your Password"
                             id="password"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                         />
                     </div>
-                    <br></br>
+                    <br />
                     <input type="submit" value="Log In" className="btn-one btn-block btn-primary" />
                     <div className="link-container">
-                        <a href="/Register" className="forgot-pass">Register</a>
+                        <a href="/register" className="forgot-pass">Register</a>
                         <a href="#" className="forgot-pass">Forgot Password</a>
                     </div>
                 </form>
@@ -86,4 +80,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default HOC(Login, false);

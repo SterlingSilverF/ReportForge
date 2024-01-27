@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faPeopleRoof, faPerson } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect, useState } from 'react';
 import HOC from "../components/HOC";
 import { useNavigate } from 'react-router-dom';
@@ -42,55 +42,48 @@ const Dashboard = ({ dbIcons, env, makeApiRequest, userID }) => {
     return (
         <div className="dashboard-container">
             <div className="sub-container">
-                <div className="header">
-                    <h3>Welcome to the Dashboard</h3>
-                    <p className="rpf-gold">Enviornment: {env}</p>
-                </div>
                 <div className="padding-medium">
                     <section className="get-started">
                         <h2>Get Started</h2>
                         <hr></hr>
                         <div className="inline-buttons">
                             <button className="btn-two" onClick={() => navigate('/connectionform')}>Add a new connection</button>
-                            <button className="btn-two" onClick={() => navigate('/createreport')}>Create a new report</button>
-                            <button className="btn-two" onClick={() => navigate('/createfolder')}>Create a new folder</button>
-                            <button className="btn-two" onClick={() => navigate('/creategroup')}>Create a new group</button>
+                            <button className="btn-two" onClick={() => navigate('/reportform')}>Create a new report</button>
+                            <button className="btn-two" onClick={() => navigate('/folderform')}>Create a new folder</button>
+                            <button className="btn-two" onClick={() => navigate('/groupform')}>Create a new group</button>
                         </div>
-                    </section>
-                    <br/><br/><br/>
-                    <section className="box">
-                        <h3>My folders</h3>
                         <hr></hr>
-                        <div className="image-label-pair">
-                            <FontAwesomeIcon icon={faFolder} size="5x" className="folder"/>
-                            <label>Some Text</label>
-                        </div>
-                        <br/><br/>
                     </section>
+                    <br/>
                     <section className="box">
-                        <h3>My reports</h3>
-                        <hr></hr>
-                        <br /><br />
+                    <div className="no-break double-split merge-border-left">    
+                            <h2>Browse Personal Items</h2>
+                        <FontAwesomeIcon
+                        className="select-icon"
+                        icon={faPerson}
+                        size="9x"
+                        onClick={() => navigate(`/browse?isPersonal=true`)}
+                    />
+                    </div>
+                    <div className="no-break double-split merge-border-right">
+                            <h2>Browse Group Items</h2>
+                            <FontAwesomeIcon
+                                className="select-icon"
+                                icon={faPeopleRoof}
+                                size="9x"
+                                onClick={() => navigate(`/browse?isPersonal=false`)}
+                            />
+                    </div>
                     </section>
-                    <section className="box">
-                        <h3>My connections</h3>
-                        <hr></hr>
-                        <div className="connections-list">
-                            {userConnections.slice(0, 10).map((connection, index) => (
-                                <div key={index} className="image-label-pair">
-                                    <img src={getIconByDbType(connection.dbType)} className="folder" />
-                                    <label>{connection.server}</label>
-                                </div>
-                            ))}
-                        </div>
-                        <br /><br />
-                    </section>
+                    <br/>
                 </div>
             </div>
             <div className="right-bar">
-                <h4>Report History</h4>
+                <h4>Announcements</h4>
                 <hr />
-                <div className="item"></div>
+                <div className="item">
+                <a>Demo: Click Here to View Development Status</a>
+                </div>
             </div>
         </div>
     );

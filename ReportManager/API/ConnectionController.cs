@@ -32,7 +32,6 @@ namespace ReportManager.API
             public string Password { get; set; }
             [Required]
             public string AuthType { get; set; }
-            [Required]
             public string OwnerID { get; set; }
             [Required]
             public string OwnerType { get; set; }
@@ -158,7 +157,7 @@ namespace ReportManager.API
             };
             ObjectId? newId = await _connectionService.AddServerConnection(newServer, true);
             if (newId == null) return BadRequest("Failed to add server connection.");
-            return Ok(newId);
+            return Ok(newId.ToString());
         }
 
         [HttpPost("AddDBConnection")]
@@ -190,7 +189,7 @@ namespace ReportManager.API
 
             ObjectId? newId = await _connectionService.SaveNewDBConnection(newDB);
             if (newId == null) return BadRequest("Failed to add DB connection.");
-            return Ok(newId);
+            return Ok(newId.ToString());
         }
 
         [HttpPut("UpdateServer")]
@@ -207,6 +206,38 @@ namespace ReportManager.API
             bool isUpdated = _connectionService.UpdateDBConnection(updatedDB);
             if (!isUpdated) return BadRequest("Failed to update.");
             return Ok("Updated successfully");
+        }
+
+        [HttpDelete("DeleteServerConnection/{connectionId}")]
+        public ActionResult DeleteServerConnection(string connectionId)
+        {
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                return BadRequest("Connection ID is required.");
+            }
+
+            try
+            {
+                ObjectId id = _sharedService.StringToObjectId(connectionId);
+
+                bool isSuccess = _connectionService.DeleteServerConnection(id);
+                if (isSuccess)
+                {
+                    return Ok("Server connection deleted successfully.");
+                }
+                else
+                {
+                    return NotFound("Server connection not found.");
+                }
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid connection ID format.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while deleting the server connection.");
+            }
         }
 
         [HttpPost("verify")]
