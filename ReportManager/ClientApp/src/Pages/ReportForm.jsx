@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import HOC from '../components/HOC';
 
-const ReportForm = ({ makeApiRequest, navigate, username, userID }) => {
+const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     // State variables
     const [reportName, setReportName] = useState('');
     const [reportDescription, setReportDescription] = useState('');
@@ -48,29 +48,32 @@ const ReportForm = ({ makeApiRequest, navigate, username, userID }) => {
         }
     }, [reportType, selectedGroup, makeApiRequest, username]);
 
+    const fetchConnections = async (ownerIdParam = null, ownerTypeParam = null) => {
+        const ownerId = ownerIdParam || (reportType === 'group' ? selectedGroup : userID);
+        const ownerType = ownerTypeParam || (reportType === 'group' ? 'Group' : 'User');
+        const apiEndpoint = `/api/connection/GetAllConnections?ownerId=${ownerId}&ownerTypeString=${ownerType}&connectionType=both`;
 
-    useEffect(() => {
-        const folderApiEndpoint = reportType === 'group' && selectedGroup
-            ? `/api/folder/getFoldersByGroupId?groupId=${selectedGroup}`
-            : `/api/folder/getPersonalFolders?username=${username}`;
+        try {
+            const response = await makeApiRequest('get', apiEndpoint);
+            setConnections(response.data);
+        } catch (error) {
+            console.error('Could not fetch connections:', error);
+            setConnections([]);
+        }
+    };
 
-        const fetchFolders = async () => {
-            try {
-                const response = await makeApiRequest('get', folderApiEndpoint);
-                setFolders(response.data);
-            } catch (error) {
-                console.error('Could not fetch folders:', error);
-            }
-        };
-        fetchFolders();
-    }, [reportType, selectedGroup, makeApiRequest, username]);
-
-
-    const handleReportTypeChange = (e) => {
-        setReportType(e.target.value);
+    const handleReportTypeChange = async (e) => {
+        const newReportType = e.target.value;
+        setReportType(newReportType);
         setSelectedGroup(null);
         setSelectedConnection(null);
         setSelectedFolder(null);
+
+        if (newReportType === 'group') {
+            setConnections([]);
+        } else {
+            await fetchConnections(); 
+        }
     };
 
     const handleConnectionSelection = (e) => {
@@ -78,9 +81,8 @@ const ReportForm = ({ makeApiRequest, navigate, username, userID }) => {
     };
 
     const handleSubmit = () => {
-        // Logic to handle form submission
-        // For demonstration, we'll just display a message
-        setMessage('Report configuration submitted.');
+        // TODO: report form step 1
+        navigate('/reportdesigner');
     };
 
     return (
@@ -135,15 +137,28 @@ const ReportForm = ({ makeApiRequest, navigate, username, userID }) => {
                                 <label>Group:</label>
                                 <select
                                     value={selectedGroup}
-                                    onChange={e => setSelectedGroup(e.target.value)}
+                                    onChange={async (e) => {
+                                        const newSelectedGroup = e.target.value;
+                                        setSelectedGroup(newSelectedGroup);
+                                        if (reportType === 'group' && newSelectedGroup) {
+                                            await fetchConnections(newSelectedGroup, 'Group');
+                                        } else {
+                                            if (reportType === 'personal') {
+                                                await fetchConnections(userID, 'User');
+                                            } else {
+                                                setConnections([]);
+                                            }
+                                        }
+                                    }}
                                     className="input-style-default standard-select">
-                                    <option value={null}>--Select a group--</option>
+                                    <option value="">--Select a group--</option>
                                     {groups.map(group => (
                                         <option key={group.id} value={group.id}>{group.groupName}</option>
                                     ))}
                                 </select>
                             </div>
                         )}
+
                     </div>
                 </div>
 

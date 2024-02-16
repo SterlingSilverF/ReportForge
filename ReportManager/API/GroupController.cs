@@ -4,6 +4,7 @@ using ReportManager.Models;
 using ReportManager.Models.SettingsModels;
 using ReportManager.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 
 namespace ReportManager.API
 {
@@ -15,94 +16,115 @@ namespace ReportManager.API
         private readonly FolderManagementService _folderManagementService;
         private readonly UserManagementService _userManagementService;
         private readonly SharedService _sharedService;
+        private readonly IConfiguration _configuration;
+        private string basePath;
 
         public GroupController(GroupManagementService groupManagementService, FolderManagementService folderManagementService, 
-            UserManagementService userManagementService, SharedService sharedService)
+            UserManagementService userManagementService, SharedService sharedService, IConfiguration configuration)
         {
             _groupManagementService = groupManagementService;
             _folderManagementService = folderManagementService;
             _userManagementService = userManagementService;
             _sharedService = sharedService;
+            _configuration = configuration;
+            var basePathValue = _configuration.GetValue<string>("BasePath");
+            basePath = (basePathValue == null) ? "C:/ReportForge/" : basePathValue;
         }
 
         public class CreateGroupRequest
         {
             [Required]
-            public string groupname { get; set; }
+            public string GroupName { get; set; }
             [Required]
             public string username { get; set; }
             [Required]
-            public string parentGroupId { get; set; }
-            public List<string>? additionalOwners { get; set; }
-            public List<string>? additionalMembers { get; set; }
+            public string ParentId { get; set; }
+            public HashSet<string>? GroupOwners { get; set; }
+            public HashSet<string>? GroupMembers { get; set; }
         }
 
         public class UpdateGroupRequest
         {
             [Required]
-            public string groupname { get; set; }
+            public string Id { get; set; }
             [Required]
-            public string username { get; set; }
-            public List<string> owners { get; set; }
-            public List<string> members { get; set; }
-            public List<string> folders { get; set; }
-            public List<string> connections { get; set; }
+            public string GroupName { get; set; }
+            [Required]
+            public HashSet<string> GroupOwners { get; set; }
+            [Required]
+            public HashSet<string> GroupMembers { get; set; }
+            [Required]
+            public HashSet<string> Folders { get; set; }
+            public HashSet<string>? GroupConnectionStrings { get; set; }
+            [Required]
+            public string ParentId { get; set; }
+            [Required]
+            public bool IsTopGroup { get; set; }
         }
 
+
         [HttpPost("createGroup")]
-        public IActionResult CreateGroup(CreateGroupRequest request)
+        public IActionResult CreateGroup([FromBody] CreateGroupRequest request)
         {
             try
             {
-                ObjectId parsedId = _sharedService.StringToObjectId(request.parentGroupId);
+                ObjectId parsedId = _sharedService.StringToObjectId(request.ParentId);
                 _Group parentGroup = _groupManagementService.GetGroup(parsedId);
-                FolderModel parent = _folderManagementService.GetFolderById(parentGroup.Folders[0]);
-                string folderPath = parent.FolderPath + "/" + request.groupname + "/";
+
+                // Determine the folderPath based on whether the parent group is the domain group
+                string folderPath;
+                if (parentGroup.IsTopGroup)
+                {
+                    // Manually build the path for a top-level group
+                    folderPath = basePath + "Groups/" + parentGroup.GroupName + "/" + request.GroupName + "/";
+                }
+                else
+                {
+                    // Use the parent group's folder path for nested groups
+                    FolderModel parentFolder = _folderManagementService.GetFolderById(parentGroup.Folders.FirstOrDefault());
+                    folderPath = parentFolder.FolderPath + request.GroupName + "/";
+                }
 
                 FolderModel folder = new FolderModel
                 {
-                    FolderName = request.groupname,
+                    FolderName = request.GroupName,
                     FolderPath = folderPath,
-                    ParentId = parent.Id,
+                    ParentId = parentGroup.IsTopGroup ? null : parsedId,
                     IsObjectFolder = true
                 };
 
-                _folderManagementService.CreateFolder(folder);
+                // Create the physical and DB folder
+                if (!_folderManagementService.CreateDBFolder(folder))
+                {
+                    return BadRequest(new { message = "Failed to create the group folder." });
+                }
 
+                // Prepare owners and members
                 HashSet<string> owners = new HashSet<string> { request.username };
+                owners.UnionWith(request.GroupOwners ?? Enumerable.Empty<string>());
+
                 HashSet<string> members = new HashSet<string> { request.username };
+                members.UnionWith(request.GroupMembers ?? Enumerable.Empty<string>());
 
-                if (request.additionalOwners != null)
-                {
-                    foreach (var owner in request.additionalOwners)
-                    {
-                        owners.Add(owner);
-                    }
-                }
-
-                if (request.additionalMembers != null)
-                {
-                    foreach (var member in request.additionalMembers)
-                    {
-                        members.Add(member);
-                    }
-                }
-
+                // Create the group entity
                 _Group group = new _Group
                 {
-                    GroupName = request.groupname,
-                    GroupOwners = owners.ToList(),
-                    GroupMembers = members.ToList(),
-                    Folders = new List<ObjectId> { folder.Id },
-                    IsTopGroup = false
+                    GroupName = request.GroupName,
+                    GroupOwners = owners,
+                    GroupMembers = members,
+                    Folders = new HashSet<ObjectId> { folder.Id },
+                    IsTopGroup = false,
+                    ParentId = parsedId
                 };
 
+                // Attempt to create the group in the database
                 _groupManagementService.CreateGroup(group);
+
                 return Ok(new { message = "Group created successfully." });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = "An error occurred: " + ex.Message });
             }
         }
 
@@ -112,8 +134,8 @@ namespace ReportManager.API
             return _groupManagementService.GetTopGroup().Id.ToString();
         }
 
-        [HttpPost("updateGroup")]
-        public IActionResult UpdateGroup(UpdateGroupRequest request)
+        [HttpPut("updateGroup")]
+        public IActionResult UpdateGroup([FromBody] UpdateGroupRequest request)
         {
             var mappedGroup = _sharedService.MapObjectToModel<_Group>(request);
             return _groupManagementService.UpdateGroup(mappedGroup) ? Ok("Group updated.") : BadRequest("Update failed.");

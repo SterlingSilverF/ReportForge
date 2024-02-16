@@ -46,7 +46,7 @@ namespace ReportManager.API
         public class CreateNormalReport : CreateReportRequest
         {
             [Required]
-            public List<DatabaseObjectInfoModel> SelectedObjects { get; set; }
+            public HashSet<DatabaseObjectInfoModel> SelectedObjects { get; set; }
             [Required]
             public List<ReportColumn> Columns { get; set; }
             public List<Filter> Filters { get; set; }

@@ -10,7 +10,7 @@ Last Updated on 1/16/2024
 const HOC = (WrappedComponent, requireAuth = true) => {
     return function Shared(props) {
         // Common state variables
-        const [env, setEnv] = useState('');
+        const [env, setEnv] = useState('Development');
         const navigate = useNavigate();
         axios.defaults.baseURL = 'https://localhost:7280';
         const [token, setToken] = useState(localStorage.getItem('token'));

@@ -1,16 +1,20 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
 import HOC from '../components/HOC';
 
-const GroupInformation = ({ goBack, navigate }) => {
+
+const GroupInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const groupId = queryParams.get('groupId');
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [codeType, setCodeType] = useState('ReadOnly');
+    const [expiresAfter, setExpiresAfter] = useState(1);
+    const [expiresInUnit, setExpiresInUnit] = useState('minute');
+    const [generatedCode, setGeneratedCode] = useState('');
     const [groupInfo, setGroupInfo] = useState({
         groupName: '',
         totalConnections: 0,
@@ -23,11 +27,9 @@ const GroupInformation = ({ goBack, navigate }) => {
         navigate(`/groupform?groupId=${groupId}`);
     };
 
-    axios.defaults.baseURL = 'https://localhost:7280';
-
     const fetchReports = async () => {
         try {
-            const response = await axios.post('/api/report/GetReportCount', {
+            const response = await makeApiRequest('post', '/api/report/GetReportCount', {
                 OwnerId: groupId,
                 ReportType: 'Group'
             });
@@ -38,35 +40,74 @@ const GroupInformation = ({ goBack, navigate }) => {
         }
     };
 
-    const processGroupData = async (rawData) => {
-        const reports = await fetchReports();
+    const processGroupData = async () => {
+        if (username) {
+            try {
+                const rawData = await makeApiRequest('get', `/api/group/GetGroupById?groupId=${groupId}`);
+                const reports = await fetchReports();
 
-        const transformedData = {
-            groupName: rawData.groupName,
-            totalConnections: rawData.groupConnectionStrings?.length ?? 0,
-            totalMembers: rawData.groupMembers?.length ?? 0,
-            totalReports: reports,
-            ownerNames: rawData.groupOwners
-        };
+                const transformedData = {
+                    groupName: rawData.data.groupName,
+                    totalConnections: rawData.data.groupConnectionStrings?.length ?? 0,
+                    totalMembers: rawData.data.groupMembers?.length ?? 0,
+                    totalReports: reports,
+                    ownerNames: rawData.data.groupOwners
+                };
 
-        setGroupInfo(transformedData);
+                setGroupInfo(transformedData);
+                const checkIsAdmin = rawData.data.groupOwners.includes(username);
+                setIsAdmin(checkIsAdmin);
+            } catch (error) {
+                console.error('Could not fetch group info:', error);
+            }
+        }
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-        } else {
-            const decoded = jwt_decode(token);
-            axios.get(`/api/group/GetGroupById?groupId=${groupId}`)
-                .then(response => {
-                    processGroupData(response.data);
-                })
-                .catch(error => {
-                    console.error('Could not fetch group info:', error);
-                });
+        if (groupId) {
+            processGroupData();
         }
-    }, [groupId, navigate]);
+    }, [groupId, username]);
+
+    const handleGenerateAccessCode = () => {
+        // Assuming `makeApiRequest` is a function passed via props or context that abstracts the API call
+        makeApiRequest('post', '/api/auth/generatePermissionKey', {
+            username: username,
+            groupname: groupInfo.groupName,
+            userType: codeType,
+            expirationDuration: expiresAfter,
+            durationUnit: expiresInUnit
+        })
+            .then(response => {
+                setGeneratedCode(response.data.key);
+                document.querySelector('#generated_code').textContent = "Access Code: " + response.data.key;
+                document.querySelector('#copied_message').textContent = "";
+            })
+            .catch(error => {
+                console.error('Error generating access code:', error);
+            });
+    };
+
+    const handleCopyCode = () => {
+        navigator.clipboard.writeText(generatedCode).then(() => {
+            document.querySelector('#copied_message').textContent = "Copied!";
+        }).catch(err => {
+            console.error('Error copying access code:', err);
+        });
+    };
+
+    const handleClearKeys = () => {
+        makeApiRequest('delete', `/api/auth/clearGroupKeys?groupname=${groupInfo.groupName}`)
+            .then(() => {
+                document.querySelector('#generated_code').textContent = "";
+                document.querySelector('#copied_message').textContent = "";
+                alert('Group keys cleared successfully.');
+            })
+            .catch(error => {
+                console.error('Error clearing group keys:', error);
+                alert('Error clearing group keys.');
+            });
+    };
 
     return (
         <div className="infobox">
@@ -90,14 +131,14 @@ const GroupInformation = ({ goBack, navigate }) => {
                 <p>Group owners: {groupInfo.ownerNames.join(', ')}</p><br />
                 <h4>Generate an Access Code</h4>
                 <label>Code Type</label>
-                <select>
+                <select value={codeType} onChange={(e) => setCodeType(e.target.value)}>
                     <option value="ReadOnly">Read Only</option>
                     <option value="User">User</option>
                     <option value="Developer">Developer</option>
-                </select><br/>
+                </select><br />
                 <label>Expires after</label>
-                <input type="number" id="duration_num" min="1" max="100" step="1" value="1"></input>
-                <select>
+                <input type="number" id="duration_num" min="1" max="100" step="1" value={expiresAfter} onChange={(e) => setExpiresAfter(e.target.value)}></input>
+                <select value={expiresInUnit} onChange={(e) => setExpiresInUnit(e.target.value)}>
                     <option value="minute">Minutes</option>
                     <option value="hour">Hours</option>
                     <option value="day">Days</option>
@@ -106,11 +147,15 @@ const GroupInformation = ({ goBack, navigate }) => {
                     <option value="never">Never</option>
                 </select>
                 <br />
-                <button className="btn-six" onclick="">Generate Access Code</button><br />
+                <button className="btn-six" onClick={handleGenerateAccessCode}>Generate Access Code</button><br />
                 <p id="generated_code"></p>
-                <button className="btn-seven" onClick="">Copy</button>
+                <button className="btn-seven" onClick={handleCopyCode}>Copy</button>
+                {isAdmin && (
+                    <button className="btn-seven" onClick={handleClearKeys} style={{ marginLeft: '25px' }}>
+                        Clear Keys
+                    </button>
+                )}
                 <p id="copied_message"></p>
-                <i id="code_duration"></i>
             </div>
         </div>
     );

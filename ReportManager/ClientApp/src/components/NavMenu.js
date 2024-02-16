@@ -5,6 +5,7 @@ import './style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
+import icon from '../components/output-onlinepngtools.png';
 
 export class NavMenu extends Component {
     static displayName = NavMenu.name;
@@ -28,7 +29,7 @@ export class NavMenu extends Component {
         return (
             <header>
                 <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-                    <NavbarBrand tag={Link} to="/"><b className='rpf-gold'>Report</b><b className='rpf-red'>Forge</b></NavbarBrand>
+                    <NavbarBrand tag={Link} to="/"><img src={icon} className="icon"></img><b className='rpf-gold'>Report</b><b className='rpf-red'>Forge</b></NavbarBrand>
                     <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
                     <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
                         <ul className="navbar-nav flex-grow">

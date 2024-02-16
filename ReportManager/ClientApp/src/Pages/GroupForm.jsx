@@ -1,120 +1,156 @@
 ﻿import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import jwt_decode from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
 import DualListBox from 'react-dual-listbox';
 import 'react-dual-listbox/lib/react-dual-listbox.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { } from '@fortawesome/free-solid-svg-icons';
+import HOC from '../components/HOC';
+import TooltipIcon from '../components/tooltip';
+import { useLocation } from 'react-router-dom';
 
-const GroupForm = () => {
+const GroupForm = ({ makeApiRequest, username, navigate }) => {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const groupId = queryParams.get('groupId');
+    const [groupConnectionStrings, setGroupConnectionStrings] = useState([]);
+    const [groupFolders, setGroupFolders] = useState([]);
+    const [isTopGroup, setIsTopGroup] = useState(false);
+    const [formTitle, setFormTitle] = useState('Create New Group');
+    const [buttonText, setButtonText] = useState('Create Group');
+    const [successText, setSuccessText] = useState('Group created successfully.');
+    const [isEditMode, setIsEditMode] = useState(false);
+
     const [groupname, setGroupName] = useState('');
     const [userGroups, setUserGroups] = useState([]);
-    const [username, setUserName] = useState('');
-    const [usernames, setUsernames] = useState([]);
     const [selectedOwners, setSelectedOwners] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [parentGroupId, setParentGroupId] = useState(null);
-    const [adminId, setAdminId] = useState('');
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
+    const [usernames, setUsernames] = useState([]);
+    const options = usernames.map(u => ({ value: u, label: u }));
 
-    const navigate = useNavigate();
-    const [env, setEnv] = useState('');
-    axios.defaults.baseURL = 'https://localhost:7280';
+    // IsEditMode
+    useEffect(() => {
+        if (groupId) {
+            makeApiRequest('get', `/api/group/GetGroupById?groupId=${groupId}`)
+                .then(response => {
+                    const group = response.data;
+                    setGroupName(group.groupName);
+                    setParentGroupId(group.parentId);
+                    setSelectedOwners(group.groupOwners);
+                    setSelectedMembers(group.groupMembers);
+                    setGroupConnectionStrings(group.groupConnectionStrings);
+                    setGroupFolders(group.folders);
+                    setIsTopGroup(group.isTopGroup);
+                    setIsEditMode(true);
+                    setFormTitle('Edit Group');
+                    setButtonText('Save Changes');
+                    setSuccessText('Group updated successfully.')
+                })
+                .catch(error => {
+                    console.error('Could not fetch group by ID:', error);
+                });
+        }
+    }, [groupId, makeApiRequest]);
 
+
+    // TODO: handlesuccess groupform
     const handleSuccess = () => {
         setSuccess(true);
-        setMessage('Group created successfully.');
+        setMessage(successText);
     };
 
-    const handleError = (err) => {
+    const handleError = () => {
         setSuccess(false);
     };
 
     const resetForm = () => {
-        window.location.reload();
+        setGroupName('');
+        setParentGroupId(userGroups[0]?.id || null);
+        setMessage('');
+        setSuccess(false);
     };
 
-    // Get top group id
     useEffect(() => {
-        axios.get('/api/group/getTopGroup')
-            .then(response => {
-                // Set both, for the dropdown and default
-                setAdminId(response.data);
-                setParentGroupId(response.data);
-            })
-            .catch(error => {
-                console.error('Could not fetch top group:', error);
-            });
-    }, []);
-
-    // Get groups for parent dropdown
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const decoded = jwt_decode(token);
-        const username = decoded.sub;
-
-        axios.get(`/api/group/getUserGroups?username=${username}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(response => {
-                setUserGroups(response.data);
-            })
-            .catch(error => {
-                console.error('Could not fetch user groups:', error);
-            });
-    }, []);
-
-    // Get usernames for combobox
-    useEffect(() => {
-        axios.get('/api/shared/getAllUsernames')
-            .then(response => {
-                setUsernames(response.data);
-            })
-            .catch(error => {
-                console.error('Could not fetch usernames:', error);
-            });
-    }, []);
-    const options = usernames.map(username => ({ value: username, label: username }));
-
-    // Get auth token
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-        } else {
-            const decoded = jwt_decode(token);
-            const usernameFromToken = decoded.sub;
-            setUserName(usernameFromToken);
-            setEnv('Production');
+        if (username && selectedOwners.length === 0 && selectedMembers.length === 0) {
+            setSelectedOwners([username]);
+            setSelectedMembers([username]);
         }
-    }, [navigate]);
+    }, [username]);
 
-    // Form submit command
-    const handleCreateGroup = () => {
-        if (groupname && username && parentGroupId) {
-            axios.post('/api/group/createGroup', {
-                groupname,
-                username,
-                parentGroupId
-            })
+
+    useEffect(() => {
+        if (username) {
+            makeApiRequest('get', '/api/group/getTopGroup')
                 .then(response => {
-                    handleSuccess();
+                    setParentGroupId(response.data);
                 })
                 .catch(error => {
-                    handleError(error);
+                    console.error('Could not fetch top group:', error);
                 });
+
+            makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
+                .then(response => {
+                    setUserGroups(response.data);
+                    if (!parentGroupId) {
+                        setParentGroupId(response.data[0]?.id);
+                    }
+                })
+                .catch(error => {
+                    console.error('Could not fetch user groups:', error);
+                });
+
+            makeApiRequest('get', '/api/shared/getAllUsernames')
+                .then(response => {
+                    // Exclude the user's own username from the options
+                    const filteredUsernames = response.data.filter(u => u !== username);
+                    setUsernames(filteredUsernames);
+                })
+                .catch(error => {
+                    console.error('Could not fetch usernames:', error);
+                });
+        }
+    }, [makeApiRequest, username]);
+
+    const handleCreateGroup = () => {
+        if (groupname && username && parentGroupId) {
+            let payload = {};
+
+            if (isEditMode) {
+                payload = {
+                    id: groupId,
+                    groupName: groupname,
+                    groupOwners: selectedOwners,
+                    groupMembers: selectedMembers,
+                    groupConnectionStrings: groupConnectionStrings,
+                    folders: groupFolders,
+                    parentId: parentGroupId,
+                    isTopGroup: isTopGroup
+                };
+
+                makeApiRequest('put', `/api/group/updateGroup`, payload)
+                    .then(handleSuccess)
+                    .catch(handleError);
+            } else {
+                payload = {
+                    groupname: groupname,
+                    username: username,
+                    parentId: parentGroupId,
+                    ...(selectedOwners && selectedOwners.length > 0 && { groupOwners: selectedOwners }),
+                    ...(selectedMembers && selectedMembers.length > 0 && { groupMembers: selectedMembers }),
+                };
+
+                makeApiRequest('post', '/api/group/createGroup', payload)
+                    .then(handleSuccess)
+                    .catch(handleError);
+            }
         } else {
             setMessage('All required fields must be filled.');
-            console.log(groupname, username, parentGroupId, adminId);
         }
     };
 
     return (
         <div className="sub-container outer">
             <div className="form-header">
-                <h2>Create a New Group</h2>
+                <h2>{formTitle}</h2>
             </div>
             <section className="box form-box">
                 <div className="form-element">
@@ -126,7 +162,8 @@ const GroupForm = () => {
                     <input type="text" value={username} readOnly className="input-style-default" />
                 </div>
                 <div className="form-element">
-                    <label>Underneath Group:</label><br />
+                    <label>Underneath Group:</label><TooltipIcon formName="groupform" fieldName="parent group" />
+                    <br/>
                     <select
                         value={parentGroupId}
                         onChange={e => setParentGroupId(e.target.value)}
@@ -155,7 +192,7 @@ const GroupForm = () => {
                     />
                 </section>
                 <br/><br/>
-                <button onClick={handleCreateGroup} className="btn-three">Create Group</button><br />
+                <button onClick={handleCreateGroup} className="btn-three">{buttonText}</button><br />
                 <label className="result-label"></label>
                 <p className="success-message">{message}</p>
             </section>
@@ -169,4 +206,4 @@ const GroupForm = () => {
     );
 };
 
-export default GroupForm;
+export default HOC(GroupForm);

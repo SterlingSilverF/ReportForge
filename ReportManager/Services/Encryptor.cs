@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using ReportManager.Models;
 using System;
 using System.IO;
@@ -76,82 +77,54 @@ public static class Encryptor
         }
     }
 
-    public static string GeneratePermissionKey(string username, string groupname, UserType userType)
+    public static string GeneratePermissionKey(string username, string groupname, UserType userType, DateTime? expiration = null)
     {
-        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        string key = $"{timestamp}:{username}:{groupname}:{userType}";
-
-        using (SHA256 sha256 = SHA256.Create())
+        var permissionKey = new PermissionKeyModel
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(key);
-            byte[] hashBytes = sha256.ComputeHash(bytes);
+            CreatedUsername = username,
+            Groupname = groupname,
+            UserType = userType,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Expiration = expiration,
+            Used = false
+        };
 
-            var permissionKey = new PermissionKeyModel
-            {
-                CreatedUsername = username,
-                Groupname = groupname,
-                UserType = userType,
-                Timestamp = timestamp,
-                Used = false
-            };
-
-            _permissionKeyDB.InsertOne(permissionKey);
-
-            return Convert.ToBase64String(hashBytes);
-        }
+        _permissionKeyDB.InsertOne(permissionKey);
+        return permissionKey.Id.ToString();
     }
 
-    public static bool TryDecodePermissionKey(string permissionKey, out string username, out string groupname, out UserType userType)
+
+    public static bool VerifyPermissionKey(string keyString, out string groupname, out UserType userType)
     {
-        username = null;
         groupname = null;
         userType = UserType.InActive;
-        long timestamp = 0;
 
-        try
-        {
-            byte[] hashBytes = Convert.FromBase64String(permissionKey);
-            string decodedHash = Encoding.UTF8.GetString(hashBytes);
-            string[] parts = decodedHash.Split(':');
-            if (parts.Length != 4)
-            {
-                return false;
-            }
-
-            if (!long.TryParse(parts[0], out timestamp) || !Enum.TryParse(parts[3], out userType))
-            {
-                return false;
-            }
-
-            username = parts[1];
-            groupname = parts[2];
-
-            // Use the timestamp and username to query the DB
-            var filter = Builders<PermissionKeyModel>.Filter.And(
-                Builders<PermissionKeyModel>.Filter.Eq("Timestamp", timestamp),
-                Builders<PermissionKeyModel>.Filter.Eq("CreatedUsername", username)
-            );
-
-            var storedPermissionKey = _permissionKeyDB.Find(filter).FirstOrDefault();
-            if (storedPermissionKey == null)
-            {
-                return false;
-            }
-
-            if (!storedPermissionKey.Used)
-            {
-                // Update the permission key status as used
-                _permissionKeyDB.UpdateOne(pk => pk.Id == storedPermissionKey.Id, Builders<PermissionKeyModel>.Update.Set(pk => pk.Used, true));
-                return true;
-            }
-            else
-            {
-                return false; // Permission key already used
-            }
-        }
-        catch (Exception)
+        if (!ObjectId.TryParse(keyString, out ObjectId keyId))
         {
             return false;
         }
+
+        var permissionKey = _permissionKeyDB.Find(pk => pk.Id == keyId).FirstOrDefault();
+        if (permissionKey == null || permissionKey.Used || (permissionKey.Expiration.HasValue && permissionKey.Expiration < DateTime.UtcNow))
+        {
+            return false;
+        }
+
+        groupname = permissionKey.Groupname;
+        userType = permissionKey.UserType;
+
+        _permissionKeyDB.UpdateOne(pk => pk.Id == keyId, Builders<PermissionKeyModel>.Update.Set(pk => pk.Used, true));
+        return true;
+    }
+
+    public static void ClearGroupKeys(string groupname)
+    {
+        if (_permissionKeyDB == null)
+        {
+            throw new InvalidOperationException("PermissionKey collection has not been initialized.");
+        }
+
+        var filter = Builders<PermissionKeyModel>.Filter.Eq(pk => pk.Groupname, groupname);
+        _permissionKeyDB.DeleteMany(filter);
     }
 }

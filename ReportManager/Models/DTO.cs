@@ -28,11 +28,12 @@
     {
         public string Id { get; set; }
         public string GroupName { get; set; }
-        public List<string> GroupOwners { get; set; }
-        public List<string> GroupMembers { get; set; }
-        public List<string> Folders { get; set; }
-        public List<string>? GroupConnectionStrings { get; set; }
+        public HashSet<string> GroupOwners { get; set; }
+        public HashSet<string> GroupMembers { get; set; }
+        public HashSet<string> Folders { get; set; }
+        public HashSet<string>? GroupConnectionStrings { get; set; }
         public bool IsTopGroup { get; set; }
+        public string ParentId { get; set; }
 
         public GroupDTO(_Group model)
         {
@@ -40,9 +41,12 @@
             this.GroupName = model.GroupName;
             this.GroupOwners = model.GroupOwners;
             this.GroupMembers = model.GroupMembers;
-            this.Folders = model.Folders.Select(f => f.ToString()).ToList();
-            this.GroupConnectionStrings = model.GroupConnectionStrings?.Select(c => c.ToString()).ToList();
+            this.Folders = new HashSet<string>(model.Folders.Select(f => f.ToString()));
+            this.GroupConnectionStrings = model.GroupConnectionStrings != null
+                ? new HashSet<string>(model.GroupConnectionStrings.Select(c => c.ToString()))
+                : new HashSet<string>();
             this.IsTopGroup = model.IsTopGroup;
+            this.ParentId = model.ParentId?.ToString();
         }
     }
 
@@ -59,6 +63,10 @@
         public string? OwnerID { get; set; }
         public string OwnerType { get; set; }
 
+        public string? AuthSource { get; set; }
+        public string? ReplicaSet { get; set; }
+        public bool? UseTLS { get; set; }
+
         public ServerConnectionDTO(ServerConnectionModel model)
         {
             this.Id = model.Id.ToString();
@@ -71,6 +79,23 @@
             this.AuthType = model.AuthType;
             this.OwnerID = model.OwnerID.ToString();
             this.OwnerType = model.OwnerType.ToString();
+
+            this.AuthSource = model.AuthSource;
+            this.ReplicaSet = model.ReplicaSet;
+            this.UseTLS = model.UseTLS;
+        }
+    }
+
+
+    public class DBConnectionDTO : ServerConnectionDTO
+    {
+        public string? FriendlyName { get; set; }
+        public string DatabaseName { get; set; }
+
+        public DBConnectionDTO(DBConnectionModel model) : base(model)
+        {
+            this.FriendlyName = model.FriendlyName;
+            this.DatabaseName = model.DatabaseName;
         }
     }
 }

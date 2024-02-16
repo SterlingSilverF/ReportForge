@@ -94,7 +94,7 @@ const Register = ({ navigate, makeApiRequest }) => {
                 <input
                     type="submit"
                     value="Register"
-                    className="btn-one btn-block"
+                    className="btn-one"
                     disabled={!canSubmit}
                 />
             </form>

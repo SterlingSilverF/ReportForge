@@ -17,6 +17,7 @@ import ConnectionForm from "./Pages/ConnectionForm";
 import UserManagement from "./Pages/UserManager";
 import FolderForm from "./Pages/FolderForm";
 import ReportForm from "./Pages/ReportForm";
+import ReportDesigner from "./Pages/ReportDesigner";
 
 /* DB Icons */
 import mssql from './components/mssql.png';
@@ -65,27 +66,27 @@ const AppRoutes = [
     {
         path: '/settings',
         element: <Settings />,
-        includeNavbar: true
+        includeNavbar: false
     },
     {
         path: '/appearance',
         element: <Appearance />,
-        includeNavbar: true
+        includeNavbar: false
     },
     {
         path: '/usermanager',
         element: <UserManager />,
-        includeNavbar: true
+        includeNavbar: false
     },
     {
         path: '/groupmanager',
         element: <GroupManager />,
-        includeNavbar: true
+        includeNavbar: false
     },
     {
         path: '/metrics',
         element: <Metrics />,
-        includeNavbar: true
+        includeNavbar: false
     },
     {
         path: '/reports',
@@ -127,6 +128,11 @@ const AppRoutes = [
         element: <ReportForm />,
         includeNavbar: true
     },
+    {
+        path: '/reportdesigner',
+        element: <ReportDesigner />,
+        includeNavbar: true
+    }
 ];
 
 export default AppRoutes;

@@ -26,21 +26,23 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => { // Use props fr
     };
 
     useEffect(() => {
-        makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
-            .then(groupsResponse => {
-                const userGroups = groupsResponse.data.slice(1); // Exclude the first group
-                makeApiRequest('get', `/api/folder/getPersonalFolders?username=${username}`)
-                    .then(foldersResponse => {
-                        setUserGroups(userGroups);
-                        setFolders(foldersResponse.data);
-                    })
-                    .catch(error => {
-                        console.error('Could not fetch user folders:', error);
-                    });
-            })
-            .catch(error => {
-                console.error('Could not fetch user groups:', error);
-            });
+        if (username) {
+            makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
+                .then(groupsResponse => {
+                    const userGroups = groupsResponse.data.slice(1); // Exclude the first group
+                    makeApiRequest('get', `/api/folder/getPersonalFolders?username=${username}`)
+                        .then(foldersResponse => {
+                            setUserGroups(userGroups);
+                            setFolders(foldersResponse.data);
+                        })
+                        .catch(error => {
+                            console.error('Could not fetch user folders:', error);
+                        });
+                })
+                .catch(error => {
+                    console.error('Could not fetch user groups:', error);
+                });
+        }
     }, [username, makeApiRequest]);
 
     useEffect(() => {
@@ -56,24 +58,26 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => { // Use props fr
     }, [folderType, groupId, makeApiRequest]);
 
     const handleCreateFolder = () => {
-        if (folderName && username && parentId) {
-            const IsGroupFolder = folderType === 'group';
-            makeApiRequest('post', '/api/folder/createFolder', {
-                FolderName: folderName,
-                Username: username,
-                ParentId: parentId,
-                GroupId: IsGroupFolder ? groupId : '',
-                IsGroupFolder: IsGroupFolder
-            })
-                .then(response => {
-                    handleSuccess();
-                })
-                .catch(error => {
-                    handleError(error);
-                });
-        } else {
+        if (!folderName || !username) {
             setMessage('All required fields must be filled.');
+            return;
         }
+
+        const isGroupFolder = folderType === 'group';
+        const groupIdValue = isGroupFolder ? groupId : '';
+
+        makeApiRequest('post', '/api/folder/createFolder', {
+            FolderName: folderName,
+            Username: username,
+            GroupId: groupIdValue,
+            IsGroupFolder: isGroupFolder
+        })
+            .then(response => {
+                handleSuccess();
+            })
+            .catch(error => {
+                handleError(error);
+            });
     };
 
     return (

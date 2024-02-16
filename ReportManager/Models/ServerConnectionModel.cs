@@ -14,5 +14,10 @@ namespace ReportManager.Models
         public string AuthType { get; set; }
         public ObjectId OwnerID { get; set; }
         public OwnerType OwnerType { get; set; }
+
+        // MongoDB
+        public string? AuthSource { get; set; } = null;
+        public string? ReplicaSet { get; set; } = null;
+        public bool? UseTLS { get; set; } = null;
     }
 }

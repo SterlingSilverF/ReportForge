@@ -30,15 +30,33 @@ namespace ReportManager.Services
                 if (destinationProp != null)
                 {
                     object value = sourceProp.GetValue(sourceObject);
-                    if (destinationProp.PropertyType == typeof(List<ObjectId>) && sourceProp.PropertyType == typeof(List<string>))
+                    if (destinationProp.PropertyType == typeof(ObjectId?) && sourceProp.PropertyType == typeof(string))
+                    {
+                        string sourceValue = value as string;
+                        ObjectId? objectIdValue = null;
+
+                        if (!string.IsNullOrEmpty(sourceValue))
+                        {
+                            objectIdValue = StringToObjectId(sourceValue);
+                        }
+
+                        value = objectIdValue;
+                    }
+                    else if (destinationProp.PropertyType == typeof(HashSet<ObjectId>) && sourceProp.PropertyType == typeof(HashSet<string>))
+                    {
+                        HashSet<string> sourceHashSet = value as HashSet<string>;
+                        HashSet<ObjectId> destHashSet = sourceHashSet != null
+                            ? new HashSet<ObjectId>(sourceHashSet.Select(s => StringToObjectId(s)))
+                            : new HashSet<ObjectId>();
+
+                        value = destHashSet;
+                    }
+                    else if (destinationProp.PropertyType == typeof(List<ObjectId>) && sourceProp.PropertyType == typeof(List<string>))
                     {
                         List<string> sourceList = value as List<string>;
-                        List<ObjectId> destList = new List<ObjectId>();
-
-                        foreach (var item in sourceList)
-                        {
-                            destList.Add(StringToObjectId(item));
-                        }
+                        List<ObjectId> destList = sourceList != null
+                            ? sourceList.Select(s => StringToObjectId(s)).ToList()
+                            : new List<ObjectId>();
 
                         value = destList;
                     }

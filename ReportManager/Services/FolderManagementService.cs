@@ -4,6 +4,7 @@ using Org.BouncyCastle.Asn1.X509;
 using ReportManager.Models;
 using System.Collections.Generic;
 using ReportManager.Models;
+using System.Configuration;
 
 namespace ReportManager.Services
 {
@@ -12,12 +13,17 @@ namespace ReportManager.Services
         private readonly IMongoCollection<FolderModel> _folders;
         private readonly IMongoCollection<PersonalFolder> _personalFolders;
         private readonly GroupManagementService _groupManagementService;
+        private readonly IConfiguration _configuration;
+        private readonly string basePath;
 
-        public FolderManagementService(AppDatabaseService databaseService, GroupManagementService groupManagementService)
+        public FolderManagementService(AppDatabaseService databaseService, GroupManagementService groupManagementService, IConfiguration configuration)
         {
             _folders = databaseService.GetCollection<FolderModel>("GroupFolders");
             _personalFolders = databaseService.GetCollection<PersonalFolder>("PersonalFolders");
             _groupManagementService = groupManagementService;
+            _configuration = configuration;
+            var basePathValue = _configuration.GetValue<string>("BasePath");
+            basePath = (basePathValue == null) ? "C:/ReportForge/" : basePathValue;
         }
 
         public List<FolderModel> GetFolders(ObjectId groupId)
@@ -32,30 +38,74 @@ namespace ReportManager.Services
             return _folders.Find(filter).FirstOrDefault();
         }
 
-        public bool CreateFolder(FolderModel folder)
+        public PersonalFolder GetUserFolder(string username)
         {
-            _folders.InsertOne(folder);
-            return true;
+            var filter = Builders<PersonalFolder>.Filter.Eq(f => f.FolderName, username);
+            return _personalFolders.Find(filter).FirstOrDefault();
         }
 
-        public bool CreatePersonalFolder(PersonalFolder folder)
+        public bool CreateDBFolder(FolderModel folder)
         {
-            _personalFolders.InsertOne(folder);
-            return true;
+            try
+            {
+                _folders.InsertOne(folder);
+                return CreatePhysicalFolder(folder.FolderPath);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Logging
+                return false;
+            }
         }
 
-        public bool UpdateFolder(FolderModel updatedFolder)
+        public bool CreateDBPersonalFolder(PersonalFolder folder)
         {
-            var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, updatedFolder.Id);
-            var result = _folders.ReplaceOne(filter, updatedFolder);
+            try
+            {
+                _personalFolders.InsertOne(folder);
+                return CreatePhysicalFolder(folder.FolderPath);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Logging
+                return false;
+            }
+        }
+
+        public bool UpdateDBFolder(FolderModel updatedFolder)
+        {
+            var existingFolder = GetFolderById(updatedFolder.Id);
+            if (existingFolder == null) return false;
+
+            var result = _folders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder);
+
+            if (existingFolder.FolderName != updatedFolder.FolderName)
+            {
+                if (!RenamePhysicalFolder(existingFolder.FolderPath, updatedFolder.FolderName))
+                    return false;
+            }
+            else if (existingFolder.FolderPath != updatedFolder.FolderPath)
+            {
+                string newParentPath = Path.GetDirectoryName(updatedFolder.FolderPath);
+                if (!MovePhysicalFolder(existingFolder.FolderPath, newParentPath))
+                    return false;
+            }
+
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool DeleteFolder(ObjectId folderId)
+        public bool DeleteDBFolder(ObjectId folderId)
         {
-            var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, folderId);
-            var result = _folders.DeleteOne(filter);
-            return result.IsAcknowledged && result.DeletedCount > 0;
+            var folder = GetFolderById(folderId);
+            if (folder == null) return false;
+
+            var result = _folders.DeleteOne(filter => filter.Id == folderId);
+
+            if (result.IsAcknowledged && result.DeletedCount > 0)
+            {
+                return DeletePhysicalFolder(folder.FolderPath);
+            }
+            return false;
         }
 
         public List<PersonalFolder> GetPersonalFoldersByUser(ObjectId userId)
@@ -81,11 +131,83 @@ namespace ReportManager.Services
             FolderModel parentFolder = _folders.Find(f => f.Id == parentId).FirstOrDefault();
             if (parentFolder != null)
             {
-                List<FolderModel> folderModels = _folders.Find(_ => true).ToList();
                 var filter = Builders<FolderModel>.Filter.Eq("ParentId", parentId);
                 return _folders.Find(filter).ToList();
             }
             return new List<FolderModel>();
+        }
+
+        public bool CreatePhysicalFolder(string folderPath)
+        {
+            try
+            {
+                string fullPath = Path.Combine(basePath, folderPath);
+
+                if (!Directory.Exists(fullPath))
+                {
+                    Directory.CreateDirectory(fullPath);
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool MovePhysicalFolder(string oldFolderPath, string newFolderPath)
+        {
+            string fullOldPath = Path.Combine(basePath, oldFolderPath);
+            string fullNewPath = Path.Combine(basePath, newFolderPath);
+
+            if (!Directory.Exists(fullOldPath)) return false;
+
+            try
+            {
+                Directory.Move(fullOldPath, fullNewPath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool RenamePhysicalFolder(string folderPath, string newName)
+        {
+            string fullOldPath = Path.Combine(basePath, folderPath);
+            string fullNewPath = Path.Combine(basePath, Path.GetDirectoryName(folderPath), newName);
+
+            if (!Directory.Exists(fullOldPath)) return false;
+
+            try
+            {
+                Directory.Move(fullOldPath, fullNewPath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool DeletePhysicalFolder(string folderPath)
+        {
+            string fullPath = Path.Combine(basePath, folderPath);
+
+            if (!Directory.Exists(fullPath)) return false;
+
+            try
+            {
+                Directory.Delete(fullPath, true);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

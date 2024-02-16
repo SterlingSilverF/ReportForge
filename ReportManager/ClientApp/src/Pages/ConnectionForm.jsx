@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
 import { decryptData } from '../components/Cryptonator';
 import MessageDisplay from '../components/MessageDisplay';
+// TODO: ConnectionForm tooltips
 
 const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
     const location = useLocation();
@@ -29,7 +30,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Oracle: defaultFields.push('Instance'),
         MySQL: defaultFields,
         PostgreSQL: defaultFields,
-        MongoDB: defaultFields,
+        MongoDB: defaultFields.push('AuthSource', 'ReplicaSet', 'UseTLS'),
         DB2: defaultFields
     });
 
@@ -52,21 +53,26 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
     };
 
     // Models
-    const [formStateCurrent, setFormStateCurrent] = useState({
+    const getDefaultFormState = (dbType) => ({
         Id: '',
         ServerName: '',
-        Port: 1433,
+        Port: defaultPorts[dbType],
         Instance: '',
-        DbType: 'MSSQL',
+        DbType: dbType,
         Username: '',
         Password: '',
-        AuthType: 'Credentials',
+        AuthType: authTypesByDB[dbType][0],
         OwnerID: userID,
         OwnerType: 'User',
         FriendlyName: '',
         DatabaseName: '',
         ConfigType: 'Server',
+        AuthSource: '',
+        ReplicaSet: '',
+        UseTLS: false,
     });
+
+    const [formStateCurrent, setFormStateCurrent] = useState(getDefaultFormState(selectedDBProvider));
 
     const serverConnection = {
         Id: formStateCurrent.Id,
@@ -78,7 +84,10 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Password: formStateCurrent.Password,
         AuthType: formStateCurrent.AuthType,
         OwnerID: formStateCurrent.OwnerID,
-        OwnerType: formStateCurrent.OwnerType
+        OwnerType: formStateCurrent.OwnerType,
+        AuthSource: formStateCurrent.AuthSource,
+        ReplicaSet: formStateCurrent.ReplicaSet,
+        UseTLS: formStateCurrent.UseTLS
     };
 
     const dbConnection = {
@@ -157,7 +166,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         if (username != '') {
             setFormStateCurrent(prevFormState => ({
                 ...prevFormState,
-                ownerID: userID,
+                OwnerID: userID,
             }));
 
             const fetchUserGroups = async () => {
@@ -183,38 +192,33 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         }
     };
 
-    // Fetch server connections
     useEffect(() => {
-        if (showDbOptions) {
-            let url = `/api/connection/`;
-
-            if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
-                let filter = '';
-                if (formStateCurrent.OwnerType === 'User') {
-                    filter = `ownerId=${userID}&in_ownerType=User`;
-                } else if (formStateCurrent.OwnerID !== '') {
-                    filter = `ownerId=${formStateCurrent.OwnerID}&in_ownerType=Group`;
-                } else {
-                    return;
-                }
-                url += `GetServerConnections?${filter}`;
-            } else if (formStateCurrent.showConnections === 'All') {
-                url += `GetAllConnectionsForUser?username=${username}&userID=${userID}`;
-            } else {
+        let url = `/api/connection/`;
+        if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
+            let filter = `ownerTypeString=${formStateCurrent.OwnerType}&connectionType=server`;
+            const ownerId = formStateCurrent.OwnerType === 'User' ? userID : formStateCurrent.OwnerID;
+            if (!ownerId) {
+                console.error('Owner ID is missing for fetching connections.');
                 return;
             }
-
-            const fetchServerConnections = async () => {
-                try {
-                    const response = await makeApiRequest('get', url);
-                    setServerConnections(response.data);
-                } catch (error) {
-                    console.error('Could not fetch server connections:', error.response ? error.response.data : error);
-                }
-            };
-
-            fetchServerConnections();
+            filter += `&ownerId=${ownerId}`;
+            url += `GetAllConnections?${filter}`;
+        } else if (formStateCurrent.showConnections === 'All') {
+            url += `GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`;
+        } else {
+            return;
         }
+
+        const fetchConnections = async () => {
+            try {
+                const response = await makeApiRequest('get', url);
+                setServerConnections(response.data);
+            } catch (error) {
+                console.error('Could not fetch connections:', error.response ? error.response.data : error);
+            }
+        };
+
+        fetchConnections();
     }, [showDbOptions, formStateCurrent, userID, username, makeApiRequest]);
 
     const handleSave = async () => {
@@ -255,7 +259,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
             setIsSuccess(false);
             setMessage("Saving failed.");
             // If server was created but database creation failed, delete the server
-            if (dbConnection.ServerID) {
+            if (dbConnection.ServerID != "null") {
                 const isDeleted = await deleteConnection(serverId, 'Server');
                 if (isDeleted) {
                     setMessage("Database creation failed. Created server connection has been deleted.");
@@ -380,12 +384,18 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                                 name='Port'
                                 value={formStateCurrent.Port}
                                 onChange={_handleChange}
-                                className='input-style-default-short'
+                                className='input-style-mini'
                             />
-                            {(formStateCurrent.dbType === 'MSSQL' || formStateCurrent.dbType === 'Oracle') && (
+                            {(formStateCurrent.DbType === 'MSSQL' || formStateCurrent.DbType === 'Oracle') && (
                                 <>
-                                    <label style={{ marginLeft: '20px', marginRight: '10px' }}>Instance:</label>
-                                    <input name='instance' onChange={_handleChange} className='input-style-default-short' />
+                                    <label style={{ marginLeft: '20px', marginRight: '10px' }}>
+                                        {formStateCurrent.DbType === 'Oracle' ? 'SID or Service Name' : 'Instance'}:
+                                    </label>
+                                    <input
+                                        name="Instance"
+                                        value={formStateCurrent.Instance}
+                                        onChange={_handleChange}
+                                        className={formStateCurrent.DbType === 'Oracle' ? 'input-style-short' : 'input-style-mini'} />
                                 </>
                             )}
                         </div>
@@ -412,6 +422,38 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                         )}
                     </>
                 )}
+
+                {/* MongoDB Only */}
+                {formStateCurrent.DbType === 'MongoDB' && (
+                    <>
+                        <div className='form-element'>
+                            <label>Auth Source</label><br />
+                            <input
+                                name='AuthSource'
+                                value={formStateCurrent.AuthSource}
+                                onChange={_handleChange}
+                                className='input-style-default' />
+                        </div>
+                        <div className='form-element'>
+                            <label>Replica Set</label><br />
+                            <input
+                                name='ReplicaSet'
+                                value={formStateCurrent.ReplicaSet}
+                                onChange={_handleChange}
+                                className='input-style-default' />
+                        </div>
+                        <div className='form-element'>
+                            <label>Use SSL</label><br />
+                            <input
+                                type='checkbox'
+                                name='UseTLS'
+                                checked={formStateCurrent.UseTLS}
+                                onChange={(e) => setFormStateCurrent(prevState => ({ ...prevState, UseTLS: e.target.checked }))}
+                                className='input-style-default' />
+                        </div>
+                    </>
+                )}
+
 
                 {/* Database Fields */}
                 {formStateCurrent.ConfigType === 'Database' && (
@@ -479,7 +521,6 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                 {!useExistingServer && (
                     <>
                         <button type='button' onClick={testConnection} className='btn-four'>Test Connection</button>
-                        <br/>
                         <label className='success-message'>{testResult}</label><br /><br />
                     </>
                 )}

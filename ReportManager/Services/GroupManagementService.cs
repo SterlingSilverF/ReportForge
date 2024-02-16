@@ -109,7 +109,7 @@ namespace ReportManager.Services
             return _groupsDB.Find(filter).FirstOrDefault();
         }
 
-        public string ModifyGroupOwnership(ObjectId groupId, List<string> newOwners)
+        public string ModifyGroupOwnership(ObjectId groupId, HashSet<string> newOwners)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
             var update = Builders<_Group>.Update.Set(g => g.GroupOwners, newOwners);

@@ -16,7 +16,6 @@ namespace ReportManager.API
         private readonly ConnectionService _connectionService;
         private readonly SharedService _sharedService;
         private readonly GroupManagementService _groupManagementService;
-        private string _temporaryConnectionString;
 
         public class ConnectionRequest
         {
@@ -28,13 +27,17 @@ namespace ReportManager.API
             public string? Instance { get; set; }
             [Required]
             public string DbType { get; set; }
-            public string Username { get; set; }
-            public string Password { get; set; }
+            public string? Username { get; set; }
+            public string? Password { get; set; }
             [Required]
             public string AuthType { get; set; }
+            [Required]
             public string OwnerID { get; set; }
             [Required]
             public string OwnerType { get; set; }
+            public string? AuthSource { get; set; }
+            public string? ReplicaSet { get; set; }
+            public bool UseTLS { get; set; }
         }
 
         public class DBConnectionRequest
@@ -108,36 +111,27 @@ namespace ReportManager.API
             return dbConnection != null ? Ok(dbConnection) : NotFound("Database connection not found.");
         }
 
-        [HttpGet("GetAllConnectionsForUser")]
-        public ActionResult<List<ServerConnectionDTO>> GetAllServerConnectionsForUser(string username, string userID)
+        [HttpGet("GetAllConnections")]
+        public ActionResult GetAllConnections(string ownerId, string ownerTypeString, string connectionType)
         {
-            var personalConnectionsResult = GetServerConnections(userID, "User");
-            if (personalConnectionsResult is OkObjectResult personalConnectionsObjectResult)
-            {
-                var personalConnectionModels = personalConnectionsObjectResult.Value as List<ServerConnectionModel>;
-                var personalConnections = personalConnectionModels?.Select(model => new ServerConnectionDTO(model)).ToList() ?? new List<ServerConnectionDTO>();
-
-                var userGroups = _groupManagementService.GetGroupsByUser(username);
-                var groupConnections = new List<ServerConnectionDTO>();
-                foreach (var group in userGroups)
-                {
-                    var groupConnectionResult = GetServerConnections(group.Id.ToString(), "Group");
-                    if (groupConnectionResult is OkObjectResult groupConnectionObjectResult)
-                    {
-                        var groupConnectionModels = groupConnectionObjectResult.Value as List<ServerConnectionModel>;
-                        if (groupConnectionModels != null)
-                        {
-                            var groupDTOs = groupConnectionModels.Select(model => new ServerConnectionDTO(model)).ToList();
-                            groupConnections.AddRange(groupDTOs);
-                        }
-                    }
-                }
-                var allServerConnections = personalConnections.Concat(groupConnections).ToList();
-                return Ok(allServerConnections);
-            }
-            return Ok(new List<ServerConnectionDTO>());
+            OwnerType ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), ownerTypeString, true);
+            var result = _connectionService.FetchConnections(ownerId, ownerType, connectionType);
+            return Ok(result);
         }
 
+        [HttpGet("GetAllConnectionsForUserAndGroups")]
+        public ActionResult GetAllConnectionsForUserAndGroups(string userId, string username)
+        {
+            var allConnections = new List<object>();
+            var userGroups = _groupManagementService.GetGroupsByUser(username);
+            allConnections.AddRange(_connectionService.FetchConnectionsForOwner(userId, "User", "server"));
+            foreach (var group in userGroups)
+            {
+                allConnections.AddRange(_connectionService.FetchConnectionsForOwner(group.Id.ToString(), "Group", "server"));
+            }
+
+            return Ok(allConnections);
+        }
 
         [HttpPost("AddServerConnection")]
         public async Task<IActionResult> AddServerConnection(ConnectionRequest data)
@@ -153,7 +147,10 @@ namespace ReportManager.API
                 Password = data.Password,
                 AuthType = data.AuthType,
                 OwnerID = _sharedService.StringToObjectId(data.OwnerID),
-                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType)
+                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType),
+                AuthSource = data.AuthSource,
+                ReplicaSet = data.ReplicaSet,
+                UseTLS = data.UseTLS
             };
             ObjectId? newId = await _connectionService.AddServerConnection(newServer, true);
             if (newId == null) return BadRequest("Failed to add server connection.");
@@ -179,6 +176,9 @@ namespace ReportManager.API
                 AuthType = serverConnection.AuthType,
                 OwnerID = serverConnection.OwnerID,
                 OwnerType = serverConnection.OwnerType,
+                AuthSource = serverConnection.AuthSource,
+                ReplicaSet = serverConnection.ReplicaSet,
+                UseTLS = serverConnection.UseTLS,
                 DatabaseName = data.DatabaseName,
                 FriendlyName = data.FriendlyName
             };
@@ -251,7 +251,10 @@ namespace ReportManager.API
                 DbType = request.DbType,
                 Username = request.Username,
                 Password = request.Password,
-                AuthType = request.AuthType
+                AuthType = request.AuthType,
+                AuthSource = request.AuthSource,
+                ReplicaSet = request.ReplicaSet,
+                UseTLS = request.UseTLS
             };
 
             var (isSuccessful, message) = _connectionService.PreviewConnection(connection);

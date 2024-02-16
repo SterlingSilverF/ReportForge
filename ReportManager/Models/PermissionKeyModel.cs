@@ -9,6 +9,7 @@ namespace ReportManager.Models
         public string Groupname { get; set; }
         public UserType UserType { get; set; }
         public long Timestamp { get; set; }
+        public DateTime? Expiration { get; set; }
         public bool Used { get; set; }
     }
 }

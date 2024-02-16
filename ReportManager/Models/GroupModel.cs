@@ -8,10 +8,11 @@ namespace ReportManager.Models
     {
         public ObjectId Id { get; set; }
         public string GroupName { get; set; }
-        public List<string> GroupOwners { get; set; }
-        public List<string> GroupMembers { get; set; }
-        public List<ObjectId> Folders { get; set; }
-        public List<ObjectId>? GroupConnectionStrings { get; set; } // FK ServerConnectionModel.Id
+        public HashSet<string> GroupOwners { get; set; }
+        public HashSet<string> GroupMembers { get; set; }
+        public HashSet<ObjectId> Folders { get; set; }
+        public HashSet<ObjectId>? GroupConnectionStrings { get; set; } // FK ServerConnectionModel.Id
         public bool IsTopGroup { get; set; }
+        public ObjectId? ParentId { get; set; } // _Group Id
     }
 }

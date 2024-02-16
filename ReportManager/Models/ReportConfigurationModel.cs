@@ -28,7 +28,7 @@ namespace ReportManager.Models
 
     public class NormalReportConfiguration : ReportConfigurationModel
     {
-        public List<DatabaseObjectInfoModel> SelectedObjects { get; set; }
+        public HashSet<DatabaseObjectInfoModel> SelectedObjects { get; set; }
         public List<ReportColumn> Columns { get; set; }
         public List<Filter>? Filters { get; set; }
         public List<string> OrderBy { get; set; }
@@ -69,7 +69,9 @@ namespace ReportManager.Models
         Equals,
         NotEquals,
         GreaterThan,
+        GreaterThanOrEqualTo,
         LessThan,
+        LessThanOrEqualTo,
         Between,
         In
     }

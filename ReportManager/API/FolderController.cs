@@ -5,6 +5,7 @@ using ReportManager.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using MongoDB.Driver;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ReportManager.API
 {
@@ -23,7 +24,7 @@ namespace ReportManager.API
             public string FolderName { get; set; }
             [Required]
             public string Username { get; set; }
-            public string ParentId { get; set; }
+            public string? ParentId { get; set; }
             public string GroupId { get; set; }
             [Required]
             public bool IsGroupFolder { get; set; }
@@ -62,17 +63,21 @@ namespace ReportManager.API
                     IsObjectFolder = false
                 };
 
-                if (request.ParentId != "")
+                if (!request.ParentId.IsNullOrEmpty())
                 {
-                    ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
+                   ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
                     folder.ParentId = parentId;
                     FolderModel parent = _folderManagementService.GetFolderById(parentId);
                     folder.FolderPath = parent.FolderPath + request.FolderName + "/";
                 }
+                else
+                {
+                    folder.ParentId = _folderManagementService.GetUserFolder(request.Username).Id;
+                }
 
                 if (request.IsGroupFolder)
                 {
-                    _folderManagementService.CreateFolder(folder);
+                    _folderManagementService.CreateDBFolder(folder);
                     ObjectId groupId = _sharedService.StringToObjectId(request.GroupId);
                     _groupManagementService.AddFolderToGroup(groupId, folder.Id);
                 }
@@ -86,7 +91,7 @@ namespace ReportManager.API
                         IsObjectFolder = folder.IsObjectFolder,
                         Owner = user.Id
                     };
-                    _folderManagementService.CreatePersonalFolder(folder as PersonalFolder);
+                    _folderManagementService.CreateDBPersonalFolder(folder as PersonalFolder);
                 }
 
                 return Ok(new { message = "Folder created successfully." });
@@ -103,7 +108,7 @@ namespace ReportManager.API
             try
             {
                 ObjectId objectId = new ObjectId(folderId);
-                bool isDeleted = _folderManagementService.DeleteFolder(objectId);
+                bool isDeleted = _folderManagementService.DeleteDBFolder(objectId);
 
                 if (isDeleted)
                 {
@@ -124,7 +129,7 @@ namespace ReportManager.API
         public IActionResult UpdateFolder(UpdateFolderRequest request)
         {
             var mappedFolder = _sharedService.MapObjectToModel<FolderModel>(request);
-            return _folderManagementService.UpdateFolder(mappedFolder) ? Ok("Folder updated.") : BadRequest("Update failed.");
+            return _folderManagementService.UpdateDBFolder(mappedFolder) ? Ok("Folder updated.") : BadRequest("Update failed.");
         }
 
         [HttpGet("getPersonalFolders")]

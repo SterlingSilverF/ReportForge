@@ -12,6 +12,7 @@ using System.Security.Claims;
 using ReportManager.Models.SettingsModels;
 using Microsoft.Extensions.Options;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using Mysqlx;
 
 namespace ReportManager.API
 {
@@ -25,6 +26,7 @@ namespace ReportManager.API
         private readonly IConfiguration _configuration;
         private readonly AppDatabaseService _appDatabaseService;
         private readonly JwtSettings _jwtSettings;
+        private string basePath;
 
         public class LoginRequest
         {
@@ -68,6 +70,24 @@ namespace ReportManager.API
             public string? email { get; set; }
         }
 
+        public class GeneratePermissionKeyRequest
+        {
+            [Required]
+            public string Username { get; set; }
+
+            [Required]
+            public string Groupname { get; set; }
+
+            [Required]
+            public string UserType { get; set; }
+
+            [Required]
+            public int ExpirationDuration { get; set; }
+
+            [Required]
+            public string DurationUnit { get; set; }
+        }
+
         // TODO: Split this into two for first time and normal
         public AuthController(UserManagementService authService, GroupManagementService groupManagementService, 
             AppDatabaseService databaseService, FolderManagementService folderManagementService, IConfiguration configuration, IOptions<JwtSettings> jwtSettings)
@@ -79,6 +99,8 @@ namespace ReportManager.API
             _configuration = configuration;
             _jwtSettings = jwtSettings.Value;
             var permissionKeyCollection = databaseService.GetCollection<PermissionKeyModel>("PermissionKeys");
+            var basePathValue = _configuration.GetValue<string>("BasePath");
+            basePath = (basePathValue == null) ? "C:/ReportForge/" : basePathValue;
             Encryptor.Initialize(permissionKeyCollection);
         }
 
@@ -113,12 +135,13 @@ namespace ReportManager.API
                 Email = request.email
             };
 
+            string isRegistered = "";
             if (request.permission_key != null)
             {
-                if (Encryptor.TryDecodePermissionKey(request.permission_key, out var createdusername, out var groupname, out var userType))
+                if (Encryptor.VerifyPermissionKey(request.permission_key, out var groupname, out var userType))
                 {
                     _user.UserType = userType;
-                    _authService.RegisterUser(_user);
+                    isRegistered = _authService.RegisterUser(_user);
 
                     _Group topGroup = _groupManagementService.GetTopGroup();
                     topGroup.GroupMembers.Add(request.username);
@@ -132,33 +155,42 @@ namespace ReportManager.API
                             group.GroupMembers.Add(request.username);
                             _groupManagementService.UpdateGroup(group);
                         }
-                        return BadRequest(new { message = "Group does not exist." });
                     }
                 }
                 else
                 {
-                    return BadRequest(new { message = "Invalid permission key" });
+                    isRegistered = _authService.RegisterUser(_user);
                 }
             }
-
-            string isRegistered = _authService.RegisterUser(_user);
-
+           
             PersonalFolder personalFolder = new PersonalFolder
             {
                 FolderName = request.username,
-                FolderPath = "/Users/" + request.username,
+                FolderPath = basePath + "Users/" + request.username + "/",
                 IsObjectFolder = true,
-
+                Owner = _user.Id
             };
 
-            string folderCreated = _folderManagementService.CreatePersonalFolder(personalFolder);
-            if (isRegistered == "User successfully registered.")
+            bool dbFolderCreated = _folderManagementService.CreateDBPersonalFolder(personalFolder);
+
+            if (isRegistered == "User created successfully." && dbFolderCreated)
             {
                 return Ok(new { message = "User successfully registered" });
             }
             else
             {
-                return BadRequest(new { message = "Registration failed" });
+                string errorMessage = "Registration failed";
+                if (isRegistered != "User successfully registered.")
+                {
+                    errorMessage = "Failed to register user: " + isRegistered;
+                }
+                else if (!dbFolderCreated)
+                {
+                    // TODO: delete user and folders
+                    errorMessage = "Failed to create database folder record";
+                }
+
+                return BadRequest(new { message = errorMessage });
             }
         }
 
@@ -201,7 +233,6 @@ namespace ReportManager.API
             return Unauthorized();
         }
 
-
         [HttpPost("firsttimesetup")]
         public IActionResult FirstTimeSetup([FromBody] AdminRegistrationRequest request)
         {
@@ -214,17 +245,22 @@ namespace ReportManager.API
             AdminAppSetup adminAppSetup = new AdminAppSetup(_configuration, _appDatabaseService);
             adminAppSetup.CreateDatabaseCollections();
 
-            string basePath = _configuration.GetValue<string>("BasePath");
-
-            // Create the top folder
-            FolderModel folder = new FolderModel
+            // Create the physical app (basepath), Users, and Groups folders
+            if (!Directory.Exists(basePath))
             {
-                FolderName = request.groupname,
-                FolderPath = basePath + "/" + request.groupname + "/",
-                IsObjectFolder = false
-            };
+               _folderManagementService.CreatePhysicalFolder(basePath);
+            }
 
-            _folderManagementService.CreateFolder(folder);
+            string usersPath = Path.Combine(basePath, "Users/");
+            string groupsPath = Path.Combine(basePath, "Groups/");
+            _folderManagementService.DeletePhysicalFolder("Users/");
+            _folderManagementService.DeletePhysicalFolder("Groups/");
+
+            if (!_folderManagementService.CreatePhysicalFolder(usersPath) ||
+                !_folderManagementService.CreatePhysicalFolder(groupsPath))
+            {
+                return BadRequest(new { message = "Failed to create essential directories" });
+            }
 
             // Create the first admin user
             var salt = Encryptor.PasswordHelper.GenerateSalt();
@@ -248,25 +284,75 @@ namespace ReportManager.API
             _Group adminGroup = new _Group
             {
                 GroupName = request.groupname,
-                Folders = new List<ObjectId>{ folder.Id },
-                GroupOwners = new List<string> { request.username },
-                GroupMembers = new List<string> { request.username },
+                Folders = new HashSet<ObjectId>(),
+                GroupOwners = new HashSet<string> { request.username },
+                GroupMembers = new HashSet<string> { request.username },
                 IsTopGroup = true
+                // ParentId = null
             };
             adminGroup = _groupManagementService.CreateAdminGroup(adminGroup);
 
-            // Create admin user's personal folder
-            PersonalFolder personalFolder = new PersonalFolder
+            // Create the first group folder (physical only)
+            if (!_folderManagementService.CreatePhysicalFolder("Groups/" + request.groupname))
             {
+                return BadRequest(new { message = "Failed to create the group folder" });
+            }
+
+            PersonalFolder _folder = new PersonalFolder
+            {
+                FolderPath = usersPath + request.username + "/",
                 FolderName = request.username,
-                FolderPath = 
-                IsObjectFolder = true,
+                IsObjectFolder = false,
                 Owner = adminUser.Id
             };
 
-            _folderManagementService.CreatePersonalFolder(personalFolder);
+            if (!_folderManagementService.CreateDBPersonalFolder(_folder))
+            {
+                return BadRequest(new { message = "Failed to create the user's personal folder" });
+            }
 
             return Ok(new { message = "First-time setup completed successfully" });
+        }
+
+        [HttpPost("generatePermissionKey")]
+        public IActionResult GeneratePermissionKey([FromBody] GeneratePermissionKeyRequest request)
+        {
+            if (!Enum.TryParse<UserType>(request.UserType, out UserType userType))
+            {
+                return BadRequest("Invalid user type.");
+            }
+            var expiration = CalculateExpiration(request.ExpirationDuration, request.DurationUnit);
+            var key = Encryptor.GeneratePermissionKey(request.Username, request.Groupname, userType, expiration);
+
+            return Ok(new { Key = key });
+        }
+
+        [HttpDelete("clearGroupKeys")]
+        public IActionResult ClearGroupKeys(string groupname)
+        {
+            try
+            {
+                Encryptor.ClearGroupKeys(groupname);
+                return Ok(new { message = "Group keys cleared successfully." });
+            } 
+            catch (Exception ex) {
+                return BadRequest(new { message = "An error occured in deletion." });
+            }
+        }
+
+        private DateTime? CalculateExpiration(int duration, string unit)
+        {
+            if (unit == "never") return null;
+
+            return unit switch
+            {
+                "minute" => DateTime.UtcNow.AddMinutes(duration),
+                "hour" => DateTime.UtcNow.AddHours(duration),
+                "day" => DateTime.UtcNow.AddDays(duration),
+                "week" => DateTime.UtcNow.AddDays(7 * duration),
+                "month" => DateTime.UtcNow.AddMonths(duration),
+                _ => DateTime.UtcNow
+            };
         }
     }
 }

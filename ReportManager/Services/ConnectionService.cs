@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using ReportManager.Models.SettingsModels;
 using System.Collections;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 public class ConnectionService
 {
@@ -67,28 +68,29 @@ public class ConnectionService
         return connectionModel.Id;
     }
 
-    // TODO: break DB string build functionality into separate function
     public static string BuildConnectionString(DBConnectionModel dbConnection)
     {
         switch (dbConnection.DbType)
         {
             case "MSSQL":
+                var mssqlConnectionString = new StringBuilder($"Server={dbConnection.ServerName},{dbConnection.Port}");
+                if (!string.IsNullOrEmpty(dbConnection.Instance))
+                {
+                    mssqlConnectionString.Append($"\\{dbConnection.Instance}");
+                }
                 if (dbConnection.AuthType == "Windows")
                 {
-                    if (!string.IsNullOrEmpty(dbConnection.Instance))
-                    {
-                        return $"Server={dbConnection.ServerName},{dbConnection.Port}\\{dbConnection.Instance};Integrated Security=True;";
-                    }
-                    return $"Server={dbConnection.ServerName},{dbConnection.Port};Integrated Security=True;";
+                    mssqlConnectionString.Append(";Integrated Security=True;");
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(dbConnection.Instance))
-                    {
-                        return $"Server={dbConnection.ServerName},{dbConnection.Port}\\{dbConnection.Instance};User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
-                    }
-                    return $"Server={dbConnection.ServerName},{dbConnection.Port};User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
+                    mssqlConnectionString.Append($";User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};");
                 }
+                if (!string.IsNullOrEmpty(dbConnection.DatabaseName))
+                {
+                    mssqlConnectionString.Append($"Database={dbConnection.DatabaseName};");
+                }
+                return mssqlConnectionString.ToString();
 
             case "Oracle":
                 if (dbConnection.AuthType == "Windows")
@@ -106,14 +108,36 @@ public class ConnectionService
                 throw new ArgumentException("Unsupported Oracle authentication type.");
 
             case "MySQL":
-                return $"server={dbConnection.ServerName};port={dbConnection.Port};uid={dbConnection.Username};pwd={Encryptor.Decrypt(dbConnection.Password)};";
+                return $"server={dbConnection.ServerName};port={dbConnection.Port};database={dbConnection.DatabaseName};uid={dbConnection.Username};pwd={Encryptor.Decrypt(dbConnection.Password)};";
 
             case "Postgres":
-                return $"Host={dbConnection.ServerName};Port={dbConnection.Port};Username={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
+                return $"Host={dbConnection.ServerName};Port={dbConnection.Port};Database={dbConnection.DatabaseName};Username={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
 
             case "MongoDB":
-                // Assuming there's no need for the database name in the connection string.
-                return $"mongodb://{dbConnection.Username}:{Encryptor.Decrypt(dbConnection.Password)}@{dbConnection.ServerName}:{dbConnection.Port}";
+                var mongoStringBuilder = new StringBuilder($"mongodb://{dbConnection.Username}:{Encryptor.Decrypt(dbConnection.Password)}@{dbConnection.ServerName}:{dbConnection.Port}");
+                if (!string.IsNullOrEmpty(dbConnection.AuthSource))
+                {
+                    mongoStringBuilder.Append($"/{dbConnection.AuthSource}");
+                }
+                else
+                {
+                    mongoStringBuilder.Append("/admin");
+                }
+
+                var queryStringStarted = mongoStringBuilder.ToString().Contains("?");
+                if (!string.IsNullOrEmpty(dbConnection.ReplicaSet))
+                {
+                    mongoStringBuilder.Append(queryStringStarted ? "&" : "?");
+                    mongoStringBuilder.Append($"replicaSet={dbConnection.ReplicaSet}");
+                    queryStringStarted = true;
+                }
+
+                if (dbConnection.UseTLS.HasValue && dbConnection.UseTLS.Value)
+                {
+                    mongoStringBuilder.Append(queryStringStarted ? "&" : "?");
+                    mongoStringBuilder.Append("tls=true");
+                }
+                return mongoStringBuilder.ToString();
 
             case "DB2":
                 return $"Server={dbConnection.ServerName}:{dbConnection.Port};Database={dbConnection.DatabaseName};UserID={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
@@ -207,8 +231,28 @@ public class ConnectionService
                     }
                     break;
                 case "MongoDB":
-                    var mongoClient = new MongoClient($"mongodb://{serverConnection.Username}:{serverConnection.Password}@{serverConnection.ServerName}:{serverConnection.Port}");
-                    mongoClient.GetDatabase("admin").RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait();
+                    var mongoUrlBuilder = new MongoUrlBuilder
+                    {
+                        Server = new MongoServerAddress(serverConnection.ServerName, serverConnection.Port),
+                        Username = serverConnection.Username,
+                        Password = serverConnection.Password,
+                        AuthenticationSource = serverConnection.AuthSource ?? "admin",
+                        ReplicaSetName = serverConnection.ReplicaSet
+                    };
+
+                    mongoUrlBuilder.UseTls = serverConnection.UseTLS.HasValue ? serverConnection.UseTLS.Value : false;
+                    var mongoClientSettings = MongoClientSettings.FromUrl(mongoUrlBuilder.ToMongoUrl());
+
+                    if (mongoUrlBuilder.UseTls)
+                    {
+                        mongoClientSettings.SslSettings = new SslSettings
+                        {
+                            EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12
+                        };
+                    }
+
+                    var mongoClient = new MongoClient(mongoClientSettings);
+                    mongoClient.GetDatabase(mongoUrlBuilder.AuthenticationSource).RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait();
 
                     if (!string.IsNullOrEmpty(databaseName))
                     {
@@ -219,6 +263,7 @@ public class ConnectionService
                         }
                     }
                     break;
+
                 case "DB2":
                     string db2ConnectionString = $"Server={serverConnection.ServerName}:{serverConnection.Port};Database={serverConnection.Instance};UserID={serverConnection.Username};Password={serverConnection.Password};";
                     using (DB2Connection db2Connection = new DB2Connection(db2ConnectionString))
@@ -267,6 +312,46 @@ public class ConnectionService
         {
             return (false, ex.Message);
         }
+    }
+
+    public List<object> FetchConnections(string ownerId, OwnerType ownerType, string connectionType)
+    {
+        var connections = new List<object>();
+
+        if (connectionType == "server" || connectionType == "both")
+        {
+            var serverConnections = GetServerConnections(ownerId, ownerType);
+            connections.AddRange(serverConnections.Select(model => new ServerConnectionDTO(model)));
+        }
+
+        if (connectionType == "database" || connectionType == "both")
+        {
+            var dbConnections = GetDBConnections(ownerId, ownerType);
+            connections.AddRange(dbConnections.Select(model => new DBConnectionDTO(model)));
+        }
+        return connections;
+    }
+
+    public List<object> FetchConnectionsForOwner(string ownerId, string ownerTypeString, string connectionType)
+    {
+        var connections = new List<object>();
+        if (!Enum.TryParse(ownerTypeString, true, out OwnerType ownerType))
+        {
+            throw new ArgumentException($"Invalid owner type: {ownerTypeString}");
+        }
+
+        if (connectionType == "server" || connectionType == "both")
+        {
+            var serverConnections = GetServerConnections(ownerId, ownerType);
+            connections.AddRange(serverConnections.Select(model => new ServerConnectionDTO(model)));
+        }
+
+        if (connectionType == "database" || connectionType == "both")
+        {
+            var dbConnections = GetDBConnections(ownerId, ownerType);
+            connections.AddRange(dbConnections.Select(model => new DBConnectionDTO(model)));
+        }
+        return connections;
     }
 
     public List<ServerConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
@@ -357,4 +442,131 @@ public class ConnectionService
         var result = collection.ReplaceOne(x => x.Id == updatedDB.Id, updatedDB);
         return result.IsAcknowledged && result.ModifiedCount > 0;
     }
+
+    // Report Utility Functions
+    /*public List<string> GetAllTables(string databaseType, string databaseName)
+    {
+        switch (databaseType.ToLower())
+        {
+            case "mssql":
+                return GetAllTablesMsSql(databaseName);
+            case "oracle":
+                return GetAllTablesOracle(databaseName);
+            case "mysql":
+                return GetAllTablesMySql(databaseName);
+            case "postgresql":
+                return GetAllTablesNpgsql(databaseName);
+            case "db2":
+                return GetAllTablesDb2(databaseName);
+            case "mongodb":
+                return GetAllTablesMongoDB(databaseName);
+            default:
+                throw new NotSupportedException($"{databaseType} is not supported.");
+        }
+    }
+
+    private List<string> GetAllTablesMsSql(string databaseName)
+    {
+        var tables = new List<string>();
+        using (var connection = new SqlConnection(_databaseSettings.Value.MsSqlConnectionString))
+        {
+            connection.Open();
+            var command = new SqlCommand("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'", connection);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tables.Add(reader.GetString(0));
+                }
+            }
+        }
+        return tables;
+    }
+
+    private List<string> GetAllTablesOracle(string databaseName)
+    {
+        var tables = new List<string>();
+        using (var connection = new OracleConnection(_databaseSettings.Value.OracleConnectionString))
+        {
+            connection.Open();
+            var command = new OracleCommand("SELECT TABLE_NAME FROM USER_TABLES", connection);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tables.Add(reader.GetString(0));
+                }
+            }
+        }
+        return tables;
+    }
+
+    private List<string> GetAllTablesMySql(string databaseName)
+    {
+        var tables = new List<string>();
+        using (var connection = new MySqlConnection(_databaseSettings.Value.MySqlConnectionString))
+        {
+            connection.Open();
+            var command = new MySqlCommand("SHOW TABLES", connection);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tables.Add(reader.GetString(0));
+                }
+            }
+        }
+        return tables;
+    }
+
+    private List<string> GetAllTablesNpgsql(string databaseName)
+    {
+        var tables = new List<string>();
+        using (var connection = new NpgsqlConnection(_databaseSettings.Value.NpgsqlConnectionString))
+        {
+            connection.Open();
+            var command = new NpgsqlCommand("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", connection);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tables.Add(reader.GetString(0));
+                }
+            }
+        }
+        return tables;
+    }
+
+    private List<string> GetAllTablesDb2(string databaseName)
+    {
+        var tables = new List<string>();
+        using (var connection = new DB2Connection(_databaseSettings.Value.Db2ConnectionString))
+        {
+            connection.Open();
+            var command = new DB2Command("SELECT NAME FROM SYSIBM.SYSTABLES WHERE TYPE = 'T'", connection);
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    tables.Add(reader.GetString(0));
+                }
+            }
+        }
+        return tables;
+    }
+
+    private List<string> GetAllTablesMongoDB(string connectionString)
+    {
+        var tables = new List<string>();
+        var client = new MongoClient(connectionString);
+        var database = client.GetDatabase(databaseName);
+
+        foreach (var collection in database.ListCollections().ToList())
+        {
+            tables.Add(collection["name"].AsString);
+        }
+
+        return tables;
+    }
+    */
 }
