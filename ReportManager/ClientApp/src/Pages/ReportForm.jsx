@@ -192,7 +192,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                     </select>
                 </div>
                 <br/>
-                <button onClick={handleSubmit} className="btn-three">Proceed to Designer</button><br />
+                <button onClick={handleSubmit} className="btn-three btn-restrict">Proceed to Designer</button><br />
             </section>
         </div>
     );

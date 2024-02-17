@@ -12,15 +12,12 @@ const Sidebar = ({ env, username, navigate }) => {
             <h4>Welcome, {username}</h4>
             <p className="rpf-gold">Environment: {env}</p>
             <button className="btn-seven" to="/login" onClick={handleLogout}>Sign Out</button>
-            <br /><br /><br /><br />
-            <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br/>
-            <h4>Guides</h4>
+            <h4 style={{marginTop: "250%"} }>Guides</h4>
             <a href="/guide/report-creation">All Guides</a><br /><br />
-            <p>Frequently Used</p>
+            <p style={{color: "white"}}>Frequently Used</p>
             <a href="/guide/adding-connection">Adding a New Connection</a><br/>
             <a href="/guide/report-creation">Creating a Report</a><br />
             <a href="/guide/managing-groups">Managing Groups</a>
-            {/* TODO: Add more guides and corresponding sections in the application */}
         </div>
     );
 };

@@ -13,7 +13,6 @@ namespace ReportManager.API
     public class ReportController : ControllerBase
     {
         private readonly ReportManagementService _reportManagementService;
-        private readonly UserManagementService _userManagementService;
         private readonly GroupManagementService _groupManagementService;
         private readonly SharedService _sharedService;
         private readonly FolderManagementService _folderManagementService;
@@ -71,7 +70,6 @@ namespace ReportManager.API
             GroupManagementService groupManagementService, SharedService sharedService, FolderManagementService folderManagementService)
         {
             _reportManagementService = reportManagementService;
-            _userManagementService = userManagementService;
             _groupManagementService = groupManagementService;
             _sharedService = sharedService;
             _folderManagementService = folderManagementService;
