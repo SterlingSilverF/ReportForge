@@ -1,57 +1,21 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, createContext } from 'react';
 import HOC from '../components/HOC';
+import MessageDisplay from '../components/MessageDisplay';
+import { useReportForm } from '../contexts/ReportFormContext';
 
 const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     // State variables
-    const [reportName, setReportName] = useState('');
-    const [reportDescription, setReportDescription] = useState('');
-    const [reportType, setReportType] = useState('personal');
-    const [selectedGroup, setSelectedGroup] = useState(null);
+    const { reportFormData, updateReportFormData } = useReportForm();
     const [groups, setGroups] = useState([]);
     const [connections, setConnections] = useState([]);
-    const [selectedConnection, setSelectedConnection] = useState(null);
     const [folders, setFolders] = useState([]);
-    const [selectedFolder, setSelectedFolder] = useState(null);
     const [message, setMessage] = useState('');
+    const [messageSuccess, setMessageSuccess] = useState(true);
 
-    // Load user groups when report type is 'group'
-    useEffect(() => {
-        if (reportType === 'group') {
-            const fetchUserGroups = async () => {
-                try {
-                    const response = await makeApiRequest('get', `/api/group/getUserGroups?username=${username}`);
-                    setGroups(response.data);
-                } catch (error) {
-                    console.error('Could not fetch user groups:', error);
-                }
-            };
-            fetchUserGroups();
-        }
-    }, [reportType, makeApiRequest, username]);
-
-    // Fetch folders based on report type and selected group
-    useEffect(() => {
-        if (username) {
-            let folderApiEndpoint = reportType === 'group' && selectedGroup
-                ? `/api/folder/getFoldersByGroupId?groupId=${selectedGroup}`
-                : `/api/folder/getPersonalFolders?username=${username}`;
-
-            const fetchFolders = async () => {
-                try {
-                    const response = await makeApiRequest('get', folderApiEndpoint);
-                    setFolders(response.data);
-                } catch (error) {
-                    console.error('Could not fetch folders:', error);
-                }
-            };
-            fetchFolders();
-        }
-    }, [reportType, selectedGroup, makeApiRequest, username]);
-
-    const fetchConnections = async (ownerIdParam = null, ownerTypeParam = null) => {
-        const ownerId = ownerIdParam || (reportType === 'group' ? selectedGroup : userID);
-        const ownerType = ownerTypeParam || (reportType === 'group' ? 'Group' : 'User');
-        const apiEndpoint = `/api/connection/GetAllConnections?ownerId=${ownerId}&ownerTypeString=${ownerType}&connectionType=both`;
+    const fetchConnections = async (ownerIdParam, ownerTypeParam) => {
+        const ownerId = ownerIdParam || (reportFormData.reportType === 'group' ? reportFormData.selectedGroup : userID);
+        const ownerType = ownerTypeParam || (reportFormData.reportType === 'group' ? 'Group' : 'User');
+        const apiEndpoint = `/api/connection/GetAllConnections?ownerId=${ownerId}&ownerTypeString=${ownerType}&connectionType=database`;
 
         try {
             const response = await makeApiRequest('get', apiEndpoint);
@@ -62,26 +26,92 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         }
     };
 
+    useEffect(() => {
+        if (reportFormData.reportType === 'group') {
+            const fetchUserGroups = async () => {
+                try {
+                    const response = await makeApiRequest('get', `/api/group/getUserGroups?username=${username}`);
+                    const filteredGroups = response.data.filter(group => !group.isTopGroup);
+                    setGroups(filteredGroups);
+                } catch (error) {
+                    console.error('Could not fetch user groups:', error);
+                }
+            };
+            fetchUserGroups();
+        }
+    }, [reportFormData.reportType, makeApiRequest, username]);
+
+    // Fetch personal connections on load for 'personal' report type
+    useEffect(() => {
+        if (reportFormData.reportType === 'personal' && userID) {
+            fetchConnections(userID, 'User');
+        }
+    }, [reportFormData.reportType, userID]);
+
+
+    // Fetch folders based on report type and selected group
+    useEffect(() => {
+        const fetchFolders = async () => {
+            let folderApiEndpoint = reportFormData.reportType === 'group' && reportFormData.selectedGroup
+                ? `/api/folder/getFoldersByGroupId?groupId=${reportFormData.selectedGroup}`
+                : `/api/folder/getPersonalFolders?username=${username}`;
+
+            try {
+                const response = await makeApiRequest('get', folderApiEndpoint);
+                setFolders(response.data);
+            } catch (error) {
+                console.error('Could not fetch folders:', error);
+                setFolders([]);
+            }
+        };
+
+        if ((reportFormData.reportType === 'personal' && username) || (reportFormData.reportType === 'group' && reportFormData.selectedGroup)) {
+            fetchFolders();
+        } else {
+            setFolders([]);
+        }
+    }, [reportFormData.reportType, reportFormData.selectedGroup, makeApiRequest, username]);
+
     const handleReportTypeChange = async (e) => {
         const newReportType = e.target.value;
-        setReportType(newReportType);
-        setSelectedGroup(null);
-        setSelectedConnection(null);
-        setSelectedFolder(null);
-
-        if (newReportType === 'group') {
-            setConnections([]);
-        } else {
-            await fetchConnections(); 
+        updateReportFormData({ reportType: e.target.value });
+        updateReportFormData({
+            selectedGroup: null,
+            selectedConnection: null,
+            selectedFolder: null,
+        });
+        if (newReportType === 'personal') {
+            await fetchConnections(userID, 'User');
         }
     };
 
-    const handleConnectionSelection = (e) => {
-        setSelectedConnection(e.target.value);
+    const handleChange = (fieldName, value) => {
+        updateReportFormData({ [fieldName]: value });
+    };
+
+    const validateForm = () => {
+        let missingFields = [];
+
+        if (!reportFormData.reportName.trim()) missingFields.push("Report Name");
+        if (!reportFormData.selectedConnection) missingFields.push("Connection");
+        if (!reportFormData.selectedFolder) missingFields.push("Folder");
+        if (reportFormData.reportType === 'group' && !reportFormData.selectedGroup) missingFields.push("Group");
+
+        if (missingFields.length > 0) {
+            const fieldsList = missingFields.join(", ");
+            setMessage(`Missing required fields: ${fieldsList}.`);
+            setMessageSuccess(false);
+            return false;
+        }
+
+        return true;
     };
 
     const handleSubmit = () => {
-        // TODO: report form step 1
+        if (!validateForm()) {
+            return;
+        }
+        // Proceed with navigation if validation passes
         navigate('/reportdesigner');
     };
 
@@ -99,18 +129,18 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                     <label>Name of Report:</label><br />
                     <input
                         type="text"
-                        value={reportName}
-                        onChange={e => setReportName(e.target.value)}
+                        value={reportFormData.reportName}
+                        onChange={(e) => handleChange('reportName', e.target.value)}
                         className="input-style-medium"
                     />
                 </div>
 
                 {/* Report Description */}
                 <div className="form-element">
-                    <label>Description:</label><br />
+                    <label>Description (Optional):</label><br />
                     <textarea
-                        value={reportDescription}
-                        onChange={e => setReportDescription(e.target.value)}
+                        value={reportFormData.reportDescription}
+                        onChange={(e) => handleChange('reportDescription', e.target.value)}
                         className="input-style-long"
                     />
                 </div>
@@ -123,7 +153,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                         <div style={{ width: '300px' }}> {/* Static width set here */}
                             <label>Report Type:</label>
                             <select
-                                value={reportType}
+                                value={reportFormData.reportType}
                                 onChange={handleReportTypeChange}
                                 className="input-style-default standard-select">
                                 <option value="personal">Personal</option>
@@ -132,22 +162,19 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                         </div>
 
                         {/* Group Selection */}
-                        {reportType === 'group' && (
+                        {reportFormData.reportType === 'group' && (
                             <div style={{ flex: 1 }}>
                                 <label>Group:</label>
                                 <select
-                                    value={selectedGroup}
+                                    value={reportFormData.selectedGroup || ''}
                                     onChange={async (e) => {
                                         const newSelectedGroup = e.target.value;
-                                        setSelectedGroup(newSelectedGroup);
-                                        if (reportType === 'group' && newSelectedGroup) {
+                                        handleChange('selectedGroup', newSelectedGroup);
+                                        if (newSelectedGroup) {
                                             await fetchConnections(newSelectedGroup, 'Group');
                                         } else {
-                                            if (reportType === 'personal') {
-                                                await fetchConnections(userID, 'User');
-                                            } else {
-                                                setConnections([]);
-                                            }
+                                            handleChange('connections', []);
+                                            handleChange('folders', []);
                                         }
                                     }}
                                     className="input-style-default standard-select">
@@ -166,12 +193,12 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                 <br/>
                 {/* Connection Selection */}
                 <div className="form-element">
-                    <label>Connection:</label><br/>
+                    <label>Connection:</label><br />
                     <select
-                        value={selectedConnection}
-                        onChange={handleConnectionSelection}
+                        value={reportFormData.selectedConnection || ''}
+                        onChange={(e) => handleChange('selectedConnection', e.target.value)}
                         className="input-style-medium">
-                        <option value={null}>--Select a connection--</option>
+                        <option value="">--Select a connection--</option>
                         {connections.map(connection => (
                             <option key={connection.id} value={connection.id}>{`(${connection.dbType}): ${connection.serverName}`}</option>
                         ))}
@@ -182,17 +209,19 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                 <div className="form-element">
                     <label>Store Report In:</label><br />
                     <select
-                        value={selectedFolder}
-                        onChange={e => setSelectedFolder(e.target.value)}
+                        value={reportFormData.selectedFolder || ''}
+                        onChange={(e) => handleChange('selectedFolder', e.target.value)}
                         className="input-style-default">
-                        <option value={null}>--Select a folder--</option>
+                        <option value="">--Select a folder--</option>
                         {folders.map(folder => (
                             <option key={folder.id} value={folder.id}>{folder.folderName}</option>
                         ))}
                     </select>
                 </div>
+                {message && <MessageDisplay message={message} isSuccess={messageSuccess} />}
                 <br/>
-                <button onClick={handleSubmit} className="btn-three btn-restrict">Proceed to Designer</button><br />
+                <button onClick={handleSubmit} className="btn-three btn-restrict">Proceed to Designer</button>
+                <br />
             </section>
         </div>
     );

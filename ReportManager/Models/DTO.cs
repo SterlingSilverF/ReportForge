@@ -98,4 +98,23 @@
             this.DatabaseName = model.DatabaseName;
         }
     }
+
+    public class SimpleServerConnectionDTO
+    {
+        public string Id { get; set; }
+        public string ServerName { get; set; }
+        public string OwnerName { get; set; }
+        public string OwnerType { get; set; }
+        public string DbType { get; set; }
+    }
+
+    public class SimpleDBConnectionDTO
+    {
+        public string Id { get; set; }
+        public string DatabaseName { get; set; }
+        public string FriendlyName { get; set; }
+        public string OwnerName { get; set; }
+        public string OwnerType { get; set; }
+        public string DbType { get; set; }
+    }
 }

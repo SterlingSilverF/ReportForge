@@ -65,7 +65,7 @@ namespace ReportManager.API
 
                 if (!request.ParentId.IsNullOrEmpty())
                 {
-                   ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
+                    ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
                     folder.ParentId = parentId;
                     FolderModel parent = _folderManagementService.GetFolderById(parentId);
                     folder.FolderPath = parent.FolderPath + request.FolderName + "/";

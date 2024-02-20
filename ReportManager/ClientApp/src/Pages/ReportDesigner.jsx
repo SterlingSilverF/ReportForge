@@ -4,7 +4,7 @@ import DBConnectionModel from '../models/databaseconnectionmodel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong } from '@fortawesome/free-solid-svg-icons';
 
-const ReportDesigner = () => {
+const ReportDesigner = (makeApiRequest, navigate) => {
     const [lines, setLines] = useState(null);
     const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'error'
     const [tables, setTables] = useState([]);

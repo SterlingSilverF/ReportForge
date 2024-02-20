@@ -68,6 +68,20 @@ public class ConnectionService
         return connectionModel.Id;
     }
 
+    public async Task<ServerConnectionModel?> FindServerConnection(string serverName, int port, string dbType, ObjectId ownerID, OwnerType ownerType)
+    {
+        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        var collection = _database.GetCollection<ServerConnectionModel>(collectionName);
+
+        var filter = Builders<ServerConnectionModel>.Filter.Eq(conn => conn.ServerName, serverName) &
+                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.Port, port) &
+                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.DbType, dbType) &
+                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.OwnerID, ownerID) &
+                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.OwnerType, ownerType);
+
+        return await collection.Find(filter).FirstOrDefaultAsync();
+    }
+
     public static string BuildConnectionString(DBConnectionModel dbConnection)
     {
         switch (dbConnection.DbType)
@@ -332,7 +346,7 @@ public class ConnectionService
         return connections;
     }
 
-    public List<object> FetchConnectionsForOwner(string ownerId, string ownerTypeString, string connectionType)
+    public List<object> FetchConnectionsForOwner(string ownerId, string ownerTypeString, string connectionType, string ownerName = null)
     {
         var connections = new List<object>();
         if (!Enum.TryParse(ownerTypeString, true, out OwnerType ownerType))
@@ -340,19 +354,49 @@ public class ConnectionService
             throw new ArgumentException($"Invalid owner type: {ownerTypeString}");
         }
 
+        bool useSimpleDTO = !string.IsNullOrEmpty(ownerName);
         if (connectionType == "server" || connectionType == "both")
         {
             var serverConnections = GetServerConnections(ownerId, ownerType);
-            connections.AddRange(serverConnections.Select(model => new ServerConnectionDTO(model)));
+            if (useSimpleDTO)
+            {
+                connections.AddRange(serverConnections.Select(model => new SimpleServerConnectionDTO
+                {
+                    Id = model.Id.ToString(),
+                    ServerName = model.ServerName,
+                    OwnerName = ownerName,
+                    OwnerType = ownerType.ToString(),
+                    DbType = model.DbType
+                }));
+            }
+            else
+            {
+                connections.AddRange(serverConnections.Select(model => new ServerConnectionDTO(model)));
+            }
         }
-
         if (connectionType == "database" || connectionType == "both")
         {
             var dbConnections = GetDBConnections(ownerId, ownerType);
-            connections.AddRange(dbConnections.Select(model => new DBConnectionDTO(model)));
+            if (useSimpleDTO)
+            {
+                connections.AddRange(dbConnections.Select(model => new SimpleDBConnectionDTO
+                {
+                    Id = model.Id.ToString(),
+                    DatabaseName = model.DatabaseName,
+                    FriendlyName = model.FriendlyName,
+                    OwnerName = ownerName,
+                    OwnerType = ownerType.ToString(),
+                    DbType = model.DbType
+                }));
+            }
+            else
+            {
+                connections.AddRange(dbConnections.Select(model => new DBConnectionDTO(model)));
+            }
         }
         return connections;
     }
+
 
     public List<ServerConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
     {
@@ -442,131 +486,4 @@ public class ConnectionService
         var result = collection.ReplaceOne(x => x.Id == updatedDB.Id, updatedDB);
         return result.IsAcknowledged && result.ModifiedCount > 0;
     }
-
-    // Report Utility Functions
-    /*public List<string> GetAllTables(string databaseType, string databaseName)
-    {
-        switch (databaseType.ToLower())
-        {
-            case "mssql":
-                return GetAllTablesMsSql(databaseName);
-            case "oracle":
-                return GetAllTablesOracle(databaseName);
-            case "mysql":
-                return GetAllTablesMySql(databaseName);
-            case "postgresql":
-                return GetAllTablesNpgsql(databaseName);
-            case "db2":
-                return GetAllTablesDb2(databaseName);
-            case "mongodb":
-                return GetAllTablesMongoDB(databaseName);
-            default:
-                throw new NotSupportedException($"{databaseType} is not supported.");
-        }
-    }
-
-    private List<string> GetAllTablesMsSql(string databaseName)
-    {
-        var tables = new List<string>();
-        using (var connection = new SqlConnection(_databaseSettings.Value.MsSqlConnectionString))
-        {
-            connection.Open();
-            var command = new SqlCommand("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'", connection);
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-            }
-        }
-        return tables;
-    }
-
-    private List<string> GetAllTablesOracle(string databaseName)
-    {
-        var tables = new List<string>();
-        using (var connection = new OracleConnection(_databaseSettings.Value.OracleConnectionString))
-        {
-            connection.Open();
-            var command = new OracleCommand("SELECT TABLE_NAME FROM USER_TABLES", connection);
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-            }
-        }
-        return tables;
-    }
-
-    private List<string> GetAllTablesMySql(string databaseName)
-    {
-        var tables = new List<string>();
-        using (var connection = new MySqlConnection(_databaseSettings.Value.MySqlConnectionString))
-        {
-            connection.Open();
-            var command = new MySqlCommand("SHOW TABLES", connection);
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-            }
-        }
-        return tables;
-    }
-
-    private List<string> GetAllTablesNpgsql(string databaseName)
-    {
-        var tables = new List<string>();
-        using (var connection = new NpgsqlConnection(_databaseSettings.Value.NpgsqlConnectionString))
-        {
-            connection.Open();
-            var command = new NpgsqlCommand("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", connection);
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-            }
-        }
-        return tables;
-    }
-
-    private List<string> GetAllTablesDb2(string databaseName)
-    {
-        var tables = new List<string>();
-        using (var connection = new DB2Connection(_databaseSettings.Value.Db2ConnectionString))
-        {
-            connection.Open();
-            var command = new DB2Command("SELECT NAME FROM SYSIBM.SYSTABLES WHERE TYPE = 'T'", connection);
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-            }
-        }
-        return tables;
-    }
-
-    private List<string> GetAllTablesMongoDB(string connectionString)
-    {
-        var tables = new List<string>();
-        var client = new MongoClient(connectionString);
-        var database = client.GetDatabase(databaseName);
-
-        foreach (var collection in database.ListCollections().ToList())
-        {
-            tables.Add(collection["name"].AsString);
-        }
-
-        return tables;
-    }
-    */
 }

@@ -40,12 +40,25 @@ namespace ReportManager.API
             public bool UseTLS { get; set; }
         }
 
+        public class DuplicateConnectionRequest
+        {
+            [Required]
+            public string Id { get; set; }
+            [Required]
+            public string OwnerID { get; set; }
+            [Required]
+            public string OwnerType { get; set; }
+            [Required]
+            public string OldOwnerType { get; set; }
+        }
+
         public class DBConnectionRequest
         {
             [Required]
-            public string ServerID { get; set; }
+            public string Id { get; set; }
             public string CollectionCategory { get; set; }
             public string FriendlyName { get; set; }
+            public string? Schema {  get; set; }
             [Required]
             public string DatabaseName { get; set; }
         }
@@ -124,19 +137,63 @@ namespace ReportManager.API
         {
             var allConnections = new List<object>();
             var userGroups = _groupManagementService.GetGroupsByUser(username);
-            allConnections.AddRange(_connectionService.FetchConnectionsForOwner(userId, "User", "server"));
+            var userConnections = _connectionService.FetchConnectionsForOwner(userId, "User", "server", username)
+                                   .ToList();
+
+            allConnections.AddRange(userConnections);
             foreach (var group in userGroups)
             {
-                allConnections.AddRange(_connectionService.FetchConnectionsForOwner(group.Id.ToString(), "Group", "server"));
+                var groupName = _groupManagementService.GetGroup(group.Id)?.GroupName;
+                var groupConnections = _connectionService.FetchConnectionsForOwner(group.Id.ToString(), "Group", "server", groupName)
+                                       .ToList();
+                allConnections.AddRange(groupConnections);
             }
 
             return Ok(allConnections);
         }
 
+        [HttpPost("DuplicateServerConnection")]
+        public async Task<IActionResult> DuplicateServerConnection(DuplicateConnectionRequest data)
+        {
+            OwnerType _ownertype = (OwnerType)Enum.Parse(typeof(OwnerType), data.OldOwnerType);
+            ServerConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
+            if (serverConnection == null) return BadRequest("Server does not exist.");
+            ServerConnectionModel _serverConnection = new ServerConnectionModel()
+            {
+                ServerName = serverConnection.ServerName,
+                Port = serverConnection.Port,
+                Instance = serverConnection.Instance,
+                DbType = serverConnection.DbType,
+                Username = serverConnection.Username,
+                Password = serverConnection.Password,
+                AuthType = serverConnection.AuthType,
+                OwnerID = _sharedService.StringToObjectId(data.OwnerID),
+                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType),
+                AuthSource = serverConnection.AuthSource,
+                ReplicaSet = serverConnection.ReplicaSet,
+                UseTLS = serverConnection.UseTLS
+            };
+            ObjectId? newId = await _connectionService.AddServerConnection(_serverConnection, true);
+            if (newId == null) return BadRequest("Failed to add server connection.");
+            return Ok(newId.ToString());
+        }
+
         [HttpPost("AddServerConnection")]
         public async Task<IActionResult> AddServerConnection(ConnectionRequest data)
         {
-            // TODO: Duplicate check
+            var existingConnection = await _connectionService.FindServerConnection(
+                data.ServerName,
+                data.Port,
+                data.DbType,
+                _sharedService.StringToObjectId(data.OwnerID),
+                (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType)
+            );
+
+            if (existingConnection != null)
+            {
+                return Ok(new { Id = existingConnection.Id.ToString(), Message = "Existing server connection." });
+            }
+
             ServerConnectionModel newServer = new ServerConnectionModel()
             {
                 ServerName = data.ServerName,
@@ -152,8 +209,13 @@ namespace ReportManager.API
                 ReplicaSet = data.ReplicaSet,
                 UseTLS = data.UseTLS
             };
+
             ObjectId? newId = await _connectionService.AddServerConnection(newServer, true);
-            if (newId == null) return BadRequest("Failed to add server connection.");
+            if (newId == null)
+            {
+                return BadRequest("Failed to add server connection.");
+            }
+
             return Ok(newId.ToString());
         }
 
@@ -161,7 +223,7 @@ namespace ReportManager.API
         public async Task<IActionResult> AddDBConnection(DBConnectionRequest data)
         {
             OwnerType _ownertype = (OwnerType)Enum.Parse(typeof(OwnerType), data.CollectionCategory);
-            ServerConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.ServerID), _ownertype);
+            ServerConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
             if (serverConnection == null) return BadRequest("Server does not exist.");
 
             // TODO: Duplicate check
@@ -180,7 +242,8 @@ namespace ReportManager.API
                 ReplicaSet = serverConnection.ReplicaSet,
                 UseTLS = serverConnection.UseTLS,
                 DatabaseName = data.DatabaseName,
-                FriendlyName = data.FriendlyName
+                FriendlyName = data.FriendlyName,
+                Schema = data.Schema
             };
 
             (bool success, string message) = _connectionService.PreviewConnection(newDB);

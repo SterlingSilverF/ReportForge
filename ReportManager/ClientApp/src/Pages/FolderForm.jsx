@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
-import HOC from '../components/HOC'; // Import the HOC
+import HOC from '../components/HOC';
 
-const FolderForm = ({ navigate, username, makeApiRequest }) => { // Use props from HOC
+const FolderForm = ({ navigate, username, makeApiRequest }) => {
     const [folderName, setFolderName] = useState('');
     const [parentId, setParentId] = useState('');
     const [groupId, setGroupId] = useState(null);
@@ -24,6 +24,17 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => { // Use props fr
     const resetForm = () => {
         window.location.reload();
     };
+
+    const validateFolderForm = () => {
+        let missingFields = [];
+
+        if (!folderName.trim()) missingFields.push("Folder Name");
+        if (folderType === 'group' && !groupId) missingFields.push("Group");
+        if (folderType === 'group' && !parentId) missingFields.push("Parent Folder");
+
+        return missingFields;
+    };
+
 
     useEffect(() => {
         if (username) {
@@ -58,24 +69,29 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => { // Use props fr
     }, [folderType, groupId, makeApiRequest]);
 
     const handleCreateFolder = () => {
-        if (!folderName || !username) {
-            setMessage('All required fields must be filled.');
+        const missingFields = validateFolderForm();
+
+        // If there are missing fields, construct and display an error message
+        if (missingFields.length > 0) {
+            const fieldsList = missingFields.join(", ");
+            setMessage(`Please fill out the following required fields: ${fieldsList}.`);
+            setSuccess(false);
             return;
         }
 
-        const isGroupFolder = folderType === 'group';
-        const groupIdValue = isGroupFolder ? groupId : '';
-
-        makeApiRequest('post', '/api/folder/createFolder', {
+        const data = {
             FolderName: folderName,
             Username: username,
-            GroupId: groupIdValue,
-            IsGroupFolder: isGroupFolder
-        })
-            .then(response => {
+            GroupId: folderType === 'group' ? groupId : '',
+            ParentId: folderType === 'group' ? parentId : '',
+            IsGroupFolder: folderType === 'group'
+        };
+
+        makeApiRequest('post', '/api/folder/createFolder', data)
+            .then(() => {
                 handleSuccess();
             })
-            .catch(error => {
+            .catch((error) => {
                 handleError(error);
             });
     };

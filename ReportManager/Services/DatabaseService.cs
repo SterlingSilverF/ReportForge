@@ -8,42 +8,86 @@ using Npgsql;
 using IBM.Data.DB2.Core;
 using System.Linq;
 using MongoDB.Bson;
+using ReportManager.Services;
+using ReportManager.Models;
 
-public class ReportService
+public class DatabaseService
 {
     private readonly IMongoDatabase _database;
+    private readonly ConnectionService _connectionService;
+    private readonly SharedService _sharedService;
+    private DBConnectionModel _dbConnection;
+    private string _connectionString;
 
-    public ReportService(string mongoConnectionString, string mongoDbName)
+    public DatabaseService(ConnectionService connectionService, SharedService sharedService)
     {
-        var client = new MongoClient(mongoConnectionString);
-        _database = client.GetDatabase(mongoDbName);
+        _connectionService = connectionService;
+        _sharedService = sharedService;
     }
 
-    public List<string> GetAllTables(string databaseType, string databaseName)
+    public void SetDBConnection(string dbConnectionId, string ownerType)
     {
-        switch (databaseType.ToLower())
+        ObjectId objDbConnectionId = _sharedService.StringToObjectId(dbConnectionId);
+        OwnerType _ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), ownerType);
+        _dbConnection = _connectionService.GetDBConnectionById(objDbConnectionId, _ownerType);
+        if (_dbConnection == null)
+        {
+            throw new InvalidOperationException("DB connection not found.");
+        }
+        _connectionString = ConnectionService.BuildConnectionString(_dbConnection);
+    }
+
+
+    public List<string> GetAllTables()
+    {
+        if (string.IsNullOrEmpty(_connectionString))
+        {
+            throw new InvalidOperationException("Connection string is not set.");
+        }
+        string databaseName = _dbConnection.DatabaseName;
+        switch (_dbConnection.DbType.ToLower())
         {
             case "mssql":
-                return GetAllTablesMsSql(databaseName);
+                return GetAllTablesMsSql(_connectionString);
             case "oracle":
-                return GetAllTablesOracle(databaseName);
+                return GetAllTablesOracle(_connectionString);
             case "mysql":
-                return GetAllTablesMySql(databaseName);
+                return GetAllTablesMySql(_connectionString);
             case "postgresql":
-                return GetAllTablesNpgsql(databaseName);
+                return GetAllTablesNpgsql(_connectionString);
             case "db2":
-                return GetAllTablesDb2(databaseName);
+                return GetAllTablesDb2(_connectionString);
             case "mongodb":
-                return GetAllTablesMongoDB(databaseName);
+                return GetAllTablesMongoDB(_connectionString);
             default:
-                throw new NotSupportedException($"{databaseType} is not supported.");
+                throw new NotSupportedException($"{_dbConnection.DbType} is not supported.");
         }
     }
 
-    private List<string> GetAllTablesMsSql(string databaseName)
+    public List<string> GetAllColumns(string tableName)
+    {
+        switch (_dbConnection.DbType.ToLower())
+        {
+            case "mssql":
+                return GetAllColumnsMsSql(_connectionString, tableName);
+            case "oracle":
+                return GetAllColumnsOracle(_connectionString, tableName);
+            case "mysql":
+                return GetAllColumnsMySql(_connectionString, tableName);
+            case "postgresql":
+                return GetAllColumnsNpgsql(_connectionString, tableName);
+            case "db2":
+                return GetAllColumnsDb2(_connectionString, tableName, _dbConnection.Schema);
+            case "mongodb":
+                return GetAllColumnsMongoDB(_connectionString, tableName);
+            default:
+                throw new NotSupportedException($"{_dbConnection.DbType} is not supported.");
+        }
+    }
+
+    private List<string> GetAllTablesMsSql(string connectionString)
     {
         var tables = new List<string>();
-        var connectionString = ""; // Set your MSSQL connection string here
         using (var connection = new SqlConnection(connectionString))
         {
             connection.Open();
@@ -59,10 +103,9 @@ public class ReportService
         return tables;
     }
 
-    private List<string> GetAllTablesOracle(string databaseName)
+    private List<string> GetAllTablesOracle(string connectionString)
     {
         var tables = new List<string>();
-        var connectionString = ""; // Set your Oracle connection string here
         using (var connection = new OracleConnection(connectionString))
         {
             connection.Open();
@@ -78,10 +121,9 @@ public class ReportService
         return tables;
     }
 
-    private List<string> GetAllTablesMySql(string databaseName)
+    private List<string> GetAllTablesMySql(string connectionString)
     {
         var tables = new List<string>();
-        var connectionString = ""; // Set your MySQL connection string here
         using (var connection = new MySqlConnection(connectionString))
         {
             connection.Open();
@@ -97,10 +139,9 @@ public class ReportService
         return tables;
     }
 
-    private List<string> GetAllTablesNpgsql(string databaseName)
+    private List<string> GetAllTablesNpgsql(string connectionString)
     {
         var tables = new List<string>();
-        var connectionString = ""; // Set your PostgreSQL connection string here
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
@@ -116,10 +157,9 @@ public class ReportService
         return tables;
     }
 
-    private List<string> GetAllTablesDb2(string databaseName)
+    private List<string> GetAllTablesDb2(string connectionString)
     {
         var tables = new List<string>();
-        var connectionString = ""; // Set your DB2 connection string here
         using (var connection = new DB2Connection(connectionString))
         {
             connection.Open();
@@ -135,10 +175,13 @@ public class ReportService
         return tables;
     }
 
-    private List<string> GetAllTablesMongoDB(string databaseName)
+    private List<string> GetAllTablesMongoDB(string connectionString)
     {
+        var mongoUrl = new MongoUrl(connectionString);
+        var databaseName = mongoUrl.DatabaseName;
+
         var tables = new List<string>();
-        var client = new MongoClient(); // Use the MongoClient instance already created if applicable
+        var client = new MongoClient(connectionString);
         var database = client.GetDatabase(databaseName);
 
         foreach (var collection in database.ListCollectionsAsync().Result.ToListAsync().Result)
@@ -147,5 +190,126 @@ public class ReportService
         }
 
         return tables;
+    }
+
+    private List<string> GetAllColumnsMsSql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            var query = $"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tableName}'";
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private List<string> GetAllColumnsOracle(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new OracleConnection(connectionString))
+        {
+            connection.Open();
+            var query = $"SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME = '{tableName.ToUpper()}'";
+            using (var command = new OracleCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private List<string> GetAllColumnsMySql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new MySqlConnection(connectionString))
+        {
+            connection.Open();
+            var query = $"SHOW COLUMNS FROM `{tableName}`";
+            using (var command = new MySqlCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private List<string> GetAllColumnsNpgsql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            var query = $"SELECT column_name FROM information_schema.columns WHERE table_name = '{tableName}'";
+            using (var command = new NpgsqlCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    public List<string> GetAllColumnsDb2(string connectionString, string tableName, string schemaName)
+    {
+        var columns = new List<string>();
+        using (var connection = new DB2Connection(connectionString))
+        {
+            connection.Open();
+            var query = $"SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME = '{tableName.ToUpper()}' AND TABSCHEMA = '{schemaName.ToUpper()}' ORDER BY COLNO";
+
+            using (var command = new DB2Command(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private List<string> GetAllColumnsMongoDB(string connectionString, string collectionName)
+    {
+        var mongoUrl = new MongoUrl(connectionString);
+        var databaseName = mongoUrl.DatabaseName;
+
+        var client = new MongoClient(connectionString);
+        var database = client.GetDatabase(databaseName);
+        var collection = database.GetCollection<BsonDocument>(collectionName);
+        var document = collection.Find(new BsonDocument()).FirstOrDefault();
+        if (document == null) return new List<string>();
+
+        var columns = document.Elements.Select(element => element.Name).ToList();
+        return columns;
     }
 }

@@ -191,7 +191,7 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                         canFilter
                     />
                 </section>
-                <br/><br/>
+                <br/>
                 <button onClick={handleCreateGroup} className="btn-three">{buttonText}</button><br />
                 <label className="result-label"></label>
                 <p className="success-message">{message}</p>
