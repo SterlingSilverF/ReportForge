@@ -1,11 +1,9 @@
 ﻿import React, { createContext, useContext, useState } from 'react';
-
 const ReportFormContext = createContext();
-
 export const useReportForm = () => useContext(ReportFormContext);
 
 export const ReportFormProvider = ({ children }) => {
-    const [reportFormData, setReportFormData] = useState({
+    const [reportFormContext, setReportFormData] = useState({
         reportName: '',
         reportDescription: '',
         reportType: 'personal',
@@ -24,7 +22,7 @@ export const ReportFormProvider = ({ children }) => {
     };
 
     return (
-        <ReportFormContext.Provider value={{ reportFormData, updateReportFormData }}>
+        <ReportFormContext.Provider value={{ reportFormContext, updateReportFormData }}>
             {children}
         </ReportFormContext.Provider>
     );

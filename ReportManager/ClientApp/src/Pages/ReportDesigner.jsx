@@ -3,16 +3,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import HOC from '../components/HOC';
 import { useReportForm } from '../contexts/ReportFormContext';
+import DynamicInputs from '../components/dynamicinputs';
+import LoadingComponent from '../components/loading';
 
 const ReportDesigner = ({ makeApiRequest, navigate }) => {
-    const { reportFormData, updateReportFormData } = useReportForm();
+    const { reportFormContext, updateReportFormData } = useReportForm();
 
-    const [lines, setLines] = useState(null);
     const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'error'
     const [tables, setTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
 
     // Joins
+    const [joinsInfo, setJoinsInfo] = useState([]);
     const [selectedTableOne, setSelectedTableOne] = useState('');
     const [selectedTableTwo, setSelectedTableTwo] = useState('');
     const [columnsTableOne, setColumnsTableOne] = useState([]);
@@ -20,20 +22,12 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const [selectedJoinColumnOne, setSelectedJoinColumnOne] = useState('');
     const [selectedJoinColumnTwo, setSelectedJoinColumnTwo] = useState('');
 
-    // Filters + Order By
-    const [selectedFilterTable, setSelectedFilterTable] = useState('');
-    const [filterTableColumns, setFilterTableColumns] = useState([]);
-    const [selectedOrderByTable, setSelectedOrderByTable] = useState('');
-    const [orderByColumns, setOrderByColumns] = useState([]);
-    const [filters, setFilters] = useState([]);
-    const [orderBys, setOrderBys] = useState([]);
-
     // On load
     useEffect(() => {
         const loadDesignerPageData = async () => {
-            if (reportFormData.selectedConnection && reportFormData.reportType && reportFormData.dbType) {
+            if (reportFormContext.selectedConnection && reportFormContext.reportType && reportFormContext.dbType) {
                 try {
-                    var url = `/api/database/LoadDesignerPage?connectionId=${reportFormData.selectedConnection}&dbType=${reportFormData.dbType}&ownerType=${reportFormData.reportType}`
+                    var url = `/api/database/LoadDesignerPage?connectionId=${reportFormContext.selectedConnection}&dbType=${reportFormContext.dbType}&ownerType=${reportFormContext.reportType}`
                     const response = await makeApiRequest('post', url);
                     setTables(response.data);
                     setStatus('ready');
@@ -46,13 +40,42 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         };
 
         loadDesignerPageData();
-    }, [reportFormData.selectedConnection, reportFormData.reportType, reportFormData.dbType]);
+    }, [reportFormContext.selectedConnection, reportFormContext.reportType, reportFormContext.dbType]);
 
-    // For "Available Tables" section & dropdown selected in "Join" section
+    // When a table is selected from "Available Tables"
+    const handleTableSelect = async (tableName) => {
+        const isSelected = reportFormContext.selectedTables.includes(tableName);
+        let newSelectedTables;
+        if (isSelected) {
+            newSelectedTables = reportFormContext.selectedTables.filter(t => t !== tableName);
+        } else {
+            newSelectedTables = [...reportFormContext.selectedTables, tableName];
+            const columns = await fetchTableColumns(tableName, true);
+            setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
+        }
+        updateReportFormData({ ...reportFormContext, selectedTables: newSelectedTables });
+    };
+
+    // When a column is selected from "Availible Tables"
+    const handleColumnSelection = (tableName, columnName, isSelected) => {
+        const columnDetails = tableColumns[tableName].find(col => col.columnName === columnName);
+        let updatedSelectedColumns;
+        if (isSelected) {
+            updatedSelectedColumns = [...reportFormContext.selectedColumns, { table: tableName, ...columnDetails }];
+        } else {
+            updatedSelectedColumns = reportFormContext.selectedColumns.filter(col => !(col.table === tableName && col.columnName === columnName));
+        }
+
+        updateReportFormData({
+            ...reportFormContext,
+            selectedColumns: updatedSelectedColumns,
+        });
+    };
+
     const fetchTableColumns = async (tableName, withDataTypes = false) => {
-        const connectionId = reportFormData.selectedConnection;
-        const dbType = reportFormData.dbType;
-        const ownerType = reportFormData.reportType;
+        const connectionId = reportFormContext.selectedConnection;
+        const dbType = reportFormContext.dbType;
+        const ownerType = reportFormContext.reportType;
 
         const endpoint = withDataTypes
             ? `/api/database/GetAllColumnsWithDT?connectionId=${connectionId}&dbType=${dbType}&tableName=${tableName}${ownerType ? `&ownerType=${ownerType}` : ''}`
@@ -67,42 +90,12 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         }
     };
 
-    // When a table is selected from "Available Tables"
-    const handleTableSelect = async (tableName) => {
-        const isSelected = reportFormData.selectedTables.includes(tableName);
-        let newSelectedTables;
-        if (isSelected) {
-            newSelectedTables = reportFormData.selectedTables.filter(t => t !== tableName);
-        } else {
-            newSelectedTables = [...reportFormData.selectedTables, tableName];
-            const columns = await fetchTableColumns(tableName, true);
-            setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
-        }
-        updateReportFormData({ ...reportFormData, selectedTables: newSelectedTables });
-    };
-
-    // When a column is selected from "Availible Tables"
-    const handleColumnSelection = (tableName, columnName, isSelected) => {
-        const columnDetails = tableColumns[tableName].find(col => col.columnName === columnName);
-        let updatedSelectedColumns;
-        if (isSelected) {
-            updatedSelectedColumns = [...reportFormData.selectedColumns, { table: tableName, ...columnDetails }];
-        } else {
-            updatedSelectedColumns = reportFormData.selectedColumns.filter(col => !(col.table === tableName && col.columnName === columnName));
-        }
-
-        updateReportFormData({
-            ...reportFormData,
-            selectedColumns: updatedSelectedColumns,
-        });
-    };
-
     const renderTableColumns = () => {
-        return reportFormData.selectedTables.map((tableName) => (
+        return reportFormContext.selectedTables.map((tableName) => (
             <React.Fragment key={tableName}>
                 <li className="table-name">{tableName}</li>
                 {tableColumns[tableName]?.map((column) => {
-                    const isSelected = reportFormData.selectedColumns.some(sc => sc.table === tableName && sc.columnName === column.columnName);
+                    const isSelected = reportFormContext.selectedColumns.some(sc => sc.table === tableName && sc.columnName === column.columnName);
                     const columnClassName = `column-detail ${isSelected ? 'selected' : ''}`;
 
                     return (
@@ -142,58 +135,40 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         }
     };
 
-    // Filters + Order By Display Columns
-    async function handleTableSelectionChange(e, index, action) {
-        const tableName = e.target.value;
+    function getColumnDataType(columnName, tableName) {
+        // Fetch the datatype from the columns listbox or a metadata store
+        // Placeholder for actual implementation
+        return 'dataType';
+    };
 
-        if (action === 'filter') {
-            if (tableName) {
-                const columns = await fetchTableColumns(tableName);
-                // Update the state for selected filter table and its columns
-                setSelectedFilterTable(tableName);
-                setFilterTableColumns(columns);
-            } else {
-                // Reset the state if tableName is falsy
-                setSelectedFilterTable('');
-                setFilterTableColumns([]);
-            }
-        } else if (action === 'orderBy') {
-            if (tableName) {
-                // For orderBy, assuming you might want to fetch columns similarly
-                // If not required, simply set the selectedOrderByTable
-                const columns = await fetchTableColumns(tableName);
-                setSelectedOrderByTable(tableName);
-                setOrderByColumns(columns);
-            } else {
-                // Reset the state if tableName is false
-                setSelectedOrderByTable('');
-                setOrderByColumns([]);
-            }
-        }
+    // Checks if datatypes are compatible or if a conversion is possible
+    function checkDataTypeCompatibility(type1, type2) {
+        // Implement logic to check compatibility or conversion feasibility
+        // Return true if compatible or convertible, false otherwise
+        return true; // Placeholder return value
+    };
+
+    function handleJoinClick() {
+        const typeOne = getColumnDataType(selectedJoinColumnOne, selectedTableOne);
+        const typeTwo = getColumnDataType(selectedJoinColumnTwo, selectedTableTwo);
+        const isValidJoin = checkDataTypeCompatibility(typeOne, typeTwo);
+
+        const joinSelection = {
+            tableOne: {
+                name: selectedTableOne,
+                column: selectedJoinColumnOne,
+                dataType: typeOne
+            },
+            tableTwo: {
+                name: selectedTableTwo,
+                column: selectedJoinColumnTwo,
+                dataType: typeTwo
+            },
+            isValid: isValidJoin,
+        };
+
+        joinsInfo.push(joinSelection);
     }
-
-    const addFilter = () => {
-        const newFilter = { table: '', column: '', condition: '', value: '' };
-        setFilters([...filters, newFilter]);
-    };
-
-    const removeFilter = (index) => {
-        setFilters(filters.filter((_, i) => i !== index));
-    };
-
-    const addOrderBy = () => {
-        const newFilter = { table: '', column: '', condition: '', value: '' };
-        setOrderBys([...filters, newFilter]);
-    };
-
-    const removeOrderBy = (index) => {
-        setOrderBys(filters.filter((_, i) => i !== index));
-    };
-
-    const calculateGridArea = (index) => {
-        const rowStart = 2 + index * 3;
-        return `${rowStart} / 2 / ${rowStart + 1} / 6`;
-    };
 
     // Support function for submission
     const compileReportConfigurations = () => {
@@ -226,7 +201,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         const { filterConfig, orderByConfig } = compileReportConfigurations();
 
         try {
-            const response = await makeApiRequest('post', '/api/reports/buildAndVerifySql', reportFormData);
+            const response = await makeApiRequest('post', '/api/reports/buildAndVerifySql', reportFormContext);
             // Handle success, e.g., navigate to the preview page with the response data
             // Possibly using something like React Router for navigation
         } catch (error) {
@@ -250,6 +225,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 <br />
                 <h2>Select Tables</h2>
+                <LoadingComponent />
                 <div className="flex-grid">
                     <div>
                         <div style={{ flex: 1 }}>
@@ -258,7 +234,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                                     <label htmlFor="tables">Available Tables</label>
                                     <ul className="listbox" id="allTables">
                                         {tables?.map((table) => (
-                                            <li key={table} className={reportFormData.selectedTables.includes(table) ? 'selected' : ''}
+                                            <li key={table} className={reportFormContext.selectedTables.includes(table) ? 'selected' : ''}
                                                 onClick={() => handleTableSelect(table)}>{table}</li>
                                         ))}
                                     </ul>
@@ -288,7 +264,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         <div className="listbox-container">
                             <select id="tableSelectOne" value={selectedTableOne} onChange={handleTableOneJoinChange}>
                                 <option value="">--Select a Table--</option>
-                                {reportFormData.selectedTables.filter(table => table !== selectedTableTwo).map((table, index) => (
+                                {reportFormContext.selectedTables.filter(table => table !== selectedTableTwo).map((table, index) => (
                                     <option key={index} value={table}>{table}</option>
                                 ))}
                             </select>
@@ -313,7 +289,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         <div className="listbox-container">
                             <select id="tableSelectTwo" value={selectedTableTwo} onChange={handleTableTwoJoinChange}>
                                 <option value="">--Select a Table--</option>
-                                {reportFormData.selectedTables.filter(table => table !== selectedTableOne).map((table, index) => (
+                                {reportFormContext.selectedTables.filter(table => table !== selectedTableOne).map((table, index) => (
                                     <option key={index} value={table}>{table}</option>
                                 ))}
                             </select>
@@ -341,102 +317,39 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         <a href="/guides/table-joins">Read More</a>
                     </div>
                 </div>
-                <button type="button" className="report-designer-button" onClick="">Join</button>
+                <button type="button" className="report-designer-button" onClick={handleJoinClick}>Join</button>
                 <br />
                 <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gridGap: '20px', alignItems: 'start' }}>
                     <div style={{ gridColumn: '1 / 2' }}>
                         <h5>Joined Columns</h5>
-                        <b>Table1 -&gt; Table2</b>
-                        <ul><li>Column 1 = Column 2</li></ul>
-                        <b>Table2 -&gt; Table3</b>
-                        <ul><li>Column 1 = Column 2</li>
-                            <li>Column 3 = Column 4</li>
-                        </ul>
+                        {joinsInfo.map((join, index) => (
+                            <div key={index}>
+                                <b>{join.tableOne.name} -> {join.tableTwo.name}</b>
+                                <ul>
+                                    <li>{join.tableOne.column} = {join.tableTwo.column}</li>
+                                </ul>
+                            </div>
+                        ))}
                     </div>
 
                     <div style={{ gridColumn: '2 / 3' }}>
                         <h5>Join Valid</h5>
                         <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {reportFormData.selectedTables.map((table, index) => (
+                            {joinsInfo.map((join, index) => (
                                 <li key={index}>
-                                    {table} { /* Dynamically determine and render checkmark or X based on status */}
-                                    {Math.random() > 0.5 ? '✅' : '❌'}
+                                    {join.tableOne.name} & {join.tableTwo.name} {join.isValid ? '✅' : '❌'}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
                 <hr />
-                <div className="grid">
-                    <h4 style={{ gridArea: '1 / 1 / 2 / 6' }}>Filters and Conditions</h4>
-                    <div className="explanation-box" style={{ gridArea: '2 / 1 / 5 / 2' }}>
-                        <p>What kind of data do you want to include or exclude?</p>
-                        <a href="/guides/conditionals">Read More</a>
-                    </div>
-
-                    <label style={{ gridArea: '2 / 2 / 3 / 3' }}>Select Table</label>
-                    <select style={{ gridArea: '3 / 2 / 4 / 3' }} id="tableFilter1" onChange={(e) => handleTableSelectionChange(e, setFilterTableColumns, 'filter')}>
-                        <option value="">--Select a Table--</option>
-                        {reportFormData.selectedTables.map((table, index) => (
-                            <option key={index} value={table}>{table}</option>
-                        ))}
-                    </select>
-                    <button className="report-designer-button" style={{ gridArea: '4 / 2 / 5 / 3' }} onClick="">Add</button>
-
-                    <label style={{ gridArea: '2 / 3 / 3 / 4' }}>Select Column</label>
-                    <select style={{ gridArea: '3 / 3 / 4 / 4' }} id="columnFilter1">
-                        <option value="">--Select a Column--</option>
-                        {filterTableColumns.map((column, index) => (
-                            <option key={index} value={column}>{column}</option>
-                        ))}
-                    </select>
-
-                    <label style={{ gridArea: '2 / 4 / 3 / 5' }}>Condition</label>
-                    <select style={{ gridArea: '3 / 4 / 4 / 5' }} id="condition1">
-                        <option value="=">Equals</option>
-                        <option value="!=">Not Equal To</option>
-                        <option value=">">Greater Than</option>
-                        <option value=">=">Greater Than or Equal To</option>
-                        <option value="<">Less Than</option>
-                        <option value="<=">Less Than or Equal To</option>
-                        <option value="Between">Between</option>
-                        <option value="In">Contained in List</option>
-                    </select>
-                    <button className="report-designer-button" style={{ gridArea: '4 / 3 / 5 / 4' }} onClick="">Remove</button>
-
-                    <label style={{ gridArea: '2 / 5 / 3 / 6' }}>Value</label>
-                    <input type="text" style={{ gridArea: '3 / 5 / 4 / 6' }} className="input-style-short" id="filterValue1"></input>
-
-                    <div style={{ gridArea: '5 / 1 / 6 / 6', height: '40px' }}></div>
-
-                    <h4 style={{ gridArea: '6 / 1 / 7 / 6' }}>Order By</h4>
-                    <div className="explanation-box eb-mini" style={{ gridArea: '7 / 1 / 8 / 2' }}>
-                        <p>Display what kind of data first?</p>
-                    </div>
-                    <select style={{ gridArea: '7 / 2 / 8 / 3' }} id="orderbyTable1" onChange={(e) => handleTableSelectionChange(e, setOrderByColumns, 'orderBy')}>
-                        <option value="">--Select a Table--</option>
-                        {reportFormData.selectedTables.map((table, index) => (
-                            <option key={index} value={table}>{table}</option>
-                        ))};
-                    </select>
-                    <select style={{ gridArea: '7 / 3 / 8 / 4' }} id="orderbyColumn1">
-                        <option value="">--Select a Column--</option>
-                        {orderByColumns.map((column, index) => (
-                            <option key={index} value={column}>{column}</option>
-                        ))}
-                    </select>
-                    <select style={{ gridArea: '7 / 4 / 8 / 5' }} id="orderbyAscDesc1">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
-                    <button className="report-designer-button" style={{ gridArea: '8 / 2 / 9 / 3' }} onClick="">Add</button>
-                    <button className="report-designer-button" style={{ gridArea: '8 / 3 / 9 / 4' }} onClick="">Remove</button>
-                </div>
+                    <DynamicInputs fetchTableColumns={fetchTableColumns} />
                 <br /><br /><hr />
                 <button className="btn-three btn-restrict" onClick={submitReportConfig}>PREVIEW REPORT</button>
             </section>
             <br />
-        </div>
+            </div>
     );
 };
 

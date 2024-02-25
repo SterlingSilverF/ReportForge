@@ -17,20 +17,20 @@ const Settings = () => {
 
     return (
         <div id="app-admin">
-            <div className="header">
-                <h4 className="centered-content">App Settings</h4>
-                <nav class="main-nav">
-                    <ul class="unstyled list-hover-slide">
-                        <li className="selected-nav"><a href="/settings">Account</a></li>
-                        <li><a href="/appearance">Appearance</a></li>
-                        <li><a href="/usermanager">User Management</a></li>
-                        <li><a href="/groupmanager">Group Management</a></li>
-                        <li><a href="/metrics">Metrics</a></li>
-                    </ul>
+            <div class="layout-container">
+                <nav class="main-nav no-break">
+                <ul className="unstyled">
+                    <li className="selected-nav"><a href="/settings">Account</a></li>
+                        <li><a href="/settings">Appearance</a></li>
+                        <li><a href="/settings">User Management</a></li>
+                        <li><a href="/settings">Group Management</a></li>
+                        <li><a href="/settings">Metrics</a></li>
+                </ul>
                 </nav>
-            </div>
             <main className="box-style-1">
-                <h4>Basic Information</h4>
+                <h4 className="centered-content">App Settings</h4>
+                    <h4>Basic Information</h4>
+                <p>Settings are under construction and this section is preview only.</p>
                 <FontAwesomeIcon icon={faEdit} className="clickable rpf-black" />
                 <br /><br />
                 <h5>Username</h5>
@@ -53,6 +53,7 @@ const Settings = () => {
                 <br /><br /><br />
                 <button className="btn-five">Delete Account</button>
             </main>
+            </div>
         </div>
     );
 };

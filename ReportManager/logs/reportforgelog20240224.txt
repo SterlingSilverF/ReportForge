@@ -249,3 +249,6 @@ System.InvalidOperationException: The type 'System.Threading.ExecutionContext&' 
 2024-02-24 22:13:41.688 -06:00 [INF] Application Starting
 2024-02-24 22:13:41.866 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
 2024-02-24 22:13:42.014 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-24 23:47:35.280 -06:00 [INF] Application Starting
+2024-02-24 23:47:35.487 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-24 23:47:35.649 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.

@@ -73,27 +73,27 @@ const AppRoutes = [
     {
         path: '/settings',
         element: <Settings />,
-        includeNavbar: false
+        includeNavbar: true
     },
     {
         path: '/appearance',
         element: <Appearance />,
-        includeNavbar: false
+        includeNavbar: true
     },
     {
         path: '/usermanager',
         element: <UserManager />,
-        includeNavbar: false
+        includeNavbar: true
     },
     {
         path: '/groupmanager',
         element: <GroupManager />,
-        includeNavbar: false
+        includeNavbar: true
     },
     {
         path: '/metrics',
         element: <Metrics />,
-        includeNavbar: false
+        includeNavbar: true
     },
     {
         path: '/reports',

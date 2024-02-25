@@ -773,8 +773,17 @@ input[type="radio"] {
 }
 
 /* MAIN NAV */
+.layout-container {
+    display: flex;
+}
+
+.main-nav {
+    flex: 0 0 200px;
+}
+
 .main-nav ul {
     border-top: solid 1px var(--rpf-gold);
+    background-color: black;
 }
 
 .main-nav li {
@@ -782,23 +791,20 @@ input[type="radio"] {
 }
 
 .main-nav li:hover, .selected-nav {
-    background-color: var(--rpf-darkbrown);
+    background-color: var(--rpf-gold);
 }
 
 .main-nav a {
     padding: 1.1em 0;
-    color: var(--rpf-silver);
+    color: white;
     text-align: center;
     font-size: 15px;
     display: block;
 }
 
 .box-style-1 {
-    position: absolute;
-    top: 9.5%;
-    left: 14%;
+    flex: 1;
     border: 2.5px solid var(--rpf-brown);
-    border-radius: 10px;
     width: 70%;
     min-height: 30%;
     padding: 10px;
@@ -966,8 +972,10 @@ input[type="radio"] {
     }
 
 .report-designer-button {
-    min-width: 5%;
+    min-width: 40px;
     margin-top: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
     justify-self: start;
     background-color: var(--rpf-red);
     color: white;
@@ -1013,3 +1021,20 @@ input[type="radio"] {
     align-items: center;
     padding: 25px;
 }
+
+.stagger {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+    .stagger > div:nth-child(2) {
+        margin-right: 0px;
+    }
+
+    .stagger > div:nth-child(4) {
+        margin-right: 50px;
+    }
+
+    .stagger > div:last-child {
+        margin-right: 100px;
+    }

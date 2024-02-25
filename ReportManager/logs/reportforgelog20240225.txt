@@ -1,0 +1,18 @@
+2024-02-25 08:55:40.079 -06:00 [INF] Application Starting
+2024-02-25 08:55:43.878 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 08:55:45.033 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 09:25:58.847 -06:00 [INF] Application Starting
+2024-02-25 09:25:59.759 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 09:25:59.998 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 11:21:26.258 -06:00 [INF] Application Starting
+2024-02-25 11:21:27.581 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 11:21:27.853 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 11:34:29.128 -06:00 [INF] Application Starting
+2024-02-25 11:34:29.314 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 11:34:29.610 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 13:33:04.032 -06:00 [INF] Application Starting
+2024-02-25 13:33:04.336 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 13:33:04.546 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 13:56:51.203 -06:00 [INF] Application Starting
+2024-02-25 13:56:51.427 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-25 13:56:51.576 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
