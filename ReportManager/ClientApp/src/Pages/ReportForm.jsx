@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, createContext } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import HOC from '../components/HOC';
 import MessageDisplay from '../components/MessageDisplay';
 import { useReportForm } from '../contexts/ReportFormContext';
@@ -13,8 +13,8 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     const [messageSuccess, setMessageSuccess] = useState(true);
 
     const fetchConnections = async (ownerIdParam, ownerTypeParam) => {
-        const ownerId = ownerIdParam || (reportFormData.reportType === 'group' ? reportFormData.selectedGroup : userID);
-        const ownerType = ownerTypeParam || (reportFormData.reportType === 'group' ? 'Group' : 'User');
+        const ownerId = ownerIdParam || (reportFormData.reportType === 'Group' ? reportFormData.selectedGroup : userID);
+        const ownerType = ownerTypeParam || (reportFormData.reportType === 'Group' ? 'Group' : 'User');
         const apiEndpoint = `/api/connection/GetAllConnections?ownerId=${ownerId}&ownerTypeString=${ownerType}&connectionType=database`;
 
         try {
@@ -27,7 +27,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     };
 
     useEffect(() => {
-        if (reportFormData.reportType === 'group') {
+        if (reportFormData.reportType === 'Group') {
             const fetchUserGroups = async () => {
                 try {
                     const response = await makeApiRequest('get', `/api/group/getUserGroups?username=${username}`);
@@ -43,7 +43,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
 
     // Fetch personal connections on load for 'personal' report type
     useEffect(() => {
-        if (reportFormData.reportType === 'personal' && userID) {
+        if (reportFormData.reportType === 'Personal' && userID) {
             fetchConnections(userID, 'User');
         }
     }, [reportFormData.reportType, userID]);
@@ -52,7 +52,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     // Fetch folders based on report type and selected group
     useEffect(() => {
         const fetchFolders = async () => {
-            let folderApiEndpoint = reportFormData.reportType === 'group' && reportFormData.selectedGroup
+            let folderApiEndpoint = reportFormData.reportType === 'Group' && reportFormData.selectedGroup
                 ? `/api/folder/getFoldersByGroupId?groupId=${reportFormData.selectedGroup}`
                 : `/api/folder/getPersonalFolders?username=${username}`;
 
@@ -65,7 +65,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             }
         };
 
-        if ((reportFormData.reportType === 'personal' && username) || (reportFormData.reportType === 'group' && reportFormData.selectedGroup)) {
+        if ((reportFormData.reportType === 'Personal' && username) || (reportFormData.reportType === 'Group' && reportFormData.selectedGroup)) {
             fetchFolders();
         } else {
             setFolders([]);
@@ -80,7 +80,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             selectedConnection: null,
             selectedFolder: null,
         });
-        if (newReportType === 'personal') {
+        if (newReportType === 'Personal') {
             await fetchConnections(userID, 'User');
         }
     };
@@ -95,7 +95,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         if (!reportFormData.reportName.trim()) missingFields.push("Report Name");
         if (!reportFormData.selectedConnection) missingFields.push("Connection");
         if (!reportFormData.selectedFolder) missingFields.push("Folder");
-        if (reportFormData.reportType === 'group' && !reportFormData.selectedGroup) missingFields.push("Group");
+        if (reportFormData.reportType === 'Group' && !reportFormData.selectedGroup) missingFields.push("Group");
 
         if (missingFields.length > 0) {
             const fieldsList = missingFields.join(", ");
@@ -111,7 +111,14 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         if (!validateForm()) {
             return;
         }
-        // Proceed with navigation if validation passes
+
+        const selectedConnection = connections.find(connection => connection.id === reportFormData.selectedConnection);
+        if (!selectedConnection) {
+            console.error("Selected connection not found.");
+            return;
+        }
+        const _dbType = selectedConnection.dbType;
+        updateReportFormData({ dbType: _dbType });
         navigate('/reportdesigner');
     };
 
@@ -156,13 +163,13 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                                 value={reportFormData.reportType}
                                 onChange={handleReportTypeChange}
                                 className="input-style-default standard-select">
-                                <option value="personal">Personal</option>
-                                <option value="group">Group</option>
+                                <option value="Personal">Personal</option>
+                                <option value="Group">Group</option>
                             </select>
                         </div>
 
                         {/* Group Selection */}
-                        {reportFormData.reportType === 'group' && (
+                        {reportFormData.reportType === 'Group' && (
                             <div style={{ flex: 1 }}>
                                 <label>Group:</label>
                                 <select

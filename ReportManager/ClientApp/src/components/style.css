@@ -5,11 +5,13 @@
     --rpf-gold-gradient: linear-gradient(to top left, #b07821, #fff778);
     --rpf-gold: #f6ca5c;
     --rpf-brightgold: #fff778;
+    --rpf-yellow: #efd033;
     --rpf-red: #a10000;
     --rpf-silverblue: #8f99ba;
     --rpf-brown: #7a3e02;
     --rpf-coffee: #B57537;
     --rpf-brightblue: #0000FF;
+    --rpf-orange: #cc492c;
 }
 
 .rpf-silver {
@@ -22,6 +24,10 @@
 
 .rpf-red {
     color: var(--rpf-red);
+}
+
+.rpf-orange{
+    color: var(--rpf-orange);
 }
 
 .rpf-silver-bg {
@@ -50,7 +56,7 @@ body, html {
     margin: 0;
     margin: 0;
     font-family: 'Trebuchet MS', sans-serif;
-    background-color: var(--rpf-lightsilver);
+    background-color: var(--rpf-grey);
 }
 
 h1, h2, h3, h4, h5{
@@ -81,12 +87,12 @@ a:hover{
 
 .navbar-brand{
     font-style: normal;
+    font-size: 22px;
 }
 
 .icon{
-    padding-right: 10px;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
 }
 
 .tool-tip {
@@ -164,12 +170,13 @@ input, select {
 }
 
 .navbar-brand{
-    left: 12%;
+    right: 88.5%;
     position: absolute;
 }
 
 .navbar {
     background-color: black;
+    height: 65px;
 }
 
     .navbar a,
@@ -216,7 +223,7 @@ input, select {
 .form-header{
     text-align: center;
     padding-top: 10px;
-    color: white;
+    color: black;
 }
 
 .form-div {
@@ -430,6 +437,7 @@ input, select {
 .tooltipcon input:focus + .tooltiptext {
     visibility: visible;
     opacity: 1;
+    color: white;
 }
 
 .tooltipcon {
@@ -559,12 +567,11 @@ input, select {
 }
 
 .outer {
-    background-color: var(--rpf-red) !important;
+    background-color: var(--rpf-lightsilver) !important;
     margin-top: -10px !important;
     padding-top: 0;
     min-height: calc(100vh - 50px);
 }
-
 
 .multi-select {
     width: 100%;
@@ -759,7 +766,7 @@ input[type="radio"] {
     padding: 10px;
     position: fixed;
     left: 0;
-    top: 5.7%;
+    top: 6.9%;
     bottom: 0;
     width: 12%;
     background: var(--rpf-coffee);
@@ -851,9 +858,10 @@ input[type="radio"] {
     .report-form-header {
         text-align: center;
         padding-top: 10px;
+        color: white;
     }
         .report-form-header hr {
-            color: var(--rpf-darkred);
+            color: var(--rpf-coffee);
         }
 
 .browse-items {
@@ -881,6 +889,7 @@ input[type="radio"] {
     display: flex;
     flex-direction: column;
     margin-bottom: 5px;
+    width: 260px;
 }
 
     .listbox-container:last-child {
@@ -889,7 +898,7 @@ input[type="radio"] {
 
 .listbox {
     border: 2px solid black;
-    min-height: 250px;
+    height: 250px;
     list-style: none;
     padding: 5px;
     overflow-y: auto;
@@ -922,8 +931,6 @@ input[type="radio"] {
     grid-template-rows: auto auto auto auto;
     column-gap: 50px;
     align-items: start;
-    justify-items: start;
-    margin: 0 auto;
 }
 
 .flex-grid {
@@ -951,11 +958,11 @@ input[type="radio"] {
     }
 
     .eb-medium{
-        height: 240px;
+        height: 300px;
     }
 
     .eb-large{
-        height: 320px;
+        height: 350px;
     }
 
 .report-designer-button {
@@ -970,3 +977,39 @@ input[type="radio"] {
     .report-designer-button:hover{
         background-color: black;
     }
+
+/* Select Tables */
+.table-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.selected {
+    background-color: var(--rpf-yellow);
+}
+
+.listbox ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.column-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding: 5px 0;
+    border: none;
+    cursor: pointer;
+}
+
+    .column-detail span {
+        margin-left: 20px;
+    }
+
+.radio-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 25px;
+}

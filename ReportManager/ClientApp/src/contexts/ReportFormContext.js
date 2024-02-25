@@ -11,7 +11,12 @@ export const ReportFormProvider = ({ children }) => {
         reportType: 'personal',
         selectedGroup: null,
         selectedConnection: null,
-        selectedFolder: null
+        dbType: '',
+        selectedFolder: null,
+        selectedTables: [],
+        selectedColumns: [],
+        joinConfig: [],
+        orderByConfig: []
     });
 
     const updateReportFormData = (newData) => {

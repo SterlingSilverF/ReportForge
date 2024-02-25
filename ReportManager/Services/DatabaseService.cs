@@ -10,91 +10,152 @@ using System.Linq;
 using MongoDB.Bson;
 using ReportManager.Services;
 using ReportManager.Models;
+using System.Data;
+using MySqlX.XDevAPI;
+using Microsoft.Extensions.Options;
+using ReportManager.Models.SettingsModels;
 
 public class DatabaseService
 {
+    private MongoClient _client;
     private readonly IMongoDatabase _database;
     private readonly ConnectionService _connectionService;
     private readonly SharedService _sharedService;
-    private DBConnectionModel _dbConnection;
-    private string _connectionString;
 
-    public DatabaseService(ConnectionService connectionService, SharedService sharedService)
+    public class ColumnDetail
+    {
+        public string ColumnName { get; set; }
+        public string DataType { get; set; }
+    }
+
+    public DatabaseService(ConnectionService connectionService, SharedService sharedService, IOptions<ConnectionSettings> settings)
     {
         _connectionService = connectionService;
         _sharedService = sharedService;
+        _client = new MongoClient(settings.Value.MongoConnectionString);
+        _database = _client.GetDatabase(settings.Value.MongoDbName);
     }
 
-    public void SetDBConnection(string dbConnectionId, string ownerType)
+    public async Task<bool> SetupDBConnection(string dbConnectionId, string ownerType, string dbType)
     {
-        ObjectId objDbConnectionId = _sharedService.StringToObjectId(dbConnectionId);
+        try
+        {
+            ObjectId objDbConnectionId = _sharedService.StringToObjectId(dbConnectionId);
+            OwnerType _ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), ownerType);
+            DBConnectionModel dbConnection = _connectionService.GetDBConnectionById(objDbConnectionId, _ownerType);
+            if (dbConnection == null)
+            {
+                throw new InvalidOperationException("DB connection not found.");
+            }
+
+            string plainConnectionString = ConnectionService.BuildConnectionString(dbConnection);
+            var builtConnectionString = _database.GetCollection<BuiltConnectionString>("ConnectionStrings")
+                                                        .Find(x => x.ConnectionId == objDbConnectionId)
+                                                        .FirstOrDefault();
+            if (builtConnectionString == null)
+            {
+                throw new InvalidOperationException("BuiltConnectionString document not found.");
+            }
+
+            builtConnectionString.SetEncryptedConnectionString(plainConnectionString);
+            var updateDefinition = Builders<BuiltConnectionString>.Update
+                                    .Set(x => x.EncryptedConnectionString, builtConnectionString.EncryptedConnectionString);
+            await _database.GetCollection<BuiltConnectionString>("ConnectionStrings")
+                           .UpdateOneAsync(x => x.Id == builtConnectionString.Id, updateDefinition);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<List<string>> GetAllTables(string connectionId, string dbType)
+    {
+        ObjectId objConnectionId = _sharedService.StringToObjectId(connectionId);
+        string decryptedConnectionString = await _connectionService.FetchAndDecryptConnectionString(objConnectionId);
+
+        switch (dbType.ToLower())
+        {
+            case "mssql":
+                return await GetAllTablesMsSql(decryptedConnectionString);
+            case "oracle":
+                return await GetAllTablesOracle(decryptedConnectionString);
+            case "mysql":
+                return await GetAllTablesMySql(decryptedConnectionString);
+            case "postgresql":
+                return await GetAllTablesNpgsql(decryptedConnectionString);
+            case "db2":
+                return await GetAllTablesDb2(decryptedConnectionString);
+            // case "mongodb":
+            //     return await GetAllTablesMongoDB(decryptedConnectionString);
+            default:
+                throw new NotSupportedException($"{dbType} is not supported.");
+        }
+    }
+
+    public async Task<List<string>> GetAllColumns(string connectionId, string dbType, string tableName, string ?ownerType = null)
+    {
+        ObjectId objConnectionId = _sharedService.StringToObjectId(connectionId);
+        string decryptedConnectionString = await _connectionService.FetchAndDecryptConnectionString(objConnectionId);
         OwnerType _ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), ownerType);
-        _dbConnection = _connectionService.GetDBConnectionById(objDbConnectionId, _ownerType);
-        if (_dbConnection == null)
-        {
-            throw new InvalidOperationException("DB connection not found.");
-        }
-        _connectionString = ConnectionService.BuildConnectionString(_dbConnection);
-    }
-
-
-    public List<string> GetAllTables()
-    {
-        if (string.IsNullOrEmpty(_connectionString))
-        {
-            throw new InvalidOperationException("Connection string is not set.");
-        }
-        string databaseName = _dbConnection.DatabaseName;
-        switch (_dbConnection.DbType.ToLower())
+        switch (dbType.ToLower())
         {
             case "mssql":
-                return GetAllTablesMsSql(_connectionString);
+                return await GetAllColumnsMsSql(decryptedConnectionString, tableName);
             case "oracle":
-                return GetAllTablesOracle(_connectionString);
+                return await GetAllColumnsOracle(decryptedConnectionString, tableName);
             case "mysql":
-                return GetAllTablesMySql(_connectionString);
+                return await GetAllColumnsMySql(decryptedConnectionString, tableName);
             case "postgresql":
-                return GetAllTablesNpgsql(_connectionString);
+                return await GetAllColumnsNpgsql(decryptedConnectionString, tableName);
             case "db2":
-                return GetAllTablesDb2(_connectionString);
-            case "mongodb":
-                return GetAllTablesMongoDB(_connectionString);
+                
+                string schemaName = await _connectionService.FetchSchemaNameForDB2(objConnectionId, _ownerType);
+                return await GetAllColumnsDb2(decryptedConnectionString, tableName, schemaName);
+            // case "mongodb":
+            //     return await GetAllColumnsMongoDB(decryptedConnectionString, tableName);
             default:
-                throw new NotSupportedException($"{_dbConnection.DbType} is not supported.");
+                throw new NotSupportedException($"{dbType} is not supported.");
         }
     }
 
-    public List<string> GetAllColumns(string tableName)
+    public async Task<List<ColumnDetail>> GetAllColumnsWithDT(string connectionId, string dbType, string tableName, string ?ownerType = null)
     {
-        switch (_dbConnection.DbType.ToLower())
+        ObjectId objConnectionId = _sharedService.StringToObjectId(connectionId);
+        string decryptedConnectionString = await _connectionService.FetchAndDecryptConnectionString(objConnectionId);
+        OwnerType _ownerType = ownerType != null ? (OwnerType)Enum.Parse(typeof(OwnerType), ownerType) : default(OwnerType);
+
+        switch (dbType.ToLower())
         {
             case "mssql":
-                return GetAllColumnsMsSql(_connectionString, tableName);
+                return await GetAllColumnsMsSqlDT(decryptedConnectionString, tableName);
             case "oracle":
-                return GetAllColumnsOracle(_connectionString, tableName);
+                return await GetAllColumnsOracleDT(decryptedConnectionString, tableName);
             case "mysql":
-                return GetAllColumnsMySql(_connectionString, tableName);
+                return await GetAllColumnsMySqlDT(decryptedConnectionString, tableName);
             case "postgresql":
-                return GetAllColumnsNpgsql(_connectionString, tableName);
+                return await GetAllColumnsNpgsqlDT(decryptedConnectionString, tableName);
             case "db2":
-                return GetAllColumnsDb2(_connectionString, tableName, _dbConnection.Schema);
-            case "mongodb":
-                return GetAllColumnsMongoDB(_connectionString, tableName);
+                string schemaName = await _connectionService.FetchSchemaNameForDB2(objConnectionId, _ownerType);
+                return await GetAllColumnsDb2DT(decryptedConnectionString, tableName, schemaName);
+            // case "mongodb":
+            //     return await GetAllColumnsMongoDBDT(decryptedConnectionString, tableName);
             default:
-                throw new NotSupportedException($"{_dbConnection.DbType} is not supported.");
+                throw new NotSupportedException($"{dbType} is not supported.");
         }
     }
 
-    private List<string> GetAllTablesMsSql(string connectionString)
+    private async Task<List<string>> GetAllTablesMsSql(string connectionString)
     {
         var tables = new List<string>();
         using (var connection = new SqlConnection(connectionString))
         {
-            connection.Open();
+            await connection.OpenAsync();
             var command = new SqlCommand("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'", connection);
-            using (var reader = command.ExecuteReader())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tables.Add(reader.GetString(0));
                 }
@@ -103,16 +164,16 @@ public class DatabaseService
         return tables;
     }
 
-    private List<string> GetAllTablesOracle(string connectionString)
+    private async Task<List<string>> GetAllTablesOracle(string connectionString)
     {
         var tables = new List<string>();
         using (var connection = new OracleConnection(connectionString))
         {
-            connection.Open();
+            await connection.OpenAsync();
             var command = new OracleCommand("SELECT TABLE_NAME FROM USER_TABLES", connection);
-            using (var reader = command.ExecuteReader())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tables.Add(reader.GetString(0));
                 }
@@ -121,16 +182,16 @@ public class DatabaseService
         return tables;
     }
 
-    private List<string> GetAllTablesMySql(string connectionString)
+    private async Task<List<string>> GetAllTablesMySql(string connectionString)
     {
         var tables = new List<string>();
         using (var connection = new MySqlConnection(connectionString))
         {
-            connection.Open();
+            await connection.OpenAsync();
             var command = new MySqlCommand("SHOW TABLES", connection);
-            using (var reader = command.ExecuteReader())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tables.Add(reader.GetString(0));
                 }
@@ -139,16 +200,16 @@ public class DatabaseService
         return tables;
     }
 
-    private List<string> GetAllTablesNpgsql(string connectionString)
+    private async Task<List<string>> GetAllTablesNpgsql(string connectionString)
     {
         var tables = new List<string>();
         using (var connection = new NpgsqlConnection(connectionString))
         {
-            connection.Open();
+            await connection.OpenAsync();
             var command = new NpgsqlCommand("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", connection);
-            using (var reader = command.ExecuteReader())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tables.Add(reader.GetString(0));
                 }
@@ -157,16 +218,16 @@ public class DatabaseService
         return tables;
     }
 
-    private List<string> GetAllTablesDb2(string connectionString)
+    private async Task<List<string>> GetAllTablesDb2(string connectionString)
     {
         var tables = new List<string>();
         using (var connection = new DB2Connection(connectionString))
         {
-            connection.Open();
+            await connection.OpenAsync();
             var command = new DB2Command("SELECT NAME FROM SYSIBM.SYSTABLES WHERE TYPE = 'T'", connection);
-            using (var reader = command.ExecuteReader())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     tables.Add(reader.GetString(0));
                 }
@@ -175,141 +236,276 @@ public class DatabaseService
         return tables;
     }
 
-    private List<string> GetAllTablesMongoDB(string connectionString)
+    private async Task<List<BsonValue>> GetAllTablesMongoDB(string connectionString, string databaseName, string collectionName)
     {
-        var mongoUrl = new MongoUrl(connectionString);
-        var databaseName = mongoUrl.DatabaseName;
-
-        var tables = new List<string>();
-        var client = new MongoClient(connectionString);
-        var database = client.GetDatabase(databaseName);
-
-        foreach (var collection in database.ListCollectionsAsync().Result.ToListAsync().Result)
-        {
-            tables.Add(collection["name"].AsString);
-        }
-
-        return tables;
-    }
-
-    private List<string> GetAllColumnsMsSql(string connectionString, string tableName)
-    {
-        var columns = new List<string>();
-        using (var connection = new SqlConnection(connectionString))
-        {
-            connection.Open();
-            var query = $"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tableName}'";
-            using (var command = new SqlCommand(query, connection))
-            {
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        columns.Add(reader.GetString(0));
-                    }
-                }
-            }
-        }
-        return columns;
-    }
-
-    private List<string> GetAllColumnsOracle(string connectionString, string tableName)
-    {
-        var columns = new List<string>();
-        using (var connection = new OracleConnection(connectionString))
-        {
-            connection.Open();
-            var query = $"SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME = '{tableName.ToUpper()}'";
-            using (var command = new OracleCommand(query, connection))
-            {
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        columns.Add(reader.GetString(0));
-                    }
-                }
-            }
-        }
-        return columns;
-    }
-
-    private List<string> GetAllColumnsMySql(string connectionString, string tableName)
-    {
-        var columns = new List<string>();
-        using (var connection = new MySqlConnection(connectionString))
-        {
-            connection.Open();
-            var query = $"SHOW COLUMNS FROM `{tableName}`";
-            using (var command = new MySqlCommand(query, connection))
-            {
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        columns.Add(reader.GetString(0));
-                    }
-                }
-            }
-        }
-        return columns;
-    }
-
-    private List<string> GetAllColumnsNpgsql(string connectionString, string tableName)
-    {
-        var columns = new List<string>();
-        using (var connection = new NpgsqlConnection(connectionString))
-        {
-            connection.Open();
-            var query = $"SELECT column_name FROM information_schema.columns WHERE table_name = '{tableName}'";
-            using (var command = new NpgsqlCommand(query, connection))
-            {
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        columns.Add(reader.GetString(0));
-                    }
-                }
-            }
-        }
-        return columns;
-    }
-
-    public List<string> GetAllColumnsDb2(string connectionString, string tableName, string schemaName)
-    {
-        var columns = new List<string>();
-        using (var connection = new DB2Connection(connectionString))
-        {
-            connection.Open();
-            var query = $"SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME = '{tableName.ToUpper()}' AND TABSCHEMA = '{schemaName.ToUpper()}' ORDER BY COLNO";
-
-            using (var command = new DB2Command(query, connection))
-            {
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        columns.Add(reader.GetString(0));
-                    }
-                }
-            }
-        }
-        return columns;
-    }
-
-    private List<string> GetAllColumnsMongoDB(string connectionString, string collectionName)
-    {
-        var mongoUrl = new MongoUrl(connectionString);
-        var databaseName = mongoUrl.DatabaseName;
-
         var client = new MongoClient(connectionString);
         var database = client.GetDatabase(databaseName);
         var collection = database.GetCollection<BsonDocument>(collectionName);
-        var document = collection.Find(new BsonDocument()).FirstOrDefault();
-        if (document == null) return new List<string>();
 
-        var columns = document.Elements.Select(element => element.Name).ToList();
+        var documentIds = await collection.Find(new BsonDocument())
+                                          .Project(Builders<BsonDocument>.Projection.Include("_id"))
+                                          .ToListAsync()
+                                          .ContinueWith(task => task.Result.Select(doc => doc["_id"]).ToList());
+
+        return documentIds;
+    }
+
+    private async Task<List<string>> GetAllColumnsMsSql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new SqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tableName}'";
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
         return columns;
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsMsSqlDT(string connectionString, string tableName)
+    {
+        var columns = new List<ColumnDetail>();
+        using (var connection = new SqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{tableName}'";
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(new ColumnDetail
+                        {
+                            ColumnName = reader.GetString(0),
+                            DataType = reader.GetString(1)
+                        });
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<string>> GetAllColumnsOracle(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new OracleConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME = '{tableName.ToUpper()}'";
+            using (var command = new OracleCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsOracleDT(string connectionString, string tableName)
+    {
+        var columns = new List<ColumnDetail>();
+        using (var connection = new OracleConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLUMN_NAME, DATA_TYPE FROM USER_TAB_COLUMNS WHERE TABLE_NAME = '{tableName.ToUpper()}'";
+            using (var command = new OracleCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(new ColumnDetail
+                        {
+                            ColumnName = reader.GetString(0),
+                            DataType = reader.GetString(1)
+                        });
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<string>> GetAllColumnsMySql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new MySqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SHOW COLUMNS FROM `{tableName}`";
+            using (var command = new MySqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsMySqlDT(string connectionString, string tableName)
+    {
+        var columns = new List<ColumnDetail>();
+        using (var connection = new MySqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SHOW COLUMNS FROM `{tableName}`";
+            using (var command = new MySqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(new ColumnDetail
+                        {
+                            ColumnName = reader.GetString("Field"),
+                            DataType = reader.GetString("Type")
+                        });
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<string>> GetAllColumnsNpgsql(string connectionString, string tableName)
+    {
+        var columns = new List<string>();
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT column_name FROM information_schema.columns WHERE table_name = '{tableName}' AND table_schema = 'public'";
+            using (var command = new NpgsqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsNpgsqlDT(string connectionString, string tableName)
+    {
+        var columns = new List<ColumnDetail>();
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{tableName}' AND table_schema = 'public'";
+            using (var command = new NpgsqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(new ColumnDetail
+                        {
+                            ColumnName = reader.GetString(0),
+                            DataType = reader.GetString(1)
+                        });
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    // TODO: Require schema when DB2
+    private async Task<List<string>> GetAllColumnsDb2(string connectionString, string tableName, string schemaName)
+    {
+        var columns = new List<string>();
+        using (var connection = new DB2Connection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME = '{tableName.ToUpper()}' AND TABSCHEMA = '{schemaName.ToUpper()}' ORDER BY COLNO";
+            using (var command = new DB2Command(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(reader.GetString(0));
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsDb2DT(string connectionString, string tableName, string schemaName)
+    {
+        var columns = new List<ColumnDetail>();
+        using (var connection = new DB2Connection(connectionString))
+        {
+            await connection.OpenAsync();
+            var query = $"SELECT COLNAME, TYPENAME FROM SYSCAT.COLUMNS WHERE TABNAME = '{tableName.ToUpper()}' AND TABSCHEMA = '{schemaName.ToUpper()}' ORDER BY COLNO";
+            using (var command = new DB2Command(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        columns.Add(new ColumnDetail
+                        {
+                            ColumnName = reader.GetString(0),
+                            DataType = reader.GetString(1)
+                        });
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    private async Task<List<string>> GetAllColumnsMongoDB(string connectionString, string databaseName, string collectionName, BsonValue documentId)
+    {
+        var client = new MongoClient(connectionString);
+        var database = client.GetDatabase(databaseName);
+        var collection = database.GetCollection<BsonDocument>(collectionName);
+
+        var document = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", documentId)).FirstOrDefaultAsync();
+        return document?.Elements.Select(e => e.Name).ToList() ?? new List<string>();
+    }
+
+    private async Task<List<ColumnDetail>> GetAllColumnsMongoDBDT(string connectionString, string databaseName, string collectionName, BsonValue documentId)
+    {
+        var client = new MongoClient(connectionString);
+        var database = client.GetDatabase(databaseName);
+        var collection = database.GetCollection<BsonDocument>(collectionName);
+
+        var document = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", documentId)).FirstOrDefaultAsync();
+        if (document == null) return new List<ColumnDetail>();
+
+        var columnDetails = document.Elements.Select(e => new ColumnDetail
+        {
+            ColumnName = e.Name,
+            DataType = e.Value.BsonType.ToString()
+        }).ToList();
+
+        return columnDetails;
     }
 }

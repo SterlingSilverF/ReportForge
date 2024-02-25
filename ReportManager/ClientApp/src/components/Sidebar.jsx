@@ -9,7 +9,7 @@ const Sidebar = ({ env, username, navigate }) => {
 
     return (
         <div className="sidebar">
-            <h4>Welcome, {username}</h4>
+            <h5>Welcome, {username}</h5>
             <p className="rpf-gold">Environment: {env}</p>
             <button className="btn-seven" to="/login" onClick={handleLogout}>Sign Out</button>
             <h4 style={{marginTop: "250%"} }>Guides</h4>

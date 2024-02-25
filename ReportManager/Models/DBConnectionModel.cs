@@ -1,6 +1,6 @@
 ﻿namespace ReportManager.Models
 {
-    public class DBConnectionModel : ServerConnectionModel
+    public class DBConnectionModel : BaseConnectionModel
     {
         public string? FriendlyName { get; set; }
         public string DatabaseName { get; set; }

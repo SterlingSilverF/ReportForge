@@ -31,7 +31,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Oracle: defaultFields.push('Instance'),
         MySQL: defaultFields,
         PostgreSQL: defaultFields,
-        MongoDB: defaultFields.push('AuthSource', 'ReplicaSet', 'UseTLS'),
+        //MongoDB: defaultFields.push('AuthSource', 'ReplicaSet', 'UseTLS'),
         DB2: defaultFields
     });
 
@@ -40,7 +40,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Oracle: 1521,
         MySQL: 3306,
         PostgreSQL: 5432,
-        MongoDB: 27017,
+        //MongoDB: 27017,
         DB2: 50000,
     };
 
@@ -49,7 +49,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Oracle: ['Credentials'],
         MySQL: ['Credentials'],
         PostgreSQL: ['Credentials'],
-        MongoDB: ['Credentials'],
+        //MongoDB: ['Credentials'],
         DB2: ['Credentials'],
     };
 
@@ -68,9 +68,9 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         FriendlyName: '',
         DatabaseName: '',
         ConfigType: 'Server',
-        AuthSource: '',
+        /*AuthSource: '',
         ReplicaSet: '',
-        UseTLS: false,
+        UseTLS: false,*/
         Schema: ''
     });
 
@@ -87,9 +87,9 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         AuthType: formStateCurrent.AuthType,
         OwnerID: formStateCurrent.OwnerID,
         OwnerType: formStateCurrent.OwnerType,
-        AuthSource: formStateCurrent.AuthSource,
+        /*AuthSource: formStateCurrent.AuthSource,
         ReplicaSet: formStateCurrent.ReplicaSet,
-        UseTLS: formStateCurrent.UseTLS
+        UseTLS: formStateCurrent.UseTLS*/
     };
 
     const dbConnection = {
@@ -433,7 +433,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                             <option value='Oracle'>Oracle</option>
                             <option value='MySQL'>MySQL</option>
                             <option value='PostgreSQL'>PostgreSQL</option>
-                            <option value='MongoDB'>MongoDB</option>
+                            {/*<option value='MongoDB'>MongoDB</option>*/}
                             <option value='DB2'>DB2</option>
                         </select>
                     </div><br/>
@@ -522,7 +522,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                 )}
 
                 {/* MongoDB Only */}
-                {formStateCurrent.DbType === 'MongoDB' && (
+                {/*{formStateCurrent.DbType === 'MongoDB' && (
                     <>
                         <br />
                         <label>MongoDB Connection Configuration</label>
@@ -552,7 +552,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                             <label>Use SSL</label>
                         </div>
                     </>
-                )}
+                )}*/}
 
                 {/* Save Connection Fields */}
                 <div className='form-element' style={{ display: 'flex', flexDirection: 'column' }}>

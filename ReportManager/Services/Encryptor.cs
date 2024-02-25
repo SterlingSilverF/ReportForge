@@ -40,22 +40,30 @@ public static class Encryptor
 
     public static string Decrypt(string input)
     {
-        byte[] byteKey = Encoding.UTF8.GetBytes(Key);
-        byte[] byteIV = Encoding.UTF8.GetBytes(IV);
-        byte[] inputBytes = Convert.FromBase64String(input);
-
-        using (Aes aes = Aes.Create())
+        try
         {
-            aes.Key = byteKey;
-            aes.IV = byteIV;
+            byte[] byteKey = Encoding.UTF8.GetBytes(Key);
+            byte[] byteIV = Encoding.UTF8.GetBytes(IV);
+            byte[] inputBytes = Convert.FromBase64String(input);
 
-            using (MemoryStream ms = new MemoryStream())
-            using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+            using (Aes aes = Aes.Create())
             {
-                cs.Write(inputBytes, 0, inputBytes.Length);
-                cs.Close();
-                return Encoding.UTF8.GetString(ms.ToArray());
+                aes.Key = byteKey;
+                aes.IV = byteIV;
+
+                using (MemoryStream ms = new MemoryStream())
+                using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                {
+                    cs.Write(inputBytes, 0, inputBytes.Length);
+                    cs.Close();
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            // TODO: Decrypt logging
+            throw new ApplicationException("Error decrypting data", ex);
         }
     }
 

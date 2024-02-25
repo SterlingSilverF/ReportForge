@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using ReportManager.Services;
 using MySqlX.XDevAPI.Relational;
+using ReportManager.Models;
 
 namespace ReportManager.API
 {
@@ -17,45 +18,51 @@ namespace ReportManager.API
             _databaseService = databaseService;
         }
 
-        [HttpPost("SetConnection")]
-        public ActionResult SetConnection(string connectionId, string ownerType)
+        [HttpPost("LoadDesignerPage")]
+        public async Task<IActionResult> LoadDesignerPage(string connectionId, string dbType, string ownerType)
         {
             try
             {
-                _databaseService.SetDBConnection(connectionId, ownerType);
-                return Ok("Connection set successfully.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred while setting the connection: {ex.Message}");
-            }
-        }
+                bool isConnectionSetupSuccessful = await _databaseService.SetupDBConnection(connectionId, ownerType, dbType);
+                if (!isConnectionSetupSuccessful)
+                {
+                    return BadRequest("Failed to setup database connection.");
+                }
 
-        [HttpGet("GetAllTables")]
-        public ActionResult GetAllTables()
-        {
-            try
-            {
-                var tables = _databaseService.GetAllTables();
+                var tables = await _databaseService.GetAllTables(connectionId, dbType);
                 return Ok(tables);
             }
             catch (Exception ex)
             {
-                return BadRequest($"An error occurred while retrieving tables: {ex.Message}");
+                return BadRequest($"An error occurred while loading the designer page: {ex.Message}");
             }
         }
 
         [HttpGet("GetAllColumns")]
-        public ActionResult GetAllColumns(string tableName)
+        public async Task<ActionResult> GetAllColumns(string connectionId, string dbType, string tableName, string ownerType)
         {
             try
             {
-                var columns = _databaseService.GetAllColumns(tableName);
+                var columns = await _databaseService.GetAllColumns(connectionId, dbType, tableName, ownerType);
                 return Ok(columns);
             }
             catch (Exception ex)
             {
                 return BadRequest($"An error occurred while retrieving columns for table {tableName}: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetAllColumnsWithDT")]
+        public async Task<ActionResult> GetAllColumnsWithDT(string connectionId, string dbType, string tableName, string ownerType)
+        {
+            try
+            {
+                var columns = await _databaseService.GetAllColumnsWithDT(connectionId, dbType, tableName, ownerType);
+                return Ok(columns);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred while retrieving columns and data types for table {tableName}: {ex.Message}");
             }
         }
     }

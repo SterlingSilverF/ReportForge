@@ -14,6 +14,7 @@ using ReportManager.Models.SettingsModels;
 using System.Collections;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using ReportManager.Services;
 
 public class ConnectionService
 {
@@ -26,21 +27,68 @@ public class ConnectionService
         _database = _client.GetDatabase(settings.Value.MongoDbName);
     }
 
-    public IMongoCollection<ServerConnectionModel> GetServerCollection(ServerConnectionModel conn)
+    public IMongoCollection<BaseConnectionModel> GetServerCollection(BaseConnectionModel conn)
     {
         string collectionName = conn.OwnerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
-        return _database.GetCollection<ServerConnectionModel>(collectionName);
+        return _database.GetCollection<BaseConnectionModel>(collectionName);
     }
 
-    public IMongoCollection<DBConnectionModel> GetDBCollection(ServerConnectionModel conn)
+    public IMongoCollection<DBConnectionModel> GetDBCollection(BaseConnectionModel conn)
     {
         string collectionName = conn.OwnerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
         return _database.GetCollection<DBConnectionModel>(collectionName);
     }
 
-    // First step in creating a new connection is to provide the server information.
-    // Password should be encrypted before reaching this
-    public async Task<ObjectId?> AddServerConnection(ServerConnectionModel serverConnection, bool saveConnection)
+    public async Task UpdateBuiltConnectionString(BuiltConnectionString connStr)
+    {
+        var connectionStringCollection = _database.GetCollection<BuiltConnectionString>("ConnectionStrings");
+        var existingConnStr = await connectionStringCollection.Find(Builders<BuiltConnectionString>.Filter.Eq("_id", connStr.Id)).FirstOrDefaultAsync();
+        if (existingConnStr == null)
+        {
+            throw new InvalidOperationException("Connection string does not exist.");
+        }
+
+        var update = Builders<BuiltConnectionString>.Update
+            .Set(c => c.EncryptedConnectionString, connStr.EncryptedConnectionString);
+
+        await connectionStringCollection.UpdateOneAsync(Builders<BuiltConnectionString>.Filter.Eq("_id", connStr.Id), update);
+    }
+
+    public async Task AddConnectionString(BuiltConnectionString connStr)
+    {
+        var connectionStringCollection = _database.GetCollection<BuiltConnectionString>("ConnectionStrings");
+        var existingDocument = await connectionStringCollection.Find(x => x.ConnectionId == connStr.ConnectionId).FirstOrDefaultAsync();
+        if (existingDocument != null)
+        {
+            await UpdateBuiltConnectionString(connStr);
+            return;
+        }
+
+        await connectionStringCollection.InsertOneAsync(connStr);
+    }
+
+    public async Task<string> FetchAndDecryptConnectionString(ObjectId connectionId)
+    {
+        var builtConnectionString = await _database.GetCollection<BuiltConnectionString>("ConnectionStrings")
+                                                    .Find(x => x.ConnectionId == connectionId)
+                                                    .FirstOrDefaultAsync();
+        if (builtConnectionString == null)
+        {
+            throw new InvalidOperationException("BuiltConnectionString document not found.");
+        }
+
+        return builtConnectionString.GetDecryptedConnectionString();
+    }
+
+    public async Task<ObjectId?> GetBuiltConnectionStringId(ObjectId dbConnectionId)
+    {
+        var connectionStringCollection = _database.GetCollection<BuiltConnectionString>("ConnectionStrings");
+        var filter = Builders<BuiltConnectionString>.Filter.Eq(x => x.ConnectionId, dbConnectionId);
+        var result = await connectionStringCollection.Find(filter).FirstOrDefaultAsync();
+        return result?.Id;
+    }
+
+    public async Task<ObjectId?> AddServerConnection(BaseConnectionModel serverConnection, bool saveConnection)
     {
         var (isSuccessful, message) = PreviewConnection(serverConnection);
         if (!isSuccessful)
@@ -68,16 +116,16 @@ public class ConnectionService
         return connectionModel.Id;
     }
 
-    public async Task<ServerConnectionModel?> FindServerConnection(string serverName, int port, string dbType, ObjectId ownerID, OwnerType ownerType)
+    public async Task<BaseConnectionModel?> FindServerConnection(string serverName, int port, string dbType, ObjectId ownerID, OwnerType ownerType)
     {
         string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
-        var collection = _database.GetCollection<ServerConnectionModel>(collectionName);
+        var collection = _database.GetCollection<BaseConnectionModel>(collectionName);
 
-        var filter = Builders<ServerConnectionModel>.Filter.Eq(conn => conn.ServerName, serverName) &
-                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.Port, port) &
-                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.DbType, dbType) &
-                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.OwnerID, ownerID) &
-                     Builders<ServerConnectionModel>.Filter.Eq(conn => conn.OwnerType, ownerType);
+        var filter = Builders<BaseConnectionModel>.Filter.Eq(conn => conn.ServerName, serverName) &
+                     Builders<BaseConnectionModel>.Filter.Eq(conn => conn.Port, port) &
+                     Builders<BaseConnectionModel>.Filter.Eq(conn => conn.DbType, dbType) &
+                     Builders<BaseConnectionModel>.Filter.Eq(conn => conn.OwnerID, ownerID) &
+                     Builders<BaseConnectionModel>.Filter.Eq(conn => conn.OwnerType, ownerType);
 
         return await collection.Find(filter).FirstOrDefaultAsync();
     }
@@ -98,7 +146,7 @@ public class ConnectionService
                 }
                 else
                 {
-                    mssqlConnectionString.Append($";User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};");
+                    mssqlConnectionString.Append($";User Id={dbConnection.Username};Password={dbConnection.Password};");
                 }
                 if (!string.IsNullOrEmpty(dbConnection.DatabaseName))
                 {
@@ -113,22 +161,22 @@ public class ConnectionService
                 }
                 else if (dbConnection.AuthType == "UsernamePassword")
                 {
-                    return $"Data Source={dbConnection.ServerName};User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};Integrated Security=no;";
+                    return $"Data Source={dbConnection.ServerName};User Id={dbConnection.Username};Password={dbConnection.Password};Integrated Security=no;";
                 }
                 else if (dbConnection.AuthType == "TNSNamesOra")
                 {
-                    return $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={dbConnection.ServerName})(PORT={dbConnection.Port}))(CONNECT_DATA=(SERVICE_NAME={dbConnection.Instance})));User Id={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
+                    return $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={dbConnection.ServerName})(PORT={dbConnection.Port}))(CONNECT_DATA=(SERVICE_NAME={dbConnection.Instance})));User Id={dbConnection.Username};Password={dbConnection.Password};";
                 }
                 throw new ArgumentException("Unsupported Oracle authentication type.");
 
             case "MySQL":
-                return $"server={dbConnection.ServerName};port={dbConnection.Port};database={dbConnection.DatabaseName};uid={dbConnection.Username};pwd={Encryptor.Decrypt(dbConnection.Password)};";
+                return $"server={dbConnection.ServerName};port={dbConnection.Port};database={dbConnection.DatabaseName};uid={dbConnection.Username};pwd={dbConnection.Password};";
 
             case "Postgres":
-                return $"Host={dbConnection.ServerName};Port={dbConnection.Port};Database={dbConnection.DatabaseName};Username={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
+                return $"Host={dbConnection.ServerName};Port={dbConnection.Port};Database={dbConnection.DatabaseName};Username={dbConnection.Username};Password={dbConnection.Password};";
 
-            case "MongoDB":
-                var mongoStringBuilder = new StringBuilder($"mongodb://{dbConnection.Username}:{Encryptor.Decrypt(dbConnection.Password)}@{dbConnection.ServerName}:{dbConnection.Port}");
+            /*case "MongoDB":
+                var mongoStringBuilder = new StringBuilder($"mongodb://{dbConnection.Username}:{dbConnection.Password}@{dbConnection.ServerName}:{dbConnection.Port}");
                 if (!string.IsNullOrEmpty(dbConnection.AuthSource))
                 {
                     mongoStringBuilder.Append($"/{dbConnection.AuthSource}");
@@ -151,17 +199,17 @@ public class ConnectionService
                     mongoStringBuilder.Append(queryStringStarted ? "&" : "?");
                     mongoStringBuilder.Append("tls=true");
                 }
-                return mongoStringBuilder.ToString();
+                return mongoStringBuilder.ToString();*/
 
             case "DB2":
-                return $"Server={dbConnection.ServerName}:{dbConnection.Port};Database={dbConnection.DatabaseName};UserID={dbConnection.Username};Password={Encryptor.Decrypt(dbConnection.Password)};";
+                return $"Server={dbConnection.ServerName}:{dbConnection.Port};Database={dbConnection.DatabaseName};UserID={dbConnection.Username};Password={dbConnection.Password};";
 
             default:
                 throw new ArgumentException("Unsupported database type.");
         }
     }
 
-    public (bool, string) PreviewConnection(ServerConnectionModel serverConnection)
+    public (bool, string) PreviewConnection(BaseConnectionModel serverConnection)
     {
         try
         {
@@ -244,7 +292,7 @@ public class ConnectionService
                         pgConnection.Close();
                     }
                     break;
-                case "MongoDB":
+                /*case "MongoDB":
                     var mongoUrlBuilder = new MongoUrlBuilder
                     {
                         Server = new MongoServerAddress(serverConnection.ServerName, serverConnection.Port),
@@ -276,7 +324,7 @@ public class ConnectionService
                             return (false, "Database does not exist.");
                         }
                     }
-                    break;
+                    break;*/
 
                 case "DB2":
                     string db2ConnectionString = $"Server={serverConnection.ServerName}:{serverConnection.Port};Database={serverConnection.Instance};UserID={serverConnection.Username};Password={serverConnection.Password};";
@@ -326,6 +374,17 @@ public class ConnectionService
         {
             return (false, ex.Message);
         }
+    }
+
+    public async Task<string> FetchSchemaNameForDB2(ObjectId connectionId, OwnerType ownerType)
+    {
+        var dbConnection = GetDBConnectionById(connectionId, ownerType);
+        if (string.IsNullOrWhiteSpace(dbConnection.Schema))
+        {
+            throw new InvalidOperationException("Schema for DB2 connection is not defined.");
+        }
+
+        return dbConnection.Schema;
     }
 
     public List<object> FetchConnections(string ownerId, OwnerType ownerType, string connectionType)
@@ -398,11 +457,11 @@ public class ConnectionService
     }
 
 
-    public List<ServerConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
+    public List<BaseConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
     {
         string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
-        var collection = _database.GetCollection<ServerConnectionModel>(collectionName);
-        var filter = Builders<ServerConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
+        var collection = _database.GetCollection<BaseConnectionModel>(collectionName);
+        var filter = Builders<BaseConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
         return collection.Find(filter).ToList();
     }
 
@@ -414,7 +473,7 @@ public class ConnectionService
         return collection.Find(filter).ToList();
     }
 
-    public ServerConnectionModel? FetchServerConnection(List<ServerConnectionModel> serverConnections, ObjectId connectionId)
+    public BaseConnectionModel? FetchServerConnection(List<BaseConnectionModel> serverConnections, ObjectId connectionId)
     {
         return serverConnections.FirstOrDefault(sc => sc.Id == connectionId);
     }
@@ -424,16 +483,16 @@ public class ConnectionService
         return dbConnections.FirstOrDefault(db => db.Id == connectionId);
     }
 
-    public ServerConnectionModel? GetServerConnectionById(ObjectId connectionId, OwnerType ownerType)
+    public BaseConnectionModel? GetServerConnectionById(ObjectId connectionId, OwnerType ownerType)
     {
-        var collection = GetServerCollection(new ServerConnectionModel { OwnerType = ownerType });
-        var filter = Builders<ServerConnectionModel>.Filter.Eq("_id", connectionId);
+        var collection = GetServerCollection(new BaseConnectionModel { OwnerType = ownerType });
+        var filter = Builders<BaseConnectionModel>.Filter.Eq("_id", connectionId);
         return collection.Find(filter).FirstOrDefault();
     }
 
     public DBConnectionModel? GetDBConnectionById(ObjectId connectionId, OwnerType ownerType)
     {
-        var collection = GetDBCollection(new ServerConnectionModel { OwnerType = ownerType });
+        var collection = GetDBCollection(new BaseConnectionModel { OwnerType = ownerType });
         var filter = Builders<DBConnectionModel>.Filter.Eq("_id", connectionId);
         return collection.Find(filter).FirstOrDefault();
     }
@@ -450,7 +509,7 @@ public class ConnectionService
         return results;
     }
 
-    public DBConnectionModel BuildDBConnectionModel(ServerConnectionModel serverConnection)
+    public DBConnectionModel BuildDBConnectionModel(BaseConnectionModel serverConnection)
     {
         DBConnectionModel dbConnection = new DBConnectionModel();
         dbConnection.DbType = serverConnection.DbType;
@@ -461,7 +520,7 @@ public class ConnectionService
 
     public bool DeleteServerConnection(ObjectId connectionId)
     {
-        var collection = _database.GetCollection<ServerConnectionModel>("ServerConnections");
+        var collection = _database.GetCollection<BaseConnectionModel>("ServerConnections");
         var result = collection.DeleteOne(x => x.Id == connectionId);
         return result.IsAcknowledged && result.DeletedCount > 0;
     }
@@ -473,7 +532,7 @@ public class ConnectionService
         return result.IsAcknowledged && result.DeletedCount > 0;
     }
 
-    public bool UpdateServerConnection(ServerConnectionModel updatedServer)
+    public bool UpdateServerConnection(BaseConnectionModel updatedServer)
     {
         var collection = GetServerCollection(updatedServer);
         var result = collection.ReplaceOne(x => x.Id == updatedServer.Id, updatedServer);

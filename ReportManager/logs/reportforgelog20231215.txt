@@ -1,5 +1,0 @@
-2023-12-15 21:00:55.079 -06:00 [INF] Application Starting
-2023-12-15 21:02:27.666 -06:00 [ERR] Couldn't start the SPA development server with command 'npm start'.
-2023-12-15 21:02:30.573 -06:00 [INF] Application Starting
-2023-12-15 21:06:04.172 -06:00 [INF] Application Starting
-2023-12-15 21:44:58.071 -06:00 [INF] Application Starting

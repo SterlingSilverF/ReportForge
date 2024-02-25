@@ -131,55 +131,6 @@ namespace ReportManager.API
             }
         }
 
-        [HttpPost("createOrUpdateSQLReport")]
-        public IActionResult CreateOrUpdateSQLReport(CreateSQLReport request)
-        {
-            ObjectId folderid = _sharedService.StringToObjectId(request.FolderId);
-            var folder = _folderManagementService.GetFolderById(folderid);
-            ObjectId _userId = _sharedService.StringToObjectId(request._userId);
-            if (folder == null)
-            {
-                return BadRequest("Invalid Folder ID");
-            }
-            try
-            {
-                var report = new CustomSQLReport
-                {
-                    ReportName = request.ReportName,
-                    Description = request.Description,
-                    SourceDB = request.SourceDB,
-                    Schedule = request.Schedule,
-                    PaginationLimit = request.PaginationLimit,
-                    FolderId = folder.Id,
-                    CreatorId = _userId,
-                    CreatedDate = DateTime.Now,
-                    LastModifiedDate = DateTime.Now,
-                    LastModifiedBy = _userId,
-                    CustomSQL = request.CustomSQL
-                };
-
-                ReportType reportType = request.IsGroupReport ? ReportType.Group : ReportType.Personal;
-
-                if (request.Action == "Create")
-                {
-                    _reportManagementService.CreateReport(report, reportType);
-                }
-                else if (request.Action == "Update")
-                {
-                    _reportManagementService.UpdateReport(report, reportType);
-                }
-                else
-                {
-                    return BadRequest($"Unknown action: {request.Action}");
-                }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.ToString());
-            }
-        }
-
         [HttpGet("getUserReports")]
         public IActionResult GetUserReports([FromQuery] string userId)
         {

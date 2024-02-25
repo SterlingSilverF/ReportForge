@@ -19,11 +19,7 @@ namespace ReportManager.Models
         public ObjectId LastModifiedBy { get; set; }
         public ObjectId OwnerID { get; set; }
         public OwnerType OwnerType { get; set; }
-    }
-
-    public class CustomSQLReport : ReportConfigurationModel
-    {
-        public string CustomSQL { get; set; }
+        public string CompiledSQL { get; set; }
     }
 
     public class NormalReportConfiguration : ReportConfigurationModel

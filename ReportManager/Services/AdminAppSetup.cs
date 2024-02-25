@@ -46,6 +46,7 @@ namespace ReportManager
                 database.CreateCollection("PersonalServerConnections");
                 database.CreateCollection("PersonalDBConnections");
                 database.CreateCollection("PersonalReports");
+                database.CreateCollection("ConnectionStrings");
 
                 // Indexing
                 // Group

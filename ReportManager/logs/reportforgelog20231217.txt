@@ -1,7 +1,0 @@
-2023-12-17 11:27:09.585 -06:00 [INF] Application Starting
-2023-12-17 12:01:36.825 -06:00 [INF] Application Starting
-2023-12-17 12:29:54.177 -06:00 [INF] Application Starting
-2023-12-17 12:49:05.247 -06:00 [INF] Application Starting
-2023-12-17 21:31:09.738 -06:00 [INF] Application Starting
-2023-12-17 21:41:30.521 -06:00 [INF] Application Starting
-2023-12-17 22:52:05.660 -06:00 [INF] Application Starting

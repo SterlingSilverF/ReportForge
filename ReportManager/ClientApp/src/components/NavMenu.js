@@ -28,8 +28,8 @@ export class NavMenu extends Component {
     render() {
         return (
             <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-                    <NavbarBrand tag={Link} to="/" ><img src={icon} className="icon"></img><b className='rpf-gold'>Report</b><b className='rpf-red'>Forge</b></NavbarBrand>
+                <Navbar className="navbar-expand-sm mb-3" container light>
+                    <NavbarBrand tag={Link} to="/" ><img src={icon} className="icon"></img><b className='rpf-gold'>Report</b><b className='rpf-orange'>Forge</b></NavbarBrand>
                     <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
                     <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
                         <ul className="navbar-nav flex-grow">

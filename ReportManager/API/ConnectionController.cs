@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Driver.Core.Configuration;
 using Org.BouncyCastle.Asn1.Ocsp;
 using ReportManager.Models;
 using ReportManager.Services;
@@ -156,9 +157,9 @@ namespace ReportManager.API
         public async Task<IActionResult> DuplicateServerConnection(DuplicateConnectionRequest data)
         {
             OwnerType _ownertype = (OwnerType)Enum.Parse(typeof(OwnerType), data.OldOwnerType);
-            ServerConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
+            BaseConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
             if (serverConnection == null) return BadRequest("Server does not exist.");
-            ServerConnectionModel _serverConnection = new ServerConnectionModel()
+            BaseConnectionModel _serverConnection = new BaseConnectionModel()
             {
                 ServerName = serverConnection.ServerName,
                 Port = serverConnection.Port,
@@ -169,9 +170,9 @@ namespace ReportManager.API
                 AuthType = serverConnection.AuthType,
                 OwnerID = _sharedService.StringToObjectId(data.OwnerID),
                 OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType),
-                AuthSource = serverConnection.AuthSource,
+                /*AuthSource = serverConnection.AuthSource,
                 ReplicaSet = serverConnection.ReplicaSet,
-                UseTLS = serverConnection.UseTLS
+                UseTLS = serverConnection.UseTLS*/
             };
             ObjectId? newId = await _connectionService.AddServerConnection(_serverConnection, true);
             if (newId == null) return BadRequest("Failed to add server connection.");
@@ -181,12 +182,16 @@ namespace ReportManager.API
         [HttpPost("AddServerConnection")]
         public async Task<IActionResult> AddServerConnection(ConnectionRequest data)
         {
+
+            OwnerType ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType);
+            ObjectId ownerId = _sharedService.StringToObjectId(data.OwnerID);
+
             var existingConnection = await _connectionService.FindServerConnection(
                 data.ServerName,
                 data.Port,
                 data.DbType,
-                _sharedService.StringToObjectId(data.OwnerID),
-                (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType)
+                ownerId,
+                ownerType
             );
 
             if (existingConnection != null)
@@ -194,7 +199,7 @@ namespace ReportManager.API
                 return Ok(new { Id = existingConnection.Id.ToString(), Message = "Existing server connection." });
             }
 
-            ServerConnectionModel newServer = new ServerConnectionModel()
+            BaseConnectionModel newServer = new BaseConnectionModel()
             {
                 ServerName = data.ServerName,
                 Port = data.Port,
@@ -203,11 +208,11 @@ namespace ReportManager.API
                 Username = data.Username,
                 Password = data.Password,
                 AuthType = data.AuthType,
-                OwnerID = _sharedService.StringToObjectId(data.OwnerID),
-                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), data.OwnerType),
-                AuthSource = data.AuthSource,
+                OwnerID = ownerId,
+                OwnerType = ownerType,
+                /*AuthSource = data.AuthSource,
                 ReplicaSet = data.ReplicaSet,
-                UseTLS = data.UseTLS
+                UseTLS = data.UseTLS*/
             };
 
             ObjectId? newId = await _connectionService.AddServerConnection(newServer, true);
@@ -215,7 +220,6 @@ namespace ReportManager.API
             {
                 return BadRequest("Failed to add server connection.");
             }
-
             return Ok(newId.ToString());
         }
 
@@ -223,7 +227,7 @@ namespace ReportManager.API
         public async Task<IActionResult> AddDBConnection(DBConnectionRequest data)
         {
             OwnerType _ownertype = (OwnerType)Enum.Parse(typeof(OwnerType), data.CollectionCategory);
-            ServerConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
+            BaseConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
             if (serverConnection == null) return BadRequest("Server does not exist.");
 
             // TODO: Duplicate check
@@ -238,9 +242,9 @@ namespace ReportManager.API
                 AuthType = serverConnection.AuthType,
                 OwnerID = serverConnection.OwnerID,
                 OwnerType = serverConnection.OwnerType,
-                AuthSource = serverConnection.AuthSource,
+                /*AuthSource = serverConnection.AuthSource,
                 ReplicaSet = serverConnection.ReplicaSet,
-                UseTLS = serverConnection.UseTLS,
+                UseTLS = serverConnection.UseTLS,*/
                 DatabaseName = data.DatabaseName,
                 FriendlyName = data.FriendlyName,
                 Schema = data.Schema
@@ -252,22 +256,43 @@ namespace ReportManager.API
 
             ObjectId? newId = await _connectionService.SaveNewDBConnection(newDB);
             if (newId == null) return BadRequest("Failed to add DB connection.");
+            string builtConnectionString = ConnectionService.BuildConnectionString(newDB);
+            BuiltConnectionString connStr = new BuiltConnectionString
+            {
+                ConnectionId = newId.Value,
+            };
+            connStr.SetEncryptedConnectionString(builtConnectionString);
+            await _connectionService.AddConnectionString(connStr);
             return Ok(newId.ToString());
         }
 
         [HttpPut("UpdateServer")]
-        public IActionResult UpdateServerConnection([FromBody] ServerConnectionModel updatedServer)
+        public IActionResult UpdateServerConnection([FromBody] BaseConnectionModel updatedServer)
         {
             bool isUpdated = _connectionService.UpdateServerConnection(updatedServer);
             if (!isUpdated) return BadRequest("Failed to update.");
             return Ok("Updated successfully");
         }
 
-        [HttpPut("UpdateDB")]
-        public IActionResult UpdateDBConnection([FromBody] DBConnectionModel updatedDB)
+        public async Task<IActionResult> UpdateDBConnection([FromBody] DBConnectionModel updatedDB)
         {
             bool isUpdated = _connectionService.UpdateDBConnection(updatedDB);
             if (!isUpdated) return BadRequest("Failed to update.");
+
+            string builtConnectionString = ConnectionService.BuildConnectionString(updatedDB);
+            ObjectId? connStrId = await _connectionService.GetBuiltConnectionStringId(updatedDB.Id);
+            if (!connStrId.HasValue)
+            {
+                return BadRequest("Associated connection string not found.");
+            }
+            BuiltConnectionString connStr = new BuiltConnectionString
+            {
+                Id = connStrId.Value,
+                ConnectionId = updatedDB.Id,
+            };
+            connStr.SetEncryptedConnectionString(builtConnectionString);
+            await _connectionService.UpdateBuiltConnectionString(connStr);
+
             return Ok("Updated successfully");
         }
 
@@ -306,7 +331,7 @@ namespace ReportManager.API
         [HttpPost("verify")]
         public IActionResult VerifyConnectivity(ConnectionRequest request)
         {
-            ServerConnectionModel connection = new ServerConnectionModel
+            BaseConnectionModel connection = new BaseConnectionModel
             {
                 ServerName = request.ServerName,
                 Port = request.Port,
@@ -315,9 +340,9 @@ namespace ReportManager.API
                 Username = request.Username,
                 Password = request.Password,
                 AuthType = request.AuthType,
-                AuthSource = request.AuthSource,
+                /*AuthSource = request.AuthSource,
                 ReplicaSet = request.ReplicaSet,
-                UseTLS = request.UseTLS
+                UseTLS = request.UseTLS*/
             };
 
             var (isSuccessful, message) = _connectionService.PreviewConnection(connection);

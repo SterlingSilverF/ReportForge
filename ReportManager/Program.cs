@@ -42,6 +42,7 @@ builder.Services.AddScoped<FolderManagementService>();
 builder.Services.AddScoped<ReportManagementService>();
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<GroupManagementService>();
+builder.Services.AddScoped<DatabaseService>();
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
     .AddNegotiate();
 

@@ -63,11 +63,11 @@
         public string? OwnerID { get; set; }
         public string OwnerType { get; set; }
 
-        public string? AuthSource { get; set; }
+        /*public string? AuthSource { get; set; }
         public string? ReplicaSet { get; set; }
-        public bool? UseTLS { get; set; }
+        public bool? UseTLS { get; set; }*/
 
-        public ServerConnectionDTO(ServerConnectionModel model)
+        public ServerConnectionDTO(BaseConnectionModel model)
         {
             this.Id = model.Id.ToString();
             this.ServerName = model.ServerName;
@@ -80,9 +80,9 @@
             this.OwnerID = model.OwnerID.ToString();
             this.OwnerType = model.OwnerType.ToString();
 
-            this.AuthSource = model.AuthSource;
+            /*this.AuthSource = model.AuthSource;
             this.ReplicaSet = model.ReplicaSet;
-            this.UseTLS = model.UseTLS;
+            this.UseTLS = model.UseTLS;*/
         }
     }
 
