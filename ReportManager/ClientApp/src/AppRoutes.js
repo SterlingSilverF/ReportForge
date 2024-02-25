@@ -18,6 +18,13 @@ import UserManagement from "./Pages/UserManager";
 import FolderForm from "./Pages/FolderForm";
 import ReportForm from "./Pages/ReportForm";
 import ReportDesigner from "./Pages/ReportDesigner";
+import AllGuides from "./Pages/guides/AllGuides";
+import WorkspaceGuides from "./Pages/guides/WorkSpaceGuides";
+import AddingNewContentGuides from "./Pages/guides/AddingNewContentGuides";
+import EditingExistingContentGuides from "./Pages/guides/EditingExistingContentGuides";
+import DatabasesGuides from "./Pages/guides/DatabaseGuides";
+import ReportsGuides from "./Pages/guides/ReportGuides";
+import CapstoneMaterials from "./Pages/guides/CapstoneMaterials";
 
 /* DB Icons */
 import mssql from './components/mssql.png';
@@ -132,7 +139,42 @@ const AppRoutes = [
         path: '/reportdesigner',
         element: <ReportDesigner />,
         includeNavbar: true
-    }
+    },
+    {
+        path: '/guides/allguides',
+        element: <AllGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/workspace',
+        element: <WorkspaceGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/adding-new-content',
+        element: <AddingNewContentGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/editing-existing-content',
+        element: <EditingExistingContentGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/databases',
+        element: <DatabasesGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/reports',
+        element: <ReportsGuides />,
+        includeNavbar: true
+    },
+    {
+        path: '/guides/capstone-materials',
+        element: <CapstoneMaterials />,
+        includeNavbar: true
+    },
 ];
 
 export default AppRoutes;

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReportManagerTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51dba9957b22ef218d7b3dc154176ae13d53c67f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e4638ba350aa94a455ef54dcbdc9c7b0be065d74")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReportManagerTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReportManagerTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

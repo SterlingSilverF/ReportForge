@@ -143,30 +143,32 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     };
 
     // Filters + Order By Display Columns
-    async function handleTableSelectionChange(e, index, type) {
+    async function handleTableSelectionChange(e, index, action) {
         const tableName = e.target.value;
 
-        if (type === 'filter') {
-            let columns = [];
+        if (action === 'filter') {
             if (tableName) {
-                columns = await fetchTableColumns(tableName);
+                const columns = await fetchTableColumns(tableName);
+                // Update the state for selected filter table and its columns
+                setSelectedFilterTable(tableName);
+                setFilterTableColumns(columns);
+            } else {
+                // Reset the state if tableName is falsy
+                setSelectedFilterTable('');
+                setFilterTableColumns([]);
             }
-            const updatedFilters = filters.map((filter, i) => {
-                if (i === index) {
-                    return { ...filter, table: tableName, columns: columns.map(column => column) };
-                }
-                return filter;
-            });
-            setFilters(updatedFilters);
-        } else if (type === 'orderBy') {
-            // Update the specific order by with new table
-            const updatedOrderBys = orderBys.map((orderBy, i) => {
-                if (i === index) {
-                    return { ...orderBy, table: tableName };
-                }
-                return orderBy;
-            });
-            setOrderBys(updatedOrderBys);
+        } else if (action === 'orderBy') {
+            if (tableName) {
+                // For orderBy, assuming you might want to fetch columns similarly
+                // If not required, simply set the selectedOrderByTable
+                const columns = await fetchTableColumns(tableName);
+                setSelectedOrderByTable(tableName);
+                setOrderByColumns(columns);
+            } else {
+                // Reset the state if tableName is false
+                setSelectedOrderByTable('');
+                setOrderByColumns([]);
+            }
         }
     }
 
@@ -191,88 +193,6 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const calculateGridArea = (index) => {
         const rowStart = 2 + index * 3;
         return `${rowStart} / 2 / ${rowStart + 1} / 6`;
-    };
-
-    const renderFilters = () => {
-        const filterElements = filters.map((filter, index) => {
-            const rowStart = 2 + index * 4;
-            const gridAreas = {
-                labelTable: `${rowStart} / 2 / ${rowStart + 1} / 3`,
-                selectTable: `${rowStart + 1} / 2 / ${rowStart + 2} / 3`,
-                labelColumn: `${rowStart} / 3 / ${rowStart + 1} / 4`,
-                selectColumn: `${rowStart + 1} / 3 / ${rowStart + 2} / 4`,
-                labelCondition: `${rowStart} / 4 / ${rowStart + 1} / 5`,
-                selectCondition: `${rowStart + 1} / 4 / ${rowStart + 2} / 5`,
-                inputValue: `${rowStart + 1} / 5 / ${rowStart + 2} / 6`,
-                buttonRemove: `${rowStart + 2} / 3 / ${rowStart + 3} / 4`,
-            };
-
-            return (
-                <React.Fragment key={index}>
-                    <label style={{ gridArea: gridAreas.labelTable }}>Select Table</label>
-                    <select
-                        style={{ gridArea: gridAreas.selectTable }}
-                        value={filter.table}
-                        onChange={(e) => handleTableSelectionChange(e, index, 'filter')}>
-                        <option value="">--Select a Table--</option>
-                        {reportFormData.selectedTables.map((table, i) => (
-                            <option key={i} value={table}>{table}</option>
-                        ))}
-                    </select>
-
-                    <label style={{ gridArea: gridAreas.labelColumn }}>Select Column</label>
-                    <select
-                        style={{ gridArea: gridAreas.selectColumn }}
-                        value={filter.column}>
-                        <option value="">--Select a Column--</option>
-                        {(filter.table ? filterTableColumns(filter.table) : []).map((column, i) => (
-                            <option key={i} value={column}>{column}</option>
-                        ))}
-                    </select>
-
-                    <label style={{ gridArea: gridAreas.labelCondition }}>Condition</label>
-                    <select
-                        style={{ gridArea: gridAreas.selectCondition }}
-                        value={filter.condition}>
-                        <option value="=">Equals</option>
-                        <option value="!=">Not Equal To</option>
-                        <option value=">">Greater Than</option>
-                        <option value=">=">Greater Than or Equal To</option>
-                        <option value="<">Less Than</option>
-                        <option value="<=">Less Than or Equal To</option>
-                        <option value="Between">Between</option>
-                        <option value="In">Contained in List</option>
-                    </select>
-
-                    <input
-                        type="text"
-                        style={{ gridArea: gridAreas.inputValue }}
-                        className="input-style-short"
-                        value={filter.value}/>
-
-                    <button
-                        className="report-designer-button"
-                        style={{ gridArea: gridAreas.buttonRemove }}
-                        onClick={() => removeFilter(index)}>
-                        Remove
-                    </button>
-                </React.Fragment>
-            );
-        });
-
-        const addButtonRowStart = 2 + filters.length * 4;
-
-        return (
-            <>
-                {filterElements}
-                <button
-                    className="report-designer-button"
-                    style={{ gridArea: `${addButtonRowStart} / 2 / ${addButtonRowStart + 1} / 3` }}
-                    onClick={addFilter}>
-                    Add Filter
-                </button>
-            </>
-        );
     };
 
     // Support function for submission
@@ -326,7 +246,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     <h5>Welcome to the report designer!</h5>
                     <p>Here you'll set up what data you want to see in your report and how.</p>
                     <p>To start, you must select tables that you think may contain relevant data. Once a table is selected, their columns will appear on the right.</p>
-                    <a href="/guides/designer" className="input-style-default">Designer Walkthrough</a><br/>
+                    <a href="/guides/designer" className="input-style-default">Designer Walkthrough</a><br />
                 </div>
                 <br />
                 <h2>Select Tables</h2>
@@ -353,7 +273,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                                     </ul>
                                 </div>
                                 <br />
-                                <div className="explanation-box eb-small" style={{marginTop: '27px' }}>
+                                <div className="explanation-box eb-small" style={{ marginTop: '27px' }}>
                                     <p>Column Name - Data Format</p>
                                     <a href="/guides/columns">Understanding Columns</a>
                                 </div>
@@ -361,18 +281,18 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         </div>
                     </div>
                 </div>
-                <br/>
+                <br />
                 <h2>Select Shared Columns</h2>
                 <div className="flex-grid dual-listbox select-shared" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    <div style={{ flex: '1 1 auto'}}>
+                    <div style={{ flex: '1 1 auto' }}>
                         <div className="listbox-container">
                             <select id="tableSelectOne" value={selectedTableOne} onChange={handleTableOneJoinChange}>
                                 <option value="">--Select a Table--</option>
                                 {reportFormData.selectedTables.filter(table => table !== selectedTableTwo).map((table, index) => (
                                     <option key={index} value={table}>{table}</option>
-                                    ))}
-                                </select>
-                                <div>
+                                ))}
+                            </select>
+                            <div>
                                 <ul className="listbox" id="tableColSelectOne">
                                     {columnsTableOne.map((column, index) => (
                                         <li key={index} className="radio-item">
@@ -389,7 +309,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                             </div>
                         </div>
                     </div>
-                    <div style={{ flex: '1 1 auto'}}>
+                    <div style={{ flex: '1 1 auto' }}>
                         <div className="listbox-container">
                             <select id="tableSelectTwo" value={selectedTableTwo} onChange={handleTableTwoJoinChange}>
                                 <option value="">--Select a Table--</option>
@@ -414,7 +334,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="explanation-box eb-medium" style={{ flex: '1 1 auto'}}>
+                    <div className="explanation-box eb-medium" style={{ flex: '1 1 auto' }}>
                         <p>In order to display data from different tables properly, each table must be joined to the query.</p>
                         <p>Joining is accomplished by indicating shared, but unique valued columns in two individual tables.</p>
                         <p>Usually these are columns that have the same name and are the unique record number or identifier for ONE of the two tables.</p>
@@ -422,7 +342,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     </div>
                 </div>
                 <button type="button" className="report-designer-button" onClick="">Join</button>
-                <br/>
+                <br />
                 <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gridGap: '20px', alignItems: 'start' }}>
                     <div style={{ gridColumn: '1 / 2' }}>
                         <h5>Joined Columns</h5>
@@ -430,7 +350,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         <ul><li>Column 1 = Column 2</li></ul>
                         <b>Table2 -&gt; Table3</b>
                         <ul><li>Column 1 = Column 2</li>
-                        <li>Column 3 = Column 4</li>
+                            <li>Column 3 = Column 4</li>
                         </ul>
                     </div>
 
@@ -446,7 +366,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         </ul>
                     </div>
                 </div>
-                <hr/>
+                <hr />
                 <div className="grid">
                     <h4 style={{ gridArea: '1 / 1 / 2 / 6' }}>Filters and Conditions</h4>
                     <div className="explanation-box" style={{ gridArea: '2 / 1 / 5 / 2' }}>
@@ -455,7 +375,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     </div>
 
                     <label style={{ gridArea: '2 / 2 / 3 / 3' }}>Select Table</label>
-                    <select style={{ gridArea: '3 / 2 / 4 / 3' }} id="tableFilter1" onChange={(e) => handleTableSelectionChange(e, setFilterTableColumns)}>
+                    <select style={{ gridArea: '3 / 2 / 4 / 3' }} id="tableFilter1" onChange={(e) => handleTableSelectionChange(e, setFilterTableColumns, 'filter')}>
                         <option value="">--Select a Table--</option>
                         {reportFormData.selectedTables.map((table, index) => (
                             <option key={index} value={table}>{table}</option>
@@ -493,7 +413,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     <div className="explanation-box eb-mini" style={{ gridArea: '7 / 1 / 8 / 2' }}>
                         <p>Display what kind of data first?</p>
                     </div>
-                    <select style={{ gridArea: '7 / 2 / 8 / 3' }} id="orderbyTable1" onChange={(e) => handleTableSelectionChange(e, setOrderByColumns)}>
+                    <select style={{ gridArea: '7 / 2 / 8 / 3' }} id="orderbyTable1" onChange={(e) => handleTableSelectionChange(e, setOrderByColumns, 'orderBy')}>
                         <option value="">--Select a Table--</option>
                         {reportFormData.selectedTables.map((table, index) => (
                             <option key={index} value={table}>{table}</option>
@@ -512,10 +432,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     <button className="report-designer-button" style={{ gridArea: '8 / 2 / 9 / 3' }} onClick="">Add</button>
                     <button className="report-designer-button" style={{ gridArea: '8 / 3 / 9 / 4' }} onClick="">Remove</button>
                 </div>
-                <br/><br/><hr/>
+                <br /><br /><hr />
                 <button className="btn-three btn-restrict" onClick={submitReportConfig}>PREVIEW REPORT</button>
             </section>
-            <br/>
+            <br />
         </div>
     );
 };

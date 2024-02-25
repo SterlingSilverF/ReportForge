@@ -2,7 +2,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faPeopleRoof, faPerson } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect, useState } from 'react';
 import HOC from "../components/HOC";
-import { useNavigate } from 'react-router-dom';
 
 const Dashboard = ({ dbIcons, env, makeApiRequest, userID, navigate }) => {
     const getIconByDbType = (dbType) => {
