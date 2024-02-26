@@ -6,31 +6,15 @@ const DynamicInputs = ({ fetchTableColumns }) => {
     const MAX_ORDERBYS = 5;
     const filterValueRefs = useRef([]);
 
-    const { reportFormContext } = useReportForm();
-    const [filters, setFilters] = useState([{
-        id: `Filter_0`,
-        table: '',
-        column: '',
-        condition: '',
-        value: '',
-        columnOptions: [],
-        andOr: ''
-    }]);
-    const [orderBys, setOrderBys] = useState([{
-        id: `OrderBy_0`,
-        table: '',
-        column: '',
-        direction: '',
-        columnOptions: []
-    }]);
+    const { reportFormContext, updateReportFormData } = useReportForm();
     const [filterId, setFilterId] = useState(1);
     const [orderById, setOrderById] = useState(1);
     useEffect(() => {
-        filterValueRefs.current = filters.map((_, i) => filterValueRefs.current[i] || React.createRef());
-    }, [filters]);
+        reportFormContext.filters.map((_, i) => filterValueRefs.current[i] || React.createRef());
+    }, [reportFormContext.filters]);
 
     const addNewFilter = () => {
-        if (filters.length < MAX_FILTERS) {
+        if (reportFormContext.filters.length < MAX_FILTERS) {
             const newFilter = {
                 id: `Filter_${filterId}`,
                 table: '',
@@ -38,15 +22,17 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 condition: '',
                 value: '',
                 columnOptions: [],
-                andOr: filters.length > 0 ? 'AND' : ''
+                andOr: reportFormContext.filters.length > 0 ? 'AND' : ''
             };
-            setFilters([...filters, newFilter]);
+            updateReportFormData({
+                filters: [...reportFormContext.filters, newFilter]
+            });
             setFilterId(filterId + 1);
         }
     };
 
     const addNewOrderBy = () => {
-        if (orderBys.length < MAX_ORDERBYS) {
+        if (reportFormContext.orderBys.length < MAX_ORDERBYS) {
             const newOrderBy = {
                 id: `OrderBy_${orderById}`,
                 table: '',
@@ -54,45 +40,59 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 direction: '',
                 columnOptions: []
             };
-            setOrderBys([...orderBys, newOrderBy]);
+            updateReportFormData({
+                orderBys: [...reportFormContext.orderBys, newOrderBy]
+            });
             setOrderById(orderById + 1);
         }
     };
 
+
     const updateColumnOptions = async (id, isFilter, tableName) => {
         const columns = await fetchTableColumns(tableName);
         if (isFilter) {
-            setFilters(currentFilters => currentFilters.map(filter =>
-                filter.id === id ? { ...filter, columnOptions: columns } : filter
-            ));
+            const updatedFilters = reportFormContext.filters.map(filter =>
+                filter.id === id ? { ...filter, table: tableName, columnOptions: columns } : filter
+            );
+            updateReportFormData({
+                filters: updatedFilters
+            });
         } else {
             const selectedColumns = reportFormContext.selectedColumns;
             const filteredColumns = columns.filter(column => selectedColumns.includes(column));
-            setOrderBys(currentOrderBys => currentOrderBys.map(orderBy =>
-                orderBy.id === id ? { ...orderBy, columnOptions: filteredColumns } : orderBy
-            ));
+            const updatedOrderBys = reportFormContext.orderBys.map(orderBy =>
+                orderBy.id === id ? { ...orderBy, table: tableName, columnOptions: filteredColumns } : orderBy
+            );
+            updateReportFormData({
+                orderBys: updatedOrderBys
+            });
         }
     };
 
+
     const removeFilter = (id) => {
-        setFilters(filters.filter(filter => filter.id !== id));
+        reportFormContext.filters.filter(filter => filter.id !== id);
     };
 
     const removeOrderBy = (id) => {
-        setOrderBys(orderBys.filter(orderBy => orderBy.id !== id));
+        reportFormContext.orderBys.filter(orderBy => orderBy.id !== id);
     };
 
     const handleFilterChange = async (id, field, value) => {
-        const updatedFilters = filters.map(filter => filter.id === id ? { ...filter, [field]: value } : filter);
-        setFilters(updatedFilters);
+        const updatedFilters = reportFormContext.filters.map(filter => filter.id === id ? { ...filter, [field]: value } : filter);
+        updateReportFormData({
+            filters: updatedFilters
+        });
         if (field === 'table') {
             await updateColumnOptions(id, true, value);
         }
     };
 
     const handleOrderByChange = async (id, field, value) => {
-        const updatedOrderBys = orderBys.map(orderBy => orderBy.id === id ? { ...orderBy, [field]: value } : orderBy);
-        setOrderBys(updatedOrderBys);
+        const updatedOrderBys = reportFormContext.orderBys.map(orderBy => orderBy.id === id ? { ...orderBy, [field]: value } : orderBy);
+        updateReportFormData({
+            orderBys: updatedOrderBys
+        });
         if (field === 'table') {
             await updateColumnOptions(id, false, value);
         }
@@ -163,8 +163,8 @@ const DynamicInputs = ({ fetchTableColumns }) => {
     const orderByValues = orderByValueRefs.current.map(ref => ref.current.value);
 
     const formData = {
-        filters: filters.map((filter, index) => ({ ...filter, value: filterValues[index] })),
-        orderBys: orderBys.map((orderBy, index) => ({ ...orderBy, value: orderByValues[index] })),
+        filters: reportFormContext.filters.map((filter, index) => ({ ...filter, value: filterValues[index] })),
+        orderBys: reportFormContext.orderBys.map((orderBy, index) => ({ ...orderBy, value: orderByValues[index] })),
     };
 
     console.log(formData); // Or handle the data as needed
@@ -180,19 +180,19 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                     <a href="/guides/conditionals">Read More</a>
                 </div>
                 <button className="report-designer-button" onClick={addNewFilter}>Add</button>
-                <button className="report-designer-button" onClick={() => filters.length && removeFilter(filters[filters.length - 1].id)}>Remove</button>
+                <button className="report-designer-button" onClick={() => reportFormContext.filters.length && removeFilter(reportFormContext.filters[reportFormContext.filters.length - 1].id)}>Remove</button>
                 <div style={{ height: '40px' }}></div>
                 <h4>Order By</h4>
                 <div className="explanation-box eb-mini">
                     <p>Display what kind of data first?</p>
                 </div>
                 <button className="report-designer-button" onClick={addNewOrderBy}>Add</button>
-                <button className="report-designer-button" onClick={() => orderBys.length && removeOrderBy(orderBys[orderBys.length - 1].id)}>Remove</button>
+                <button className="report-designer-button" onClick={() => reportFormContext.orderBys.length && removeOrderBy(reportFormContext.orderBys[reportFormContext.orderBys.length - 1].id)}>Remove</button>
             </div>
 
             <div>
                 <label>Select Table</label>
-                {filters.map((filter) => (
+                {reportFormContext.filters.map((filter) => (
                     <TableSelect
                         key={filter.id}
                         value={filter.table}
@@ -200,8 +200,8 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                         options={reportFormContext.selectedTables}
                     />
                 ))}
-                <div style={{ height: calculateSpacerHeight(filters.length) }}></div>
-                {orderBys.map((orderBy) => (
+                <div style={{ height: calculateSpacerHeight(reportFormContext.filters.length) }}></div>
+                {reportFormContext.orderBys.map((orderBy) => (
                     <TableSelect
                         key={orderBy.id}
                         value={orderBy.table}
@@ -213,7 +213,7 @@ const DynamicInputs = ({ fetchTableColumns }) => {
 
             <div>
                 <label>Select Column</label>
-                {filters.map((filter) => (
+                {reportFormContext.filters.map((filter) => (
                     <ColumnSelect
                         key={filter.id}
                         value={filter.column}
@@ -221,8 +221,8 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                         options={filter.columnOptions}
                     />
                 ))}
-                <div style={{ height: calculateSpacerHeight(filters.length) }}></div>
-                {orderBys.map((orderBy) => (
+                <div style={{ height: calculateSpacerHeight(reportFormContext.filters.length) }}></div>
+                {reportFormContext.orderBys.map((orderBy) => (
                     <ColumnSelect
                         key={orderBy.id}
                         value={orderBy.column}
@@ -234,15 +234,15 @@ const DynamicInputs = ({ fetchTableColumns }) => {
 
             <div>
                 <label>Condition</label>
-                {filters.map((filter) => (
+                {reportFormContext.filters.map((filter) => (
                     <ConditionSelect
                         key={filter.id}
                         value={filter.condition}
                         onChange={(value) => handleFilterChange(filter.id, 'condition', value)}
                     />
                 ))}
-                <div style={{ height: calculateSpacerHeight(filters.length) }}></div>
-                {orderBys.map((orderBy) => (
+                <div style={{ height: calculateSpacerHeight(reportFormContext.filters.length) }}></div>
+                {reportFormContext.orderBys.map((orderBy) => (
                     <OrderBySelect
                         key={orderBy.id}
                         value={orderBy.direction}
@@ -254,20 +254,20 @@ const DynamicInputs = ({ fetchTableColumns }) => {
             <div>
                 <div>
                     <label>Value</label>
-                    {filters.map((filter, index) => (
+                    {reportFormContext.filters.map((filter, index) => (
                         <div key={filter.id}>
                             <ValueInput
                                 id={`filter-value-${filter.id}`}
-                                ref={filterValueRefs.current[index]}/>
+                                ref={filterValueRefs.current[index]} />
                         </div>
                     ))}
                 </div>
             </div>
-            {filters.length > 1 ? (
+            {reportFormContext.filters.length > 1 ? (
                 <div>
                     <label>Operator</label>
-                    {filters.map((filter, index) => (
-                        index < filters.length - 1 && (
+                    {reportFormContext.filters.map((filter, index) => (
+                        index < reportFormContext.filters.length - 1 && (
                             <AndOrSelect
                                 key={filter.id}
                                 value={filter.andOr}
@@ -277,7 +277,7 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                     ))}
                 </div>
             ) : (
-                <div style={{ width: "50px"}}></div>
+                <div style={{ width: "50px" }}></div>
             )}
         </div>
     );

@@ -5,6 +5,7 @@ using ReportManager.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.Runtime.InteropServices;
 
 namespace ReportManager.API
 {
@@ -16,6 +17,18 @@ namespace ReportManager.API
         private readonly GroupManagementService _groupManagementService;
         private readonly SharedService _sharedService;
         private readonly FolderManagementService _folderManagementService;
+
+        public class BuildSQLRequest
+        {
+            public string? SelectedConnection { get; set; }
+            [Required]
+            public string DbType { get; set; }
+            public List<string> SelectedTables { get; set; } = new List<string>();
+            public List<string> SelectedColumns { get; set; } = new List<string>();
+            public List<object> JoinConfig { get; set; } = new List<object>();
+            public object? Filters { get; set; }
+            public object? OrderBys { get; set; }
+        }
 
         public class CreateReportRequest
         {
@@ -73,6 +86,12 @@ namespace ReportManager.API
             _groupManagementService = groupManagementService;
             _sharedService = sharedService;
             _folderManagementService = folderManagementService;
+        }
+
+        [HttpPost("buildAndVerifySQL")]
+        public IActionResult BuildSQL(BuildSQLRequest request)
+        {
+            return Ok(request);
         }
 
         [HttpPost("createOrUpdateNormalReport")]

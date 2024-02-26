@@ -277,44 +277,81 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
 
         return orderedTables;
     }
-    
-    // Support function for submission
-    const compileReportConfigurations = () => {
-        const filterConfig = [];
-        const orderByConfig = [];
 
-        const filterCount = document.querySelectorAll('[id^="columnFilter"]').length;
-        const orderByCount = document.querySelectorAll('[id^="orderbyColumn"]').length;
+    const updateReportFormContextWithJoins = () => {
+        const joinConfig = joinsInfo.map(join => ({
+            tableOne: join.tableOne.name,
+            tableTwo: join.tableTwo.name,
+            columnOne: join.tableOne.column,
+            columnTwo: join.tableTwo.column
+        }));
 
-        for (let i = 1; i <= filterCount; i++) {
-            filterConfig.push({
-                column: document.getElementById(`columnFilter${i}`).value,
-                condition: document.getElementById(`condition${i}`).value,
-                value: document.getElementById(`filterValue${i}`).value,
-            });
+        updateReportFormData(prevState => ({
+            ...prevState,
+            joinConfig
+        }));
+    };
+
+    // Verification function
+    const verifyReportConfiguration = () => {
+        const essentialFields = ['reportName', 'dbType', 'selectedConnection'];
+        for (let field of essentialFields) {
+            if (!reportFormContext[field]) {
+                return false;
+            }
         }
 
-        for (let i = 1; i <= orderByCount; i++) {
-            orderByConfig.push({
-                column: document.getElementById(`orderbyColumn${i}`).value,
-                order: document.getElementById(`orderbyAscDesc${i}`).value,
-            });
+        if (reportFormContext.selectedTables.length === 0 || reportFormContext.selectedColumns.length === 0) {
+            return false;
         }
 
-        return { filterConfig, orderByConfig };
+        
+        if (reportFormContext.selectedTables.length > 1 && reportFormContext.joinConfig.length === 0) {
+            return false;
+        }
+
+       
+        for (let join of joinsInfo) {
+            if (!join.isValid) {
+                return false;
+            }
+        }
+
+        return true;
     };
 
     // Final function
     const submitReportConfig = async () => {
-        const { filterConfig, orderByConfig } = compileReportConfigurations();
+        const filterValues = filterValueRefs.current.map(ref => ref?.current?.value);
+        const dynamicFilters = reportFormContext.filters.map((filter, index) => ({
+            ...filter,
+            value: filterValues[index],
+        }));
+
+        const isReportValid = verifyReportConfiguration();
+        if (!isReportValid) {
+            console.error("Report configuration is invalid.");
+            return;
+        }
+
+        updateReportFormContextWithJoins();
 
         try {
-            const response = await makeApiRequest('post', '/api/reports/buildAndVerifySql', reportFormContext);
-            // Handle success, e.g., navigate to the preview page with the response data
-            // Possibly using something like React Router for navigation
+            const requestBody = {
+                selectedConnection: reportFormContext.selectedConnection,
+                dbType: reportFormContext.dbType,
+                selectedTables: reportFormContext.selectedTables,
+                selectedColumns: reportFormContext.selectedColumns,
+                joinConfig: reportFormContext.joinConfig,
+                filters: dynamicFilters,
+                orderBys: reportFormContext.orderBys
+            };
+            const response = await makeApiRequest('post', '/api/report/buildAndVerifySql', {
+                requestBody
+            });
+            navigate('/report-preview');
         } catch (error) {
             console.error("Error submitting report configuration:", error);
-            // Handle error
         }
     };
 
@@ -333,7 +370,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 <br />
                 <h2>Select Tables</h2>
-                <LoadingComponent />
+                {status === 'loading' && <LoadingComponent />}
                 <div className="flex-grid">
                     <div>
                         <div style={{ flex: 1 }}>

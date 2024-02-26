@@ -1,6 +1,8 @@
 ﻿import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import HOC from '../components/HOC';
+import LoadingComponent from '../components/loading';
 
 const FirstTimeAdminSetup = () => {
     const navigate = useNavigate();
@@ -12,14 +14,14 @@ const FirstTimeAdminSetup = () => {
     const [permissionKey, setPermissionKey] = useState('');
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
-
-    axios.defaults.baseURL = 'https://localhost:7280';
+    const [status, setStatus] = useState('');
 
     const canSubmit = username.length >= 3 && password.length >= 8 && password === confirmPassword && groupname != "";
 
     const handleSuccess = () => {
         setSuccess(true);
         setMessage('First time setup completed without errors.');
+        setStatus("done");
     };
 
     const handleError = (err) => {
@@ -30,8 +32,12 @@ const FirstTimeAdminSetup = () => {
         window.location.reload();
     };
 
+    // No HOC because that would require signing in
+    axios.defaults.baseURL = 'https://localhost:7280';
+
     const handleAdminSetup = async (e) => {
         e.preventDefault();
+        setStatus("loading");
 
         if (canSubmit) {
             axios.post('/api/auth/firsttimesetup', {
@@ -108,14 +114,16 @@ const FirstTimeAdminSetup = () => {
                 <input
                     type="submit"
                     value="Setup Admin"
-                    className="btn btn-block"
+                    className="btn-six"
+                    style={{ padding: '5px 5px 6px 5px' }}
                     disabled={!canSubmit}
                 />
             </form>
+            {status === 'loading' && <LoadingComponent />}
             <p className="success-message">{message}</p>
             {success && (
                 <div>
-                    <button onClick={() => navigate('/')} className="btn-four">Go to Dashboard</button>
+                    <button onClick={() => navigate('/')} className="btn-four">Go to Login</button>
                     <button onClick={resetForm} className="btn-four">Reset Form</button><br />
                 </div>
             )}

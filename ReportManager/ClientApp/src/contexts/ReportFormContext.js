@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState } from 'react';
+﻿import React, { createContext, useContext, useState, useRef } from 'react';
 const ReportFormContext = createContext();
 export const useReportForm = () => useContext(ReportFormContext);
 
@@ -14,7 +14,23 @@ export const ReportFormProvider = ({ children }) => {
         selectedTables: [],
         selectedColumns: [],
         joinConfig: [],
-        orderByConfig: []
+        filters: [{
+            id: `Filter_0`,
+            table: '',
+            column: '',
+            condition: '',
+            value: '',
+            columnOptions: [],
+            andOr: ''
+        }],
+        filterValueRefs: useRef([]),
+        orderBys: [{
+            id: `OrderBy_0`,
+            table: '',
+            column: '',
+            direction: '',
+            columnOptions: []
+        }]
     });
 
     const updateReportFormData = (newData) => {

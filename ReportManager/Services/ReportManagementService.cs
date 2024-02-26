@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using ReportManager.Models;
+using static ReportManager.API.ReportController;
 
 namespace ReportManager.Services
 {
@@ -75,5 +76,26 @@ namespace ReportManager.Services
             var result = GetReportCollection(type).DeleteOne(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
+
+        // SQL
+        /*public string GenerateSelectSQL(selectedColumns)
+        {
+            string sql = "SELECT ";
+            foreach (string table in request.SelectedTables)
+            {
+                foreach (string column in request.SelectedColumns)
+                {
+                    sql += $"{GetColumnName(table, column)}, ";
+                }
+            }
+            sql = sql.TrimEnd(',', ' ') + " FROM ...";
+
+            return sql;
+        }
+
+        private string GetColumnName(string table, string column)
+        {
+            return $"{table}.{column}";
+        }*/
     }
 }
