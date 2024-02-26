@@ -6,8 +6,6 @@ const DynamicInputs = ({ fetchTableColumns }) => {
     const MAX_ORDERBYS = 5;
     const filterValueRefs = useRef([]);
 
-    
-
     const { reportFormContext } = useReportForm();
     const [filters, setFilters] = useState([{
         id: `Filter_0`,
@@ -15,7 +13,8 @@ const DynamicInputs = ({ fetchTableColumns }) => {
         column: '',
         condition: '',
         value: '',
-        columnOptions: []
+        columnOptions: [],
+        andOr: ''
     }]);
     const [orderBys, setOrderBys] = useState([{
         id: `OrderBy_0`,
@@ -38,7 +37,8 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 column: '',
                 condition: '',
                 value: '',
-                columnOptions: []
+                columnOptions: [],
+                andOr: filters.length > 0 ? 'AND' : ''
             };
             setFilters([...filters, newFilter]);
             setFilterId(filterId + 1);
@@ -66,8 +66,10 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 filter.id === id ? { ...filter, columnOptions: columns } : filter
             ));
         } else {
+            const selectedColumns = reportFormContext.selectedColumns;
+            const filteredColumns = columns.filter(column => selectedColumns.includes(column));
             setOrderBys(currentOrderBys => currentOrderBys.map(orderBy =>
-                orderBy.id === id ? { ...orderBy, columnOptions: columns } : orderBy
+                orderBy.id === id ? { ...orderBy, columnOptions: filteredColumns } : orderBy
             ));
         }
     };
@@ -123,14 +125,21 @@ const DynamicInputs = ({ fetchTableColumns }) => {
             <option value=">=">Greater Than or Equal To</option>
             <option value="<">Less Than</option>
             <option value="<=">Less Than or Equal To</option>
-            <option value="Between">Between</option>
-            <option value="In">Contained in List</option>
+            {/*<option value="Between">Between</option>
+            <option value="In">Contained in List</option>*/}
         </select>
     );
 
     const ValueInput = React.forwardRef(({ id }, ref) => (
         <input id={id} type="text" ref={ref} className="input-style-short" />
     ));
+
+    const AndOrSelect = ({ value, onChange }) => (
+        <select value={value} onChange={e => onChange(e.target.value)}>
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+        </select>
+    );
 
     const OrderBySelect = ({ id, value, onChange }) => (
         <select id={id} value={value} onChange={e => onChange(e.target.value)}>
@@ -243,15 +252,33 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 ))}
             </div>
             <div>
-                <label>Value</label>
-                {filters.map((filter, index) => (
-                    <ValueInput
-                        key={filter.id}
-                        id={`filter-value-${filter.id}`}
-                        ref={filterValueRefs.current[index]}
-                    />
-                ))}
+                <div>
+                    <label>Value</label>
+                    {filters.map((filter, index) => (
+                        <div key={filter.id}>
+                            <ValueInput
+                                id={`filter-value-${filter.id}`}
+                                ref={filterValueRefs.current[index]}/>
+                        </div>
+                    ))}
+                </div>
             </div>
+            {filters.length > 1 ? (
+                <div>
+                    <label>Operator</label>
+                    {filters.map((filter, index) => (
+                        index < filters.length - 1 && (
+                            <AndOrSelect
+                                key={filter.id}
+                                value={filter.andOr}
+                                onChange={(value) => handleFilterChange(filter.id, 'andOr', value)}
+                            />
+                        )
+                    ))}
+                </div>
+            ) : (
+                <div style={{ width: "50px"}}></div>
+            )}
         </div>
     );
 };

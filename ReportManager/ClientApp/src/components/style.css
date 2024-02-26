@@ -1032,9 +1032,5 @@ input[type="radio"] {
     }
 
     .stagger > div:nth-child(4) {
-        margin-right: 50px;
-    }
-
-    .stagger > div:last-child {
-        margin-right: 100px;
+        margin-right: 10px;
     }

@@ -115,6 +115,13 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const handleTableOneJoinChange = async (e) => {
         const tableName = e.target.value;
         setSelectedTableOne(tableName);
+
+        const joinExists = joinsInfo.some(join =>
+            (join.tableOne.name === tableName || join.tableOne.name === selectedTableTwo) &&
+            (join.tableTwo.name === tableName || join.tableTwo.name === selectedTableTwo)
+        );
+        updateJoinButtonText(joinExists ? "Unjoin" : "Join");
+
         if (tableName) {
             const columns = await fetchTableColumns(tableName);
             setColumnsTableOne(columns);
@@ -127,6 +134,14 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const handleTableTwoJoinChange = async (e) => {
         const tableName = e.target.value;
         setSelectedTableTwo(tableName);
+
+        const joinExists = joinsInfo.some(join =>
+            (join.tableOne.name === selectedTableOne || join.tableOne.name === tableName) &&
+            (join.tableTwo.name === selectedTableOne || join.tableTwo.name === tableName)
+        );
+
+        updateJoinButtonText(joinExists ? "Unjoin" : "Join");
+
         if (tableName) {
             const columns = await fetchTableColumns(tableName);
             setColumnsTableTwo(columns);
@@ -136,40 +151,133 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     };
 
     function getColumnDataType(columnName, tableName) {
-        // Fetch the datatype from the columns listbox or a metadata store
-        // Placeholder for actual implementation
-        return 'dataType';
-    };
-
-    // Checks if datatypes are compatible or if a conversion is possible
-    function checkDataTypeCompatibility(type1, type2) {
-        // Implement logic to check compatibility or conversion feasibility
-        // Return true if compatible or convertible, false otherwise
-        return true; // Placeholder return value
-    };
-
-    function handleJoinClick() {
-        const typeOne = getColumnDataType(selectedJoinColumnOne, selectedTableOne);
-        const typeTwo = getColumnDataType(selectedJoinColumnTwo, selectedTableTwo);
-        const isValidJoin = checkDataTypeCompatibility(typeOne, typeTwo);
-
-        const joinSelection = {
-            tableOne: {
-                name: selectedTableOne,
-                column: selectedJoinColumnOne,
-                dataType: typeOne
-            },
-            tableTwo: {
-                name: selectedTableTwo,
-                column: selectedJoinColumnTwo,
-                dataType: typeTwo
-            },
-            isValid: isValidJoin,
-        };
-
-        joinsInfo.push(joinSelection);
+        const column = tableColumns[tableName]?.find(col => col.columnName === columnName);
+        return column ? column.dataType : null;
     }
 
+    function checkDataTypeCompatibility(type1, type2, dbType) {
+        const complexTypes = ['BLOB', 'IMAGE', 'BYTEA', 'BINARY', 'VARBINARY', 'LONG VARBINARY'];
+
+        if (complexTypes.includes(type1) || complexTypes.includes(type2)) {
+            return false;
+        }
+        // Same types always compatible
+        if (type1 === type2) return true;
+
+        const booleanTypes = ['BIT', 'BOOLEAN'];
+        const numericTypes = ['INT', 'BIGINT', 'SMALLINT', 'FLOAT', 'DECIMAL', 'NUMERIC'];
+        const stringTypes = ['VARCHAR', 'CHAR', 'TEXT', 'NVARCHAR', 'NCHAR'];
+        const isType1Boolean = booleanTypes.includes(type1);
+        const isType2Boolean = booleanTypes.includes(type2);
+        const isType1Numeric = numericTypes.includes(type1);
+        const isType2Numeric = numericTypes.includes(type2);
+        const isType1String = stringTypes.includes(type1);
+        const isType2String = stringTypes.includes(type2);
+
+        // Bool and numeric
+        if ((isType1Boolean && isType2Numeric) || (isType1Numeric && isType2Boolean)) {
+            /*if ((typeof value1 === 'boolean' && !Number.isInteger(value2)) ||
+                (typeof value2 === 'boolean' && !Number.isInteger(value1))) {
+                return false;
+            }*/
+            return true;
+        }
+
+        // Numeric and string
+        if ((isType1Numeric && isType2String) || (isType1String && isType2Numeric)) {
+            return true;
+        }
+
+        const dateTimeCompatibilities = {
+            'MSSQL': ['DATETIME', 'DATETIME2', 'SMALLDATETIME'],
+            'Oracle': ['DATE', 'TIMESTAMP'],
+            'MySQL': ['DATETIME', 'TIMESTAMP'],
+            'Postgres': ['TIMESTAMP', 'TIMESTAMP WITH TIME ZONE'],
+            'DB2': ['TIMESTAMP']
+        };
+
+        if (dateTimeCompatibilities[dbType]) {
+            let bothDateTime = dateTimeCompatibilities[dbType].includes(type1) && dateTimeCompatibilities[dbType].includes(type2);
+            if (bothDateTime) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function updateJoinButtonText(text) {
+        const joinButton = document.getElementById("joinButton");
+        joinButton.textContent = text;
+    };
+
+    async function handleJoinClick() {
+        const typeOne = getColumnDataType(selectedJoinColumnOne, selectedTableOne);
+        const typeTwo = getColumnDataType(selectedJoinColumnTwo, selectedTableTwo);
+
+        const joinIndex = joinsInfo.findIndex(join =>
+            (join.tableOne.name === selectedTableOne || join.tableOne.name === selectedTableTwo) &&
+            (join.tableTwo.name === selectedTableOne || join.tableTwo.name === selectedTableTwo)
+        );
+
+        if (joinIndex !== -1) {
+            updateJoinButtonText("Join");
+            setJoinsInfo(prevJoins => prevJoins.filter((_, index) => index !== joinIndex));
+        } else {
+            if (!selectedJoinColumnOne || !selectedJoinColumnTwo) {
+                return;
+            }
+            const isValidJoin = checkDataTypeCompatibility(typeOne, typeTwo, reportFormContext.dbType);
+            const joinSelection = {
+                tableOne: {
+                    name: selectedTableOne,
+                    column: selectedJoinColumnOne,
+                    dataType: typeOne
+                },
+                tableTwo: {
+                    name: selectedTableTwo,
+                    column: selectedJoinColumnTwo,
+                    dataType: typeTwo
+                },
+                isValid: isValidJoin,
+            };
+
+            if (isValidJoin) {
+                setSelectedTableOne(selectedTableTwo);
+                const columnsOne = await fetchTableColumns(selectedTableTwo);
+                setColumnsTableOne(columnsOne);
+                setSelectedTableTwo('');
+                setColumnsTableTwo([]);
+            } else {
+                updateJoinButtonText("Unjoin");
+            }
+
+            setJoinsInfo(prevJoins => [...prevJoins, joinSelection]);
+            setSelectedJoinColumnOne('');
+            setSelectedJoinColumnTwo('');
+        }
+    }
+
+    function reorderTables(selectedTables, joinsInfo) {
+        const orderedTables = [];
+        
+        joinsInfo.forEach(join => {
+            if (!orderedTables.includes(join.tableOne.name)) {
+                orderedTables.push(join.tableOne.name);
+            }
+            if (!orderedTables.includes(join.tableTwo.name)) {
+                orderedTables.push(join.tableTwo.name);
+            }
+        });
+
+        selectedTables.forEach(tableName => {
+            if (!orderedTables.includes(tableName)) {
+                orderedTables.push(tableName);
+            }
+        });
+
+        return orderedTables;
+    }
+    
     // Support function for submission
     const compileReportConfigurations = () => {
         const filterConfig = [];
@@ -311,38 +419,56 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                         </div>
                     </div>
                     <div className="explanation-box eb-medium" style={{ flex: '1 1 auto' }}>
-                        <p>In order to display data from different tables properly, each table must be joined to the query.</p>
-                        <p>Joining is accomplished by indicating shared, but unique valued columns in two individual tables.</p>
-                        <p>Usually these are columns that have the same name and are the unique record number or identifier for ONE of the two tables.</p>
-                        <a href="/guides/table-joins">Read More</a>
+                        <p>To correlate two separate sets of information in a single report via a database, each set (table) must be "joined" to the query.</p>
+                        <p>Joining involves linking tables through a common column. Most often it is the unique identifier for ONE of the tables involved.</p>
+                        <p>Each table needs to be joined only once, like a chain.</p>
+                        <a href="/guides/table-joins">Learn More</a>
                     </div>
                 </div>
-                <button type="button" className="report-designer-button" onClick={handleJoinClick}>Join</button>
+                <button type="button" id="joinButton" className="report-designer-button" onClick={handleJoinClick}>Join</button>
                 <br />
-                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gridGap: '20px', alignItems: 'start' }}>
+                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '.5fr 1fr 1fr 1fr', gridGap: '10px', alignItems: 'start' }}>
                     <div style={{ gridColumn: '1 / 2' }}>
+                        <h5>Table Join Checklist</h5>
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                            {reorderTables(reportFormContext.selectedTables, joinsInfo).map((tableName, index) => {
+                                const isAlreadyJoined = joinsInfo.some(join =>
+                                    join.tableOne.name === tableName || join.tableTwo.name === tableName
+                                );
+                                const isJoined = isAlreadyJoined && joinsInfo.find(join =>
+                                    join.tableOne.name === tableName || join.tableTwo.name === tableName
+                                ).isValid;
+                                return (
+                                    <li key={index}>
+                                        {isJoined ? '✅' : '❌'} {tableName}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                    <div style={{ gridColumn: '2 / 3' }}>
                         <h5>Joined Columns</h5>
                         {joinsInfo.map((join, index) => (
                             <div key={index}>
-                                <b>{join.tableOne.name} -> {join.tableTwo.name}</b>
+                                <b>{join.tableOne.name} -&gt; {join.tableTwo.name}</b>
                                 <ul>
                                     <li>{join.tableOne.column} = {join.tableTwo.column}</li>
                                 </ul>
                             </div>
                         ))}
                     </div>
-
-                    <div style={{ gridColumn: '2 / 3' }}>
+                    <div style={{ gridColumn: '3 / 4' }}>
                         <h5>Join Valid</h5>
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {joinsInfo.map((join, index) => (
                                 <li key={index}>
-                                    {join.tableOne.name} & {join.tableTwo.name} {join.isValid ? '✅' : '❌'}
+                                    {join.isValid ? '✅' : '❌'} {join.tableOne.name} & {join.tableTwo.name}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
+                <p>To proceed, only green check marks can be displayed.</p>
                 <hr />
                     <DynamicInputs fetchTableColumns={fetchTableColumns} />
                 <br /><br /><hr />
