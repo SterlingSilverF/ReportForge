@@ -18,7 +18,7 @@ public enum DBObjectType
     Procedure = 4,
     All = Table | View | Procedure
 }
-
+/*
 public interface IObjectReaderService
 {
     List<DatabaseObjectInfoModel> GetObjectStructure(DBConnectionModel DBConnection, DBObjectType objectType = DBObjectType.All);
@@ -186,4 +186,4 @@ public class ObjectReaderService : IObjectReaderService
                 throw new ArgumentException("Unsupported database type.");
         }
     }
-}
+}*/

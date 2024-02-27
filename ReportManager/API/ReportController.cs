@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Runtime.InteropServices;
+using static ReportManager.Models.SQL_Builder;
 
 namespace ReportManager.API
 {
@@ -29,41 +30,6 @@ namespace ReportManager.API
             public List<OrderByItem> OrderBys { get; set; } = new List<OrderByItem>();
         }
 
-        public class ColumnDefinition
-        {
-            public string Table { get; set; }
-            public string ColumnName { get; set; }
-            public string DataType { get; set; }
-        }
-
-        public class JoinConfigItem
-        {
-            public string TableOne { get; set; }
-            public string TableTwo { get; set; }
-            public string ColumnOne { get; set; }
-            public string ColumnTwo { get; set; }
-            public bool IsValid { get; set; }
-        }
-
-        public class FilterItem
-        {
-            public string Id { get; set; }
-            public string Table { get; set; }
-            public string Column { get; set; }
-            public string Condition { get; set; }
-            public string Value { get; set; }
-            public string? AndOr { get; set; }
-        }
-
-        public class OrderByItem
-        {
-            public string Id { get; set; }
-            public string Table { get; set; }
-            public string Column { get; set; }
-            public string Direction { get; set; }
-            public List<string> ColumnOptions { get; set; } = new List<string>();
-        }
-
         public class CreateReportRequest
         {
             [Required]
@@ -72,7 +38,7 @@ namespace ReportManager.API
             public string ReportName { get; set; }
             public string Description { get; set; }
             [Required]
-            public DBConnectionModel SourceDB { get; set; }
+            public string BuiltConnectionId { get; set; }
             [Required]
             public ScheduleInfo Schedule { get; set; }
             [Required]
@@ -91,8 +57,6 @@ namespace ReportManager.API
 
         public class CreateNormalReport : CreateReportRequest
         {
-            [Required]
-            public HashSet<DatabaseObjectInfoModel> SelectedObjects { get; set; }
             [Required]
             public List<ReportColumn> Columns { get; set; }
             public List<Filter> Filters { get; set; }
@@ -125,10 +89,11 @@ namespace ReportManager.API
         [HttpPost("buildAndVerifySQL")]
         public IActionResult BuildSQL([FromBody] BuildSQLRequest request)
         {
-            return Ok(request);
+            string SQL = _reportManagementService.BuildSQLQuery(request);
+            return Ok(SQL);
         }
 
-        [HttpPost("createOrUpdateNormalReport")]
+        /*[HttpPost("createOrUpdateNormalReport")]
         public IActionResult CreateOrUpdateNormalReport(CreateNormalReport request)
         {
             ObjectId folderid = _sharedService.StringToObjectId(request.FolderId);
@@ -142,11 +107,11 @@ namespace ReportManager.API
             {
                 OwnerType ownerType = Enum.TryParse(request.OwnerType, true, out OwnerType parsedType) ? parsedType : default(OwnerType);
 
-                var report = new NormalReportConfiguration
+                var report = new ReportConfigurationModel
                 {
                     ReportName = request.ReportName,
                     Description = request.Description,
-                    SourceDB = request.SourceDB,
+                    BuiltConnectionString = request.BuiltConnectionId;
                     Schedule = request.Schedule,
                     PaginationLimit = request.PaginationLimit,
                     FolderId = folder.Id,
@@ -182,7 +147,7 @@ namespace ReportManager.API
             {
                 return BadRequest(ex.ToString());
             }
-        }
+        }*/
 
         [HttpGet("getUserReports")]
         public IActionResult GetUserReports([FromQuery] string userId)

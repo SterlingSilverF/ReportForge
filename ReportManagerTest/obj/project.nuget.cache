@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "N1VttB0s9A8eOuKon3wozIHplYurZLKv9FlC+xj/36c2/gyQI5Qlmk2J1/DXJenKjbbuxK38TxTcboocdJc16A==",
+  "dgSpecHash": "BxzAftLk1ncgYpYGlGzD2Wal21dBEpzC1jaZYjKfoEL7AmN3igEBwxsjkwCa7yPav/1E6QX/PodNcq7McSRjyA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManagerTest\\ReportManagerTest.csproj",
   "expectedPackageFiles": [
@@ -58,6 +58,7 @@
     "C:\\Users\\Silver\\.nuget\\packages\\mongodb.driver\\2.23.1\\mongodb.driver.2.23.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\mongodb.driver.core\\2.23.1\\mongodb.driver.core.2.23.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\mongodb.libmongocrypt\\1.8.0\\mongodb.libmongocrypt.1.8.0.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\mstest.testframework\\3.2.2\\mstest.testframework.3.2.2.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\mysql.data\\8.3.0\\mysql.data.8.3.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\npgsql\\8.0.1\\npgsql.8.0.1.nupkg.sha512",

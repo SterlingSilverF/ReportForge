@@ -69,7 +69,10 @@ const Dashboard = ({ dbIcons, env, makeApiRequest, userID, navigate }) => {
                 <h3>Announcements</h3>
                 <hr />
                 <div className="item">
-                    <a>Demo: Click Here to View Development Status</a>
+                    <a>Capstone Submission</a>
+                    <p>This application is being used as a capstone project.</p>
+                    <a>Settings Under Construction</a>
+                    <p>Only some settings are currently availible in settings.</p>
                 </div>
             </div>
         </div>

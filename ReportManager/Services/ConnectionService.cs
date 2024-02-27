@@ -456,7 +456,6 @@ public class ConnectionService
         return connections;
     }
 
-
     public List<BaseConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
     {
         string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";

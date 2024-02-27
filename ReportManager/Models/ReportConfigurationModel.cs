@@ -8,7 +8,7 @@ namespace ReportManager.Models
         public ObjectId Id { get; set; }
         public string ReportName { get; set; }
         public string? Description { get; set; }
-        public DBConnectionModel SourceDB { get; set; }
+        public BuiltConnectionString BuiltConnectionString { get; set; }
         public ScheduleInfo Schedule { get; set; }
         public List<Job>? ReportJobs { get; set; }
         public int PaginationLimit { get; set; }
@@ -22,17 +22,9 @@ namespace ReportManager.Models
         public string CompiledSQL { get; set; }
     }
 
-    public class NormalReportConfiguration : ReportConfigurationModel
-    {
-        public HashSet<DatabaseObjectInfoModel> SelectedObjects { get; set; }
-        public List<ReportColumn> Columns { get; set; }
-        public List<Filter>? Filters { get; set; }
-        public List<string> OrderBy { get; set; }
-    }
-
     public class ReportColumn
     {
-        public DatabaseObjectInfoModel ParentObject { get; set; }
+        public string Table { get; set; }
         public string ColumnName { get; set; }
         public int DisplayOrder { get; set; }
         public ColumnFormatting? ColumnFormatting { get; set; }
