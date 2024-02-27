@@ -1,17 +1,12 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { useReportForm } from '../contexts/ReportFormContext';
 
-const DynamicInputs = ({ fetchTableColumns }) => {
+const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
     const MAX_FILTERS = 6;
     const MAX_ORDERBYS = 5;
-    const filterValueRefs = useRef([]);
-
     const { reportFormContext, updateReportFormData } = useReportForm();
     const [filterId, setFilterId] = useState(1);
     const [orderById, setOrderById] = useState(1);
-    useEffect(() => {
-        reportFormContext.filters.map((_, i) => filterValueRefs.current[i] || React.createRef());
-    }, [reportFormContext.filters]);
 
     const addNewFilter = () => {
         if (reportFormContext.filters.length < MAX_FILTERS) {
@@ -24,9 +19,16 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 columnOptions: [],
                 andOr: reportFormContext.filters.length > 0 ? 'AND' : ''
             };
+
             updateReportFormData({
                 filters: [...reportFormContext.filters, newFilter]
             });
+
+            setInputValues(prevState => ({
+                ...prevState,
+                [`filter-value-${newFilter.id}`]: ''
+            }));
+
             setFilterId(filterId + 1);
         }
     };
@@ -47,7 +49,6 @@ const DynamicInputs = ({ fetchTableColumns }) => {
         }
     };
 
-
     const updateColumnOptions = async (id, isFilter, tableName) => {
         const columns = await fetchTableColumns(tableName);
         if (isFilter) {
@@ -58,8 +59,9 @@ const DynamicInputs = ({ fetchTableColumns }) => {
                 filters: updatedFilters
             });
         } else {
-            const selectedColumns = reportFormContext.selectedColumns;
-            const filteredColumns = columns.filter(column => selectedColumns.includes(column));
+            const filteredColumns = columns.filter(columnName =>
+                reportFormContext.selectedColumns.some(sc => sc.table === tableName && sc.columnName === columnName)
+            );
             const updatedOrderBys = reportFormContext.orderBys.map(orderBy =>
                 orderBy.id === id ? { ...orderBy, table: tableName, columnOptions: filteredColumns } : orderBy
             );
@@ -69,13 +71,29 @@ const DynamicInputs = ({ fetchTableColumns }) => {
         }
     };
 
+    const handleValueChange = (id, value) => {
+        setInputValues(prevState => ({
+            ...prevState,
+            [id]: value
+        }));
+    };
 
     const removeFilter = (id) => {
-        reportFormContext.filters.filter(filter => filter.id !== id);
+        const updatedFilters = reportFormContext.filters.filter(filter => filter.id !== id);
+        updateReportFormData({ filters: updatedFilters });
+
+        setInputValues(prevState => {
+            const updatedInputValues = { ...prevState };
+            delete updatedInputValues[`filter-value-${id}`];
+            return updatedInputValues;
+        });
     };
 
     const removeOrderBy = (id) => {
-        reportFormContext.orderBys.filter(orderBy => orderBy.id !== id);
+        const updatedOrderBys = reportFormContext.orderBys.filter(orderBy => orderBy.id !== id);
+        updateReportFormData({
+            orderBys: updatedOrderBys
+        });
     };
 
     const handleFilterChange = async (id, field, value) => {
@@ -130,10 +148,6 @@ const DynamicInputs = ({ fetchTableColumns }) => {
         </select>
     );
 
-    const ValueInput = React.forwardRef(({ id }, ref) => (
-        <input id={id} type="text" ref={ref} className="input-style-short" />
-    ));
-
     const AndOrSelect = ({ value, onChange }) => (
         <select value={value} onChange={e => onChange(e.target.value)}>
             <option value="AND">AND</option>
@@ -154,22 +168,6 @@ const DynamicInputs = ({ fetchTableColumns }) => {
         const dynamicHeight = Math.max(baseHeight - (itemCount * 24), minHeight);
         return `${dynamicHeight}px`;
     };
-
-    /*
-    const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
-
-    const filterValues = filterValueRefs.current.map(ref => ref.current.value);
-    const orderByValues = orderByValueRefs.current.map(ref => ref.current.value);
-
-    const formData = {
-        filters: reportFormContext.filters.map((filter, index) => ({ ...filter, value: filterValues[index] })),
-        orderBys: reportFormContext.orderBys.map((orderBy, index) => ({ ...orderBy, value: orderByValues[index] })),
-    };
-
-    console.log(formData); // Or handle the data as needed
-    };
-    */
 
     return (
         <div className="stagger">
@@ -254,11 +252,14 @@ const DynamicInputs = ({ fetchTableColumns }) => {
             <div>
                 <div>
                     <label>Value</label>
-                    {reportFormContext.filters.map((filter, index) => (
-                        <div key={filter.id}>
-                            <ValueInput
-                                id={`filter-value-${filter.id}`}
-                                ref={filterValueRefs.current[index]} />
+                    {Object.entries(inputValues).map(([id, value]) => (
+                        <div key={id}>
+                            <input
+                                type="text"
+                                value={value}
+                                className="input-style-short"
+                                onChange={(e) => handleValueChange(id, e.target.value)}
+                            />
                         </div>
                     ))}
                 </div>

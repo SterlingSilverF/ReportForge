@@ -18,7 +18,7 @@ import UserManagement from "./Pages/UserManager";
 import FolderForm from "./Pages/FolderForm";
 import ReportForm from "./Pages/ReportForm";
 import ReportDesigner from "./Pages/ReportDesigner";
-import PreviewReport from "./Pages/ReportPreview";
+import PreviewReport from "./Pages/PreviewReport";
 import AllGuides from "./Pages/guides/AllGuides";
 import WorkspaceGuides from "./Pages/guides/WorkSpaceGuides";
 import AddingNewContentGuides from "./Pages/guides/AddingNewContentGuides";

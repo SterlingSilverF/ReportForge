@@ -23,7 +23,6 @@ export const ReportFormProvider = ({ children }) => {
             columnOptions: [],
             andOr: ''
         }],
-        filterValueRefs: useRef([]),
         orderBys: [{
             id: `OrderBy_0`,
             table: '',

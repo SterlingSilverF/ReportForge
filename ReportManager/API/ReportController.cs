@@ -20,14 +20,48 @@ namespace ReportManager.API
 
         public class BuildSQLRequest
         {
-            public string? SelectedConnection { get; set; }
-            [Required]
+            public string SelectedConnection { get; set; }
             public string DbType { get; set; }
             public List<string> SelectedTables { get; set; } = new List<string>();
-            public List<string> SelectedColumns { get; set; } = new List<string>();
-            public List<object> JoinConfig { get; set; } = new List<object>();
-            public object? Filters { get; set; }
-            public object? OrderBys { get; set; }
+            public List<ColumnDefinition> SelectedColumns { get; set; } = new List<ColumnDefinition>();
+            public List<JoinConfigItem> JoinConfig { get; set; } = new List<JoinConfigItem>();
+            public List<FilterItem> Filters { get; set; } = new List<FilterItem>();
+            public List<OrderByItem> OrderBys { get; set; } = new List<OrderByItem>();
+        }
+
+        public class ColumnDefinition
+        {
+            public string Table { get; set; }
+            public string ColumnName { get; set; }
+            public string DataType { get; set; }
+        }
+
+        public class JoinConfigItem
+        {
+            public string TableOne { get; set; }
+            public string TableTwo { get; set; }
+            public string ColumnOne { get; set; }
+            public string ColumnTwo { get; set; }
+            public bool IsValid { get; set; }
+        }
+
+        public class FilterItem
+        {
+            public string Id { get; set; }
+            public string Table { get; set; }
+            public string Column { get; set; }
+            public string Condition { get; set; }
+            public string Value { get; set; }
+            public string? AndOr { get; set; }
+        }
+
+        public class OrderByItem
+        {
+            public string Id { get; set; }
+            public string Table { get; set; }
+            public string Column { get; set; }
+            public string Direction { get; set; }
+            public List<string> ColumnOptions { get; set; } = new List<string>();
         }
 
         public class CreateReportRequest
@@ -89,7 +123,7 @@ namespace ReportManager.API
         }
 
         [HttpPost("buildAndVerifySQL")]
-        public IActionResult BuildSQL(BuildSQLRequest request)
+        public IActionResult BuildSQL([FromBody] BuildSQLRequest request)
         {
             return Ok(request);
         }

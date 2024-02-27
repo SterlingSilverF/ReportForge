@@ -10,8 +10,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
 
     const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'error'
+    const [message, setMessage] = useState('');
     const [tables, setTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
+    const [inputValues, setInputValues] = useState({ [`filter-value-0`]: "" });
 
     // Joins
     const [joinsInfo, setJoinsInfo] = useState([]);
@@ -53,7 +55,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             const columns = await fetchTableColumns(tableName, true);
             setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
         }
-        updateReportFormData({ ...reportFormContext, selectedTables: newSelectedTables });
+        updateReportFormData({ selectedTables: newSelectedTables });
     };
 
     // When a column is selected from "Availible Tables"
@@ -67,7 +69,6 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         }
 
         updateReportFormData({
-            ...reportFormContext,
             selectedColumns: updatedSelectedColumns,
         });
     };
@@ -283,13 +284,11 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             tableOne: join.tableOne.name,
             tableTwo: join.tableTwo.name,
             columnOne: join.tableOne.column,
-            columnTwo: join.tableTwo.column
+            columnTwo: join.tableTwo.column,
+            isValid: join.isValid
         }));
 
-        updateReportFormData(prevState => ({
-            ...prevState,
-            joinConfig
-        }));
+        updateReportFormData({joinConfig: joinConfig});
     };
 
     // Verification function
@@ -297,61 +296,75 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         const essentialFields = ['reportName', 'dbType', 'selectedConnection'];
         for (let field of essentialFields) {
             if (!reportFormContext[field]) {
-                return false;
+                return `The essential field '${field}' is missing.`;
             }
         }
 
-        if (reportFormContext.selectedTables.length === 0 || reportFormContext.selectedColumns.length === 0) {
-            return false;
+        if (reportFormContext.selectedTables.length === 0) {
+            return "At least one table must be selected.";
         }
 
-        
+        if (reportFormContext.selectedColumns.length === 0) {
+            return "At least one column must be selected.";
+        }
+
         if (reportFormContext.selectedTables.length > 1 && reportFormContext.joinConfig.length === 0) {
-            return false;
+            return "Join configuration is required for multiple selected tables.";
         }
 
-       
-        for (let join of joinsInfo) {
+        // Assuming joinsInfo is accessible and contains validity information for joins
+        for (let join of reportFormContext.joinConfig) {
             if (!join.isValid) {
-                return false;
+                return `The join configuration for '${join.tables.join(" and ")}' is invalid.`;
             }
         }
 
         return true;
     };
 
+
     // Final function
     const submitReportConfig = async () => {
-        const filterValues = filterValueRefs.current.map(ref => ref?.current?.value);
+        const filterValues = Object.values(inputValues);
         const dynamicFilters = reportFormContext.filters.map((filter, index) => ({
             ...filter,
-            value: filterValues[index],
+            value: filterValues[index] || ''
         }));
-
-        const isReportValid = verifyReportConfiguration();
-        if (!isReportValid) {
-            console.error("Report configuration is invalid.");
-            return;
-        }
 
         updateReportFormContextWithJoins();
 
+        const validationResponse = verifyReportConfiguration();
+        if (validationResponse !== true) {
+            setMessage(validationResponse);
+            return;
+        }
+
         try {
             const requestBody = {
-                selectedConnection: reportFormContext.selectedConnection,
-                dbType: reportFormContext.dbType,
-                selectedTables: reportFormContext.selectedTables,
-                selectedColumns: reportFormContext.selectedColumns,
-                joinConfig: reportFormContext.joinConfig,
-                filters: dynamicFilters,
-                orderBys: reportFormContext.orderBys
+                SelectedConnection: reportFormContext.selectedConnection,
+                DbType: reportFormContext.dbType,
+                SelectedTables: reportFormContext.selectedTables,
+                SelectedColumns: reportFormContext.selectedColumns,
+                JoinConfig: reportFormContext.joinConfig,
+                Filters: dynamicFilters.map(({ columnOptions, ...rest }) => rest),
+                OrderBys: reportFormContext.orderBys
             };
-            const response = await makeApiRequest('post', '/api/report/buildAndVerifySql', {
-                requestBody
-            });
-            navigate('/report-preview');
+            const formattedString = JSON.stringify(requestBody, null, 2);
+            console.log(formattedString);
+
+            makeApiRequest('post', '/api/report/buildAndVerifySql', requestBody)
+                .then(() => {
+                    setMessage("Success!");
+                    navigate('/previewreport');
+                })
+                .catch((error) => {
+                    setMessage("Failed to build and verify SQL.");
+                });
+
+            
         } catch (error) {
             console.error("Error submitting report configuration:", error);
+            setMessage("There was an error building verification SQL.");
         }
     };
 
@@ -507,8 +520,9 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 <p>To proceed, only green check marks can be displayed.</p>
                 <hr />
-                    <DynamicInputs fetchTableColumns={fetchTableColumns} />
+                <DynamicInputs fetchTableColumns={fetchTableColumns} inputValues={inputValues} setInputValues={setInputValues} />
                 <br /><br /><hr />
+                <p>{message}</p>
                 <button className="btn-three btn-restrict" onClick={submitReportConfig}>PREVIEW REPORT</button>
             </section>
             <br />
