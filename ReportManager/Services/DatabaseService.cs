@@ -14,6 +14,7 @@ using System.Data;
 using MySqlX.XDevAPI;
 using Microsoft.Extensions.Options;
 using ReportManager.Models.SettingsModels;
+using System.Data.Common;
 
 public class DatabaseService
 {
@@ -507,5 +508,86 @@ public class DatabaseService
         }).ToList();
 
         return columnDetails;
+    }
+
+    public static bool SqlSanitizationChecks(string sqlStatement, bool isReadOnly = true)
+    {
+        var forbiddenCharacters = new[] { ";", "--", "/*", "*/", "@@", "@" };
+        var alwaysForbiddenKeywords = new[] { "CURSOR", "KILL", "SYS", "SYSTABLES", "SYSOBJECTS", "SYSVIEWS", "SYSUSERS" };
+        var conditionalForbiddenKeywords = isReadOnly ? new string[] { } : new[] { "ALTER", "BEGIN", "CREATE", "DELETE", "DROP", "END", "EXEC", "EXECUTE", "INSERT", "UPDATE" };
+
+
+        foreach (var charPattern in forbiddenCharacters)
+        {
+            if (sqlStatement.Contains(charPattern)) return false;
+        }
+
+        foreach (var kw in alwaysForbiddenKeywords)
+        {
+            if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
+        }
+
+        foreach (var kw in conditionalForbiddenKeywords)
+        {
+            if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
+        }
+
+        if (isReadOnly)
+        {
+            var disallowedPostEqualsKeywords = new[] { "DELETE", "DROP", "CREATE", "UPDATE" };
+            var substringsAfterEquals = sqlStatement.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Skip(1);
+
+            foreach (var substring in substringsAfterEquals)
+            {
+                foreach (var kw in disallowedPostEqualsKeywords)
+                {
+                    if (substring.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<List<Dictionary<string, object>>> ExecuteQueryAsync(string dbType, string connectionString, string query)
+    {
+        var results = new List<Dictionary<string, object>>();
+        try
+        {
+            // No this is not DBConnectionModel
+            using (DbConnection connection = dbType.ToLower() switch
+            {
+                "mssql" => new SqlConnection(connectionString) as DbConnection,
+                "oracle" => new OracleConnection(connectionString) as DbConnection,
+                "mysql" => new MySqlConnection(connectionString) as DbConnection,
+                "postgresql" => new NpgsqlConnection(connectionString) as DbConnection,
+                "db2" => new DB2Connection(connectionString) as DbConnection,
+                _ => throw new ArgumentException("Unsupported database type", nameof(dbType)),
+            })
+            {
+                await connection.OpenAsync();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = query;
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var row = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                row.Add(reader.GetName(i), reader.GetValue(i));
+                            }
+                            results.Add(row);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{dbType} query execution error: {ex.Message}");
+        }
+        return results;
     }
 }

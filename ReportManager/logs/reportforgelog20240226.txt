@@ -86,3 +86,7 @@ System.FormatException: String should contain only hexadecimal digits.
 2024-02-26 21:28:26.596 -06:00 [INF] Application Starting
 2024-02-26 21:28:26.773 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
 2024-02-26 21:28:26.924 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-26 21:54:27.400 -06:00 [INF] Application Starting
+2024-02-26 21:54:28.874 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-26 21:54:29.105 -06:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-02-26 21:56:35.477 -06:00 [ERR] Unable to connect to the SPA development server at 'https://localhost:44462'.

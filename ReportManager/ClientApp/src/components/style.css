@@ -1,3 +1,6 @@
+@import "../../node_modules/ag-grid-community/styles/ag-grid.css";
+@import "../../node_modules/ag-grid-community/styles/ag-theme-alpine.css";
+
 :root {
     --rpf-grey: #20292f;
     --rpf-silver: #979c9f;
@@ -391,6 +394,24 @@ input, select {
         color: var(--rpf-gold);
     }
 
+.btn-eight {
+    background-color: var(--rpf-silverblue);
+    padding: 4px;
+    font-size: 0.7em;
+    border: none;
+    cursor: pointer;
+    color: white;
+    margin-left: 10px;
+}
+
+    .btn-eight:hover {
+        background-color: black;
+        color: var(--rpf-gold);
+    }
+
+.large-font{
+    font-size: 16px;
+}
 
 .inline-buttons {
     display: flex;
@@ -1034,3 +1055,14 @@ input[type="radio"] {
     .stagger > div:nth-child(4) {
         margin-right: 10px;
     }
+
+.search-bar-con {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.search-bar {
+    margin-left: auto;
+}

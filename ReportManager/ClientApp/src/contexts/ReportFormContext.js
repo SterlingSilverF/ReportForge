@@ -29,7 +29,8 @@ export const ReportFormProvider = ({ children }) => {
             column: '',
             direction: '',
             columnOptions: []
-        }]
+        }],
+        compiledSQL: ''
     });
 
     const updateReportFormData = (newData) => {

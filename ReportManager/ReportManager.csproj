@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="Dapper" Version="2.1.28" />
     <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
     <PackageReference Include="Dapper.SqlBuilder" Version="2.0.78" />
@@ -28,8 +29,10 @@
     <PackageReference Include="MongoDB.Bson" Version="2.23.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
     <PackageReference Include="MySql.Data" Version="8.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.1" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.130" />
+    <PackageReference Include="PDFsharp" Version="6.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.0" />

@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Runtime.InteropServices;
 using static ReportManager.Models.SQL_Builder;
+using MongoDB.Bson.IO;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace ReportManager.API
 {
@@ -91,6 +94,54 @@ namespace ReportManager.API
         {
             string SQL = _reportManagementService.BuildSQLQuery(request);
             return Ok(SQL);
+        }
+
+        [HttpPost("exportReport")]
+        public async Task<IActionResult> ExportReport(string format, string reportname, string data)
+        {
+            var reportName = reportname + DateTime.Now;
+            var reportData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(data);
+            if (reportData == null)
+            {
+                return BadRequest("Invalid data format.");
+            }
+
+            byte[] fileBytes;
+            string contentType;
+            string fileName;
+
+            switch (format.ToLower())
+            {
+                case "csv":
+                    fileBytes = _reportManagementService.GenerateCsv(reportData);
+                    contentType = "text/csv";
+                    fileName = $"{reportName}.csv";
+                    break;
+                case "excel":
+                    fileBytes = _reportManagementService.GenerateXlsx(reportData, reportName);
+                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    fileName = $"{reportName}.xlsx";
+                    break;
+                case "pdf":
+                    fileBytes = _reportManagementService.GeneratePdf(reportData, reportName);
+                    contentType = "application/pdf";
+                    fileName = $"{reportName}.pdf";
+                    break;
+                case "json":
+                    fileBytes = Encoding.UTF8.GetBytes(data);
+                    contentType = "application/json";
+                    fileName = $"{reportName}.json";
+                    break;
+                case "txt":
+                    fileBytes = _reportManagementService.GenerateTxtPipeDelimited(reportData);
+                    contentType = "text/plain";
+                    fileName = $"{reportName}.txt";
+                    break;
+                default:
+                    return BadRequest("Unsupported format.");
+            }
+
+            return File(fileBytes, contentType, fileName);
         }
 
         /*[HttpPost("createOrUpdateNormalReport")]

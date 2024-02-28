@@ -9,7 +9,7 @@ import LoadingComponent from '../components/loading';
 const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
 
-    const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'error'
+    const [status, setStatus] = useState('loading'); // loading, ready, error
     const [message, setMessage] = useState('');
     const [tables, setTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
@@ -349,11 +349,13 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 Filters: dynamicFilters.map(({ columnOptions, ...rest }) => rest),
                 OrderBys: reportFormContext.orderBys
             };
-            const formattedString = JSON.stringify(requestBody, null, 2);
-            console.log(formattedString);
+            //const formattedString = JSON.stringify(requestBody, null, 2);
+            //console.log(formattedString);
 
             makeApiRequest('post', '/api/report/buildAndVerifySql', requestBody)
-                .then(() => {
+                .then((response) => {
+                    const compiledSQL = response.data;
+                    updateReportFormData({ compiledSQL });
                     setMessage("Success!");
                     navigate('/previewreport');
                 })

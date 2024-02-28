@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ReportManager.Services;
 using MySqlX.XDevAPI.Relational;
 using ReportManager.Models;
+using MongoDB.Bson;
 
 namespace ReportManager.API
 {
@@ -12,10 +13,14 @@ namespace ReportManager.API
     public class DatabaseController : ControllerBase
     {
         private readonly DatabaseService _databaseService;
+        private readonly ConnectionService _connectionService;
+        private readonly SharedService _sharedService;
 
-        public DatabaseController(DatabaseService databaseService)
+        public DatabaseController(DatabaseService databaseService, ConnectionService connectionService, SharedService sharedService)
         {
             _databaseService = databaseService;
+            _connectionService = connectionService;
+            _sharedService = sharedService;
         }
 
         [HttpPost("LoadDesignerPage")]
@@ -63,6 +68,23 @@ namespace ReportManager.API
             catch (Exception ex)
             {
                 return BadRequest($"An error occurred while retrieving columns and data types for table {tableName}: {ex.Message}");
+            }
+        }
+
+        [HttpPost("HandleSql")]
+        public async Task<ActionResult> HandleSQL(string dbType, string SQL, string connectionId)
+        {
+            bool safe = DatabaseService.SqlSanitizationChecks(SQL);
+            if (safe)
+            {
+                ObjectId _connectionId = _sharedService.StringToObjectId(connectionId);
+                string connectionstring = await _connectionService.FetchAndDecryptConnectionString(_connectionId);
+                var result = await _databaseService.ExecuteQueryAsync(dbType, connectionstring, SQL);
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest("SQL safety verification failed.");
             }
         }
     }

@@ -1,8 +1,13 @@
-﻿using MongoDB.Bson;
+﻿using ClosedXML.Excel;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Org.BouncyCastle.Asn1.Ocsp;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using ReportManager.Models;
+using System.Drawing;
 using System.Text;
+using System.Xml.Linq;
 using static ReportManager.API.ReportController;
 using static ReportManager.Models.SQL_Builder;
 
@@ -78,6 +83,96 @@ namespace ReportManager.Services
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
             var result = GetReportCollection(type).DeleteOne(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
+        }
+
+        public byte[] GenerateCsv(List<Dictionary<string, object>> data)
+        {
+            var stringBuilder = new StringBuilder();
+
+            if (data.Any())
+            {
+                stringBuilder.AppendLine(string.Join(",", data.First().Keys));
+                foreach (var row in data)
+                {
+                    stringBuilder.AppendLine(string.Join(",", row.Values.Select(value => $"\"{value}\"")));
+                }
+            }
+            return Encoding.UTF8.GetBytes(stringBuilder.ToString());
+        }
+
+        public byte[] GenerateXlsx(List<Dictionary<string, object>> data, string reportName)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add(reportName);
+                var headers = data.FirstOrDefault()?.Keys;
+                if (headers != null)
+                {
+                    int columnIndex = 1;
+                    foreach (var header in headers)
+                    {
+                        worksheet.Cell(1, columnIndex++).Value = header;
+                    }
+
+                    int rowIndex = 2;
+                    foreach (var row in data)
+                    {
+                        columnIndex = 1;
+                        foreach (var value in row.Values)
+                        {
+                            worksheet.Cell(rowIndex, columnIndex++).Value = value?.ToString() ?? string.Empty;
+                        }
+                        rowIndex++;
+                    }
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return stream.ToArray();
+                }
+            }
+        }
+
+        public byte[] GeneratePdf(List<Dictionary<string, object>> data, string reportName)
+        {
+            var document = new PdfDocument();
+            var page = document.AddPage();
+            var graphics = XGraphics.FromPdfPage(page);
+            var titleFont = new XFont("Verdana", 14.0, XFontStyleEx.Bold);
+            var contentFont = new XFont("Verdana", 10.0, XFontStyleEx.Regular);
+
+            float yPoint = 20;
+            graphics.DrawString(reportName, titleFont, XBrushes.Black, new XRect(0, 0, page.Width, page.Height), XStringFormats.TopCenter);
+            yPoint += 40;
+
+            foreach (var row in data)
+            {
+                string line = string.Join(", ", row.Select(kv => $"{kv.Key}: {kv.Value}"));
+                graphics.DrawString(line, contentFont, XBrushes.Black, new XRect(0, yPoint, page.Width, page.Height), XStringFormats.TopLeft);
+                yPoint += 20;
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                document.Save(stream, false);
+                return stream.ToArray();
+            }
+        }
+
+        public byte[] GenerateTxtPipeDelimited(List<Dictionary<string, object>> data)
+        {
+            var stringBuilder = new StringBuilder();
+            if (data.Any())
+            {
+                stringBuilder.AppendLine(string.Join("|", data.First().Keys));
+            }
+
+            foreach (var row in data)
+            {
+                stringBuilder.AppendLine(string.Join("|", row.Values.Select(value => value?.ToString() ?? "")));
+            }
+            return Encoding.UTF8.GetBytes(stringBuilder.ToString());
         }
 
         public string BuildSQLQuery(BuildSQLRequest raw)
