@@ -107,7 +107,6 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         'DatabaseName'
     ];
 
-    // Update passed object
     useEffect(() => {
         if (connectionDetails && connectionDetails.id) {
             const endpoint = connectionDetails.type === 'server'

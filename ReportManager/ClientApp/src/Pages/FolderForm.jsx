@@ -143,7 +143,7 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
                             onChange={e => setGroupId(e.target.value)}
                             className="input-style-default standard-select"
                             style={{ fontSize: "1em" }}>
-                            <option value={null}>--Select a group--</option>
+                            <option value="">--Select a group--</option>
                             {userGroups.map(group => (
                                 <option key={group.id} value={group.id}>{group.groupName}</option>
                             ))}
@@ -158,7 +158,7 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
                             onChange={e => setParentId(e.target.value)}
                             className="input-style-default standard-select"
                             style={{ fontSize: "1em" }}>
-                            <option value={null}>--Select a group--</option>
+                            <option value="">--Select a group--</option>
                             {folders.map(folder => (
                                 <option key={folder.id} value={folder.id}>{folder.folderName}</option>
                             ))}

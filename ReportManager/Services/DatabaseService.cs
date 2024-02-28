@@ -37,7 +37,7 @@ public class DatabaseService
         _database = _client.GetDatabase(settings.Value.MongoDbName);
     }
 
-    public async Task<bool> SetupDBConnection(string dbConnectionId, string ownerType, string dbType)
+    public async Task<bool> SetupDBConnection(string dbConnectionId, string ownerType)
     {
         try
         {

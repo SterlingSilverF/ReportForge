@@ -28,7 +28,7 @@ namespace ReportManager.API
         {
             try
             {
-                bool isConnectionSetupSuccessful = await _databaseService.SetupDBConnection(connectionId, ownerType, dbType);
+                bool isConnectionSetupSuccessful = await _databaseService.SetupDBConnection(connectionId, ownerType);
                 if (!isConnectionSetupSuccessful)
                 {
                     return BadRequest("Failed to setup database connection.");

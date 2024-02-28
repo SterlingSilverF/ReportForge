@@ -137,7 +137,8 @@ namespace ReportManager.API
         {
             var user = _userManagementService.GetUserByUsername(username);
             var personalFolders = _folderManagementService.GetPersonalFoldersByUser(user.Id);
-            return Ok(personalFolders);
+            var personalFolderDTOs = personalFolders.Select(model => new FolderDTO(model));
+            return Ok(personalFolderDTOs);
         }
 
         [HttpGet("getFoldersByGroupId")]
@@ -183,18 +184,16 @@ namespace ReportManager.API
         public IActionResult GetAllUserFolders(string username)
         {
             var user = _userManagementService.GetUserByUsername(username);
-            List<FolderModel> allFolders = new List<FolderModel>();
+            List<FolderDTO> allFolders = new List<FolderDTO>();
 
-            // Get personal folders
             var personalFolders = _folderManagementService.GetPersonalFoldersByUser(user.Id);
-            allFolders.AddRange(personalFolders.Cast<FolderModel>());
+            allFolders.AddRange(personalFolders.Select(model => new FolderDTO(model)));
 
-            // Get group folders
             var groups = _groupManagementService.GetGroupsByUser(username);
             foreach (var group in groups)
             {
                 var groupFolders = _folderManagementService.GetFoldersByGroup(group.Id);
-                allFolders.AddRange(groupFolders);
+                allFolders.AddRange(groupFolders.Select(model => new FolderDTO(model)));
             }
 
             return Ok(allFolders);

@@ -11,6 +11,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [message, setMessage] = useState('');
     const [messageSuccess, setMessageSuccess] = useState(true);
+    const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
 
     const fetchConnections = async (ownerIdParam, ownerTypeParam) => {
         const ownerId = ownerIdParam || (reportFormContext.reportType === 'Group' ? reportFormContext.selectedGroup : userID);
@@ -27,7 +28,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     };
 
     useEffect(() => {
-        if (reportFormContext.reportType === 'Group') {
+        if (reportFormContext.reportType === 'Group' && !hasFetchedGroups && username) {
             const fetchUserGroups = async () => {
                 try {
                     const response = await makeApiRequest('get', `/api/group/getUserGroups?username=${username}`);
@@ -37,17 +38,19 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                     console.error('Could not fetch user groups:', error);
                 }
             };
-            fetchUserGroups();
+            fetchUserGroups().then(() => setHasFetchedGroups(true));;
         }
     }, [reportFormContext.reportType, makeApiRequest, username]);
 
-    // Fetch personal connections on load for 'personal' report type
+    // Fetch User connections on load for 'User' report type
     useEffect(() => {
-        if (reportFormContext.reportType === 'Personal' && userID) {
+        if (reportFormContext.reportType === 'User' && userID) {
             fetchConnections(userID, 'User');
         }
-    }, [reportFormContext.reportType, userID]);
-
+        else if (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup) {
+            fetchConnections(reportFormContext.selectedGroup, 'Group');
+        }
+    }, [reportFormContext.reportType, reportFormContext.selectedGroup, userID]);
 
     // Fetch folders based on report type and selected group
     useEffect(() => {
@@ -65,7 +68,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             }
         };
 
-        if ((reportFormContext.reportType === 'Personal' && username) || (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup)) {
+        if ((reportFormContext.reportType === 'User' && username) || (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup)) {
             fetchFolders();
         } else {
             setFolders([]);
@@ -80,7 +83,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             selectedConnection: null,
             selectedFolder: null,
         });
-        if (newReportType === 'Personal') {
+        if (newReportType === 'User') {
             await fetchConnections(userID, 'User');
         }
     };
@@ -163,7 +166,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                                 value={reportFormContext.reportType}
                                 onChange={handleReportTypeChange}
                                 className="input-style-default standard-select">
-                                <option value="Personal">Personal</option>
+                                <option value="User">Personal</option>
                                 <option value="Group">Group</option>
                             </select>
                         </div>
@@ -176,12 +179,15 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                                     value={reportFormContext.selectedGroup || ''}
                                     onChange={async (e) => {
                                         const newSelectedGroup = e.target.value;
-                                        handleChange('selectedGroup', newSelectedGroup);
-                                        if (newSelectedGroup) {
-                                            await fetchConnections(newSelectedGroup, 'Group');
-                                        } else {
-                                            handleChange('connections', []);
-                                            handleChange('folders', []);
+                                        if (reportFormContext.selectedGroup !== newSelectedGroup) {
+                                            handleChange('selectedGroup', newSelectedGroup);
+                                            if (newSelectedGroup) {
+                                                await fetchConnections(newSelectedGroup, 'Group');
+                                                // TODO: Consider implementing similar logic for fetching folders here
+                                            } else {
+                                                handleChange('connections', []);
+                                                handleChange('folders', []);
+                                            }
                                         }
                                     }}
                                     className="input-style-default standard-select">

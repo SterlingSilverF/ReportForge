@@ -6,7 +6,7 @@ export const ReportFormProvider = ({ children }) => {
     const [reportFormContext, setReportFormData] = useState({
         reportName: '',
         reportDescription: '',
-        reportType: 'personal',
+        reportType: 'User',
         selectedGroup: null,
         selectedConnection: null,
         dbType: '',

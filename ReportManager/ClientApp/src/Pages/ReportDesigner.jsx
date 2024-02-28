@@ -11,6 +11,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
 
     const [status, setStatus] = useState('loading'); // loading, ready, error
     const [message, setMessage] = useState('');
+    const [isSubmitTriggered, setIsSubmitTriggered] = useState(false);
     const [tables, setTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
     const [inputValues, setInputValues] = useState({ [`filter-value-0`]: "" });
@@ -288,8 +289,25 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             isValid: join.isValid
         }));
 
-        updateReportFormData({joinConfig: joinConfig});
+        updateReportFormData({ joinConfig: joinConfig });
+        setIsSubmitTriggered(true);
     };
+
+    useEffect(() => {
+        const validateAndSubmit = async () => {
+            const validationResponse = verifyReportConfiguration();
+            setIsSubmitTriggered(false);
+            if (validationResponse !== true) {
+                setMessage(validationResponse);
+            } else {
+                await triggerSubmit();
+            }
+        };
+
+        if (isSubmitTriggered) {
+            validateAndSubmit();
+        }
+    }, [reportFormContext.joinConfig, isSubmitTriggered]);
 
     // Verification function
     const verifyReportConfiguration = () => {
@@ -322,16 +340,18 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         return true;
     };
 
-
     // Final function
-    const submitReportConfig = async () => {
+    const triggerSubmit = async () => {
+        // triggered by updateReportFormContextWithJoins(); finishing
         const filterValues = Object.values(inputValues);
         const dynamicFilters = reportFormContext.filters.map((filter, index) => ({
             ...filter,
             value: filterValues[index] || ''
-        }));
+        })).filter(filter => !Object.values(filter).some(value => value === '' || value === null || value === undefined));
 
-        updateReportFormContextWithJoins();
+        const validOrderBys = reportFormContext.orderBys.filter(orderBy =>
+            !Object.values(orderBy).some(value => value === '' || value === null || value === undefined)
+        );
 
         const validationResponse = verifyReportConfiguration();
         if (validationResponse !== true) {
@@ -347,7 +367,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 SelectedColumns: reportFormContext.selectedColumns,
                 JoinConfig: reportFormContext.joinConfig,
                 Filters: dynamicFilters.map(({ columnOptions, ...rest }) => rest),
-                OrderBys: reportFormContext.orderBys
+                OrderBys: validOrderBys.map(({ columnOptions, ...rest }) => rest)
             };
             //const formattedString = JSON.stringify(requestBody, null, 2);
             //console.log(formattedString);
@@ -525,7 +545,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 <DynamicInputs fetchTableColumns={fetchTableColumns} inputValues={inputValues} setInputValues={setInputValues} />
                 <br /><br /><hr />
                 <p>{message}</p>
-                <button className="btn-three btn-restrict" onClick={submitReportConfig}>PREVIEW REPORT</button>
+                <button className="btn-three btn-restrict" onClick={updateReportFormContextWithJoins}>PREVIEW REPORT</button>
             </section>
             <br />
             </div>

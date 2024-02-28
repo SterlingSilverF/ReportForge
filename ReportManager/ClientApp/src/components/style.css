@@ -1066,3 +1066,9 @@ input[type="radio"] {
 .search-bar {
     margin-left: auto;
 }
+
+.small-div {
+    width: 50%;
+    max-width: 650px;
+    margin: 0 auto;
+}
