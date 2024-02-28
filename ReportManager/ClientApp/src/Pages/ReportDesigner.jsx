@@ -35,15 +35,61 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     setTables(response.data);
                     setStatus('ready');
                     console.log("Tables loaded successfully.");
+
+                    // Existing data or edit
+                    if (reportFormContext.selectedColumns) {
+                        for (const table of reportFormContext.selectedTables) {
+                            const columns = await fetchTableColumns(table, true);
+                            setTableColumns(prevState => ({ ...prevState, [table]: columns }));
+                        }
+                        if (reportFormContext.joinConfig.length > 0) {
+                            const extractedJoins = extractJoinsFromContext(reportFormContext.joinConfig);
+                            setJoinsInfo(extractedJoins);
+                        }
+                    }
                 } catch (error) {
                     console.error("Error loading designer page data:", error);
                     setStatus('error');
                 }
             }
         };
-
         loadDesignerPageData();
-    }, [reportFormContext.selectedConnection, reportFormContext.reportType, reportFormContext.dbType]);
+    }, [reportFormContext.selectedConnection, reportFormContext.reportType, reportFormContext.dbType, reportFormContext.selectedColumns, reportFormContext.selectedTables]);
+
+    // Convert from condensed join into full join info
+    const extractJoinsFromContext = async () => {
+        const extractedJoins = [];
+        for (const join of reportFormContext.joinConfig) {
+            const typeOne = await getColumnDataType(join.columnOne, join.tableOne);
+            const typeTwo = await getColumnDataType(join.columnTwo, join.tableTwo);
+            const isValidJoin = checkDataTypeCompatibility(typeOne, typeTwo, reportFormContext.dbType);
+
+            extractedJoins.push({
+                tableOne: {
+                    name: join.tableOne,
+                    column: join.columnOne,
+                    dataType: typeOne
+                },
+                tableTwo: {
+                    name: join.tableTwo,
+                    column: join.columnTwo,
+                    dataType: typeTwo
+                },
+                isValid: isValidJoin,
+            });
+        }
+        return extractedJoins;
+    };
+
+    // Update joinsInfo from reportFormContext.joinConfig
+    useEffect(() => {
+        const updateJoinsInfoFromContext = async () => {
+            const joinsFromContext = await extractJoinsFromContext();
+            setJoinsInfo(joinsFromContext);
+        };
+        updateJoinsInfoFromContext();
+    }, [reportFormContext.joinConfig]);
+
 
     // When a table is selected from "Available Tables"
     const handleTableSelect = async (tableName) => {
@@ -282,10 +328,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
 
     const updateReportFormContextWithJoins = () => {
         const joinConfig = joinsInfo.map(join => ({
-            tableOne: join.tableOne.name,
-            tableTwo: join.tableTwo.name,
-            columnOne: join.tableOne.column,
-            columnTwo: join.tableTwo.column,
+            tableOne: join.tableOne,
+            tableTwo: join.tableTwo,
+            columnOne: join.tableOne,
+            columnTwo: join.tableTwo,
             isValid: join.isValid
         }));
 

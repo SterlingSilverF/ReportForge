@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -251,6 +252,10 @@ namespace ReportManager.Services
 
         private string BuildOrderByClause(List<OrderByItem> orderBys)
         {
+            if (orderBys.Count == 0)
+            {
+                return "";
+            }
             string orderByClause = " ORDER BY ";
             foreach (var orderBy in orderBys)
             {
