@@ -198,8 +198,8 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
             let filter = `ownerTypeString=${formStateCurrent.OwnerType}&connectionType=server`;
             const ownerId = formStateCurrent.OwnerType === 'User' ? userID : formStateCurrent.OwnerID;
-            if (!ownerId) {
-                console.error('Owner ID is missing for fetching connections.');
+            if (!ownerId || ownerId == "--Select a Group--") {
+                setServerConnections([]);
                 return;
             }
             filter += `&ownerId=${ownerId}`;
@@ -581,7 +581,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                                     name='OwnerID'
                                     onChange={_handleChange}
                                     className='input-style-default'>
-                                    <option value={null}>--Select a group--</option>
+                                    <option value={null}>--Select a Group--</option>
                                     {userGroups.map((group, index) =>
                                         <option key={index} value={group.id}>{group.groupName}</option>)}
                                 </select>

@@ -33,43 +33,29 @@ namespace ReportManager.API
             public List<OrderByItem> OrderBys { get; set; } = new List<OrderByItem>();
         }
 
-        public class CreateReportRequest
+        public class ReportFormContextRequest
         {
-            [Required]
-            public string _userId { get; set; }
-            [Required]
-            public string ReportName { get; set; }
-            public string Description { get; set; }
-            [Required]
-            public string BuiltConnectionId { get; set; }
-            [Required]
-            public ScheduleInfo Schedule { get; set; }
-            [Required]
-            public int PaginationLimit { get; set; }
-            [Required]
-            public string FolderId { get; set; }
-            [Required]
-            public bool IsGroupReport { get; set; }
-            [Required]
             public string Action { get; set; }
-            [Required]
-            public string OwnerId { get; set; }
-            [Required]
-            public string OwnerType { get; set; }
-        }
+            public string UserId { get; set; }
+            public string ReportName { get; set; }
+            public string ReportDescription { get; set; }
+            public string ReportType { get; set; }
+            public string SelectedGroup { get; set; }
+            public string SelectedFolder { get; set; }
+            public BuildSQLRequest SqlRequest { get; set; }
+            public string CompiledSQL { get; set; }
+            public string OutputFormat { get; set; }
+            public int ReportFrequencyValue { get; set; }
+            public string ReportFrequencyType { get; set; }
+            public string ReportGenerationTime { get; set; }
+            public string EmailReports { get; set; }
+            public string EmailRecipients { get; set; }
 
-        public class CreateNormalReport : CreateReportRequest
-        {
-            [Required]
-            public List<ReportColumn> Columns { get; set; }
-            public List<Filter> Filters { get; set; }
-            [Required]
-            public List<string> OrderBy { get; set; }
-        }
-
-        public class CreateSQLReport : CreateReportRequest
-        {
-            public string CustomSQL { get; set; }
+            public ReportFormContextRequest()
+            {
+                // Existing shared properties copy over
+                SqlRequest = new BuildSQLRequest();
+            }
         }
 
         public class ReportSubsetRequest
@@ -87,6 +73,29 @@ namespace ReportManager.API
             _groupManagementService = groupManagementService;
             _sharedService = sharedService;
             _folderManagementService = folderManagementService;
+        }
+
+        [HttpPost("ConfigureReport")]
+        public IActionResult ConfigureReport([FromBody] ReportFormContextRequest request)
+        {
+            try
+            {
+                bool existing = request.Action.Equals("Create", StringComparison.OrdinalIgnoreCase) ? false : true;
+                var reportModel = _reportManagementService.TransformRequestToModel(request, _sharedService, existing);
+                if (existing) {
+                    _reportManagementService.UpdateReport(reportModel, request.ReportType);
+                }
+                else
+                {
+                    _reportManagementService.CreateReport(reportModel, request.ReportType);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Logging
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
         [HttpPost("buildAndVerifySQL")]
@@ -144,62 +153,6 @@ namespace ReportManager.API
             return File(fileBytes, contentType, fileName);
         }
 
-        /*[HttpPost("createOrUpdateNormalReport")]
-        public IActionResult CreateOrUpdateNormalReport(CreateNormalReport request)
-        {
-            ObjectId folderid = _sharedService.StringToObjectId(request.FolderId);
-            var folder = _folderManagementService.GetFolderById(folderid);
-            ObjectId _userId = _sharedService.StringToObjectId(request._userId);
-            if (folder == null)
-            {
-                return BadRequest("Invalid Folder ID");
-            }
-            try
-            {
-                OwnerType ownerType = Enum.TryParse(request.OwnerType, true, out OwnerType parsedType) ? parsedType : default(OwnerType);
-
-                var report = new ReportConfigurationModel
-                {
-                    ReportName = request.ReportName,
-                    Description = request.Description,
-                    BuiltConnectionString = request.BuiltConnectionId;
-                    Schedule = request.Schedule,
-                    PaginationLimit = request.PaginationLimit,
-                    FolderId = folder.Id,
-                    CreatorId = _userId,
-                    CreatedDate = DateTime.Now,
-                    LastModifiedDate = DateTime.Now,
-                    LastModifiedBy = _userId,
-                    SelectedObjects = request.SelectedObjects,
-                    Columns = request.Columns,
-                    Filters = request.Filters,
-                    OrderBy = request.OrderBy,
-                    OwnerID = _sharedService.StringToObjectId(request.OwnerId),
-                    OwnerType = ownerType
-                };
-
-                ReportType reportType = request.IsGroupReport ? ReportType.Group : ReportType.Personal;
-
-                if (request.Action == "Create")
-                {
-                    _reportManagementService.CreateReport(report, reportType);
-                }
-                else if (request.Action == "Update")
-                {
-                    _reportManagementService.UpdateReport(report, reportType);
-                }
-                else
-                {
-                    return BadRequest($"Unknown action: {request.Action}");
-                }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.ToString());
-            }
-        }*/
-
         [HttpGet("getUserReports")]
         public IActionResult GetUserReports([FromQuery] string userId)
         {
@@ -211,8 +164,7 @@ namespace ReportManager.API
         [HttpPost("GetReportCount")]
         public int GetReportCount(ReportSubsetRequest subset)
         {
-            ReportType reportType = (ReportType)Enum.Parse(typeof(ReportType), subset.ReportType);
-            var reports = _reportManagementService.GetReportsByOwnerId(_sharedService.StringToObjectId(subset.OwnerId), reportType);
+            var reports = _reportManagementService.GetReportsByOwnerId(_sharedService.StringToObjectId(subset.OwnerId), subset.ReportType);
             return reports.Count;
         }
 
@@ -240,7 +192,7 @@ namespace ReportManager.API
             try
             {
                 ReportType reportType = isPersonal ? ReportType.Personal : ReportType.Group;
-                reports = _reportManagementService.GetReportsByFolder(folderObjectId, reportType);
+                reports = _reportManagementService.GetReportsByFolder(folderObjectId, reportType.ToString());
             }
             catch (Exception ex)
             {

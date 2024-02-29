@@ -36,27 +36,38 @@ namespace ReportManager.Services
             return type == ReportType.Group ? _reports : _personalreports;
         }
 
-        public List<ReportConfigurationModel> GetAllReports(ReportType type)
+        public static ReportType ParseReportType(string reportTypeStr)
         {
-            return GetReportCollection(type).Find(report => true).ToList();
+            return Enum.TryParse(reportTypeStr, true, out ReportType reportType)
+                ? reportType
+                : throw new ArgumentException("Invalid report type", nameof(reportTypeStr));
         }
 
-        public bool CreateReport(ReportConfigurationModel newReport, ReportType type)
+        public List<ReportConfigurationModel> GetAllReports(string type)
         {
-            GetReportCollection(type).InsertOne(newReport);
+            var reportType = ParseReportType(type);
+            return GetReportCollection(reportType).Find(report => true).ToList();
+        }
+
+        public bool CreateReport(ReportConfigurationModel newReport, string type)
+        {
+            var reportType = ParseReportType(type);
+            GetReportCollection(reportType).InsertOne(newReport);
             return true;
         }
 
-        public List<ReportConfigurationModel> GetReportsByFolder(ObjectId folderId, ReportType type)
+        public List<ReportConfigurationModel> GetReportsByFolder(ObjectId folderId, string type)
         {
+            var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.FolderId, folderId);
-            return GetReportCollection(type).Find(filter).ToList();
+            return GetReportCollection(reportType).Find(filter).ToList();
         }
 
-        public ReportConfigurationModel GetReportById(ObjectId reportId, ReportType type)
+        public ReportConfigurationModel GetReportById(ObjectId reportId, string type)
         {
+            var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
-            return GetReportCollection(type).Find(filter).FirstOrDefault();
+            return GetReportCollection(reportType).Find(filter).FirstOrDefault();
         }
 
         public List<ReportConfigurationModel> GetPersonalReportsByCreatorId(ObjectId userId)
@@ -65,24 +76,27 @@ namespace ReportManager.Services
             return _personalreports.Find(filter).ToList();
         }
 
-        public List<ReportConfigurationModel> GetReportsByOwnerId(ObjectId ownerId, ReportType reportType)
+        public List<ReportConfigurationModel> GetReportsByOwnerId(ObjectId ownerId, string type)
         {
+            var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq("OwnerId", ownerId);
             var reportCollection = GetReportCollection(reportType);
             return reportCollection.Find(filter).ToList();
         }
 
-        public bool UpdateReport(ReportConfigurationModel updatedReport, ReportType type)
+        public bool UpdateReport(ReportConfigurationModel updatedReport, string type)
         {
+            var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, updatedReport.Id);
-            var result = GetReportCollection(type).ReplaceOne(filter, updatedReport);
+            var result = GetReportCollection(reportType).ReplaceOne(filter, updatedReport);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool DeleteReport(ObjectId reportId, ReportType type)
+        public bool DeleteReport(ObjectId reportId, string type)
         {
+            var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
-            var result = GetReportCollection(type).DeleteOne(filter);
+            var result = GetReportCollection(reportType).DeleteOne(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
 
@@ -263,6 +277,94 @@ namespace ReportManager.Services
             }
             orderByClause = orderByClause.TrimEnd(' ', ',');
             return orderByClause;
+        }
+
+        public ReportConfigurationModel TransformRequestToModel(ReportFormContextRequest request, SharedService _sharedService, bool existing)
+        {
+            var userIdObjectId = _sharedService.StringToObjectId(request.UserId);
+            var connectionStringId = _sharedService.StringToObjectId(request.SqlRequest.SelectedConnection);
+            var folderId = _sharedService.StringToObjectId(request.SelectedFolder);
+            var ownerId = request.ReportType.Equals("User", StringComparison.OrdinalIgnoreCase)
+                ? userIdObjectId
+                : _sharedService.StringToObjectId(request.SelectedGroup);
+            
+
+            var model = new ReportConfigurationModel
+            {
+                ReportName = request.ReportName,
+                Description = request.ReportDescription,
+                ConnectionStringId = connectionStringId,
+                FolderId = folderId,
+                CompiledSQL = request.CompiledSQL,
+                Schedule = new ScheduleInfo
+                {
+                    ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                    Iteration = request.ReportFrequencyValue,
+                    ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                },
+                CreatorId = userIdObjectId,
+                LastModifiedBy = userIdObjectId,
+                OwnerID = ownerId,
+                LastModifiedDate = DateTime.UtcNow,
+                ReportJobs = GenerateReportJobs(request)
+            };
+
+            if (!existing)
+            {
+                model.CreatorId = userIdObjectId;
+                model.CreatedDate = DateTime.UtcNow;
+            }
+
+            return model;
+        }
+
+        private List<Job> GenerateReportJobs(ReportFormContextRequest request)
+        {
+            var jobs = new List<Job>();
+
+            if (request.EmailReports.Equals("yes", StringComparison.OrdinalIgnoreCase))
+            {
+                var emailJob = new EmailJob
+                {
+                    ReportFormat = ConvertToReportFormat(request.OutputFormat),
+                    Recipients = request.EmailRecipients.Split(';').ToList(),
+                    ScheduleInfo = new ScheduleInfo
+                    {
+                        ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                        Iteration = request.ReportFrequencyValue,
+                        ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                    }
+                };
+                jobs.Add(emailJob);
+            }
+            return jobs;
+        }
+
+        private ScheduleType ConvertToScheduleType(string frequencyType)
+        {
+            return frequencyType.ToLower() switch
+            {
+                "daily" => ScheduleType.Daily,
+                "weekly" => ScheduleType.Weekly,
+                "monthly" => ScheduleType.Monthly,
+                "quarterly" => ScheduleType.Quarterly,
+                "yearly" => ScheduleType.Yearly,
+                _ => throw new ArgumentException("Invalid frequency type"),
+            };
+        }
+
+        private ReportFormat ConvertToReportFormat(string outputFormat)
+        {
+            return outputFormat.ToLower() switch
+            {
+                "csv" => ReportFormat.CSV,
+                "xls" => ReportFormat.XLS,
+                "xlsx" => ReportFormat.XLSX,
+                "pdf" => ReportFormat.PDF,
+                "txt" => ReportFormat.TXT,
+                "json" => ReportFormat.JSON,
+                _ => throw new ArgumentException("Invalid report output format", nameof(outputFormat)),
+            };
         }
 
         public static string QuoteIdentifier(string identifier, string dbType)

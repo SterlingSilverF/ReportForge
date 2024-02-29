@@ -13,6 +13,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const [message, setMessage] = useState('');
     const [isSubmitTriggered, setIsSubmitTriggered] = useState(false);
     const [tables, setTables] = useState([]);
+    const [orderedTables, setOrderedTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
     const [inputValues, setInputValues] = useState({ [`filter-value-0`]: "" });
 
@@ -43,8 +44,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                             setTableColumns(prevState => ({ ...prevState, [table]: columns }));
                         }
                         if (reportFormContext.joinConfig.length > 0) {
-                            const extractedJoins = extractJoinsFromContext(reportFormContext.joinConfig);
+                            const extractedJoins = await extractJoinsFromContext();
                             setJoinsInfo(extractedJoins);
+                            const orderedTables = reorderTables(reportFormContext.selectedTables, extractedJoins);
+                            setOrderedTables(orderedTables);
                         }
                     }
                 } catch (error) {
@@ -81,16 +84,6 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         return extractedJoins;
     };
 
-    // Update joinsInfo from reportFormContext.joinConfig
-    useEffect(() => {
-        const updateJoinsInfoFromContext = async () => {
-            const joinsFromContext = await extractJoinsFromContext();
-            setJoinsInfo(joinsFromContext);
-        };
-        updateJoinsInfoFromContext();
-    }, [reportFormContext.joinConfig]);
-
-
     // When a table is selected from "Available Tables"
     const handleTableSelect = async (tableName) => {
         const isSelected = reportFormContext.selectedTables.includes(tableName);
@@ -103,6 +96,13 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
         }
         updateReportFormData({ selectedTables: newSelectedTables });
+        const updatedJoinsInfo = joinsInfo.filter(join =>
+            join.tableOne.name !== tableName && join.tableTwo.name !== tableName
+        );
+        setJoinsInfo(updatedJoinsInfo);
+
+        const orderedTables = reorderTables(newSelectedTables, updatedJoinsInfo);
+        setOrderedTables(orderedTables);
     };
 
     // When a column is selected from "Availible Tables"
@@ -302,6 +302,9 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             setJoinsInfo(prevJoins => [...prevJoins, joinSelection]);
             setSelectedJoinColumnOne('');
             setSelectedJoinColumnTwo('');
+
+            const orderedTables = reorderTables(reportFormContext.selectedTables, [...joinsInfo, joinSelection]);
+            setOrderedTables(orderedTables);
         }
     }
 
@@ -328,10 +331,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
 
     const updateReportFormContextWithJoins = () => {
         const joinConfig = joinsInfo.map(join => ({
-            tableOne: join.tableOne,
-            tableTwo: join.tableTwo,
-            columnOne: join.tableOne,
-            columnTwo: join.tableTwo,
+            tableOne: join.tableOne.name,
+            tableTwo: join.tableTwo.name,
+            columnOne: join.tableOne.column,
+            columnTwo: join.tableTwo.column,
             isValid: join.isValid
         }));
 
@@ -390,14 +393,19 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const triggerSubmit = async () => {
         // triggered by updateReportFormContextWithJoins(); finishing
         const filterValues = Object.values(inputValues);
-        const dynamicFilters = reportFormContext.filters.map((filter, index) => ({
-            ...filter,
-            value: filterValues[index] || ''
-        })).filter(filter => !Object.values(filter).some(value => value === '' || value === null || value === undefined));
+        const dynamicFilters = reportFormContext.filters
+            .map((filter, index) => ({
+                ...filter,
+                value: filterValues[index] || ''
+            }))
+            .filter(filter =>
+                !Object.keys(filter)
+                    .filter(key => key !== 'value' && key !== 'andOr')
+                    .some(key => filter[key] === '' || filter[key] === null || filter[key] === undefined)
+            );
 
-        const validOrderBys = reportFormContext.orderBys.filter(orderBy =>
-            !Object.values(orderBy).some(value => value === '' || value === null || value === undefined)
-        );
+        const validOrderBys = reportFormContext.orderBys
+            .filter(orderBy => !Object.values(orderBy).some(value => value === '' || value === null || value === undefined));
 
         const validationResponse = verifyReportConfiguration();
         if (validationResponse !== true) {
@@ -538,7 +546,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     </div>
                     <div className="explanation-box eb-medium" style={{ flex: '1 1 auto' }}>
                         <p>To correlate two separate sets of information in a single report via a database, each set (table) must be "joined" to the query.</p>
-                        <p>Joining involves linking tables through a common column. Most often it is the unique identifier for ONE of the tables involved.</p>
+                        <p>Joining involves linking tables through a common column. Most often it is the same column name and the unique identifier for ONE of the tables involved.</p>
                         <p>Each table needs to be joined only once, like a chain.</p>
                         <a href="/guides/table-joins">Learn More</a>
                     </div>
@@ -549,7 +557,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     <div style={{ gridColumn: '1 / 2' }}>
                         <h5>Table Join Checklist</h5>
                         <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {reorderTables(reportFormContext.selectedTables, joinsInfo).map((tableName, index) => {
+                            {orderedTables.map((tableName, index) => {
                                 const isAlreadyJoined = joinsInfo.some(join =>
                                     join.tableOne.name === tableName || join.tableTwo.name === tableName
                                 );

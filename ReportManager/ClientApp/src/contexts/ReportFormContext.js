@@ -30,7 +30,13 @@ export const ReportFormProvider = ({ children }) => {
             direction: '',
             columnOptions: []
         }],
-        compiledSQL: ''
+        compiledSQL: '',
+        outputFormat: 'csv',
+        reportFrequencyValue: 1,
+        reportFrequencyType: 'months',
+        reportGenerationTime: '00:00',
+        emailReports: 'no',
+        emailRecipients: ''
     });
 
     const updateReportFormData = (newData) => {

@@ -157,6 +157,7 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
 
     const OrderBySelect = ({ id, value, onChange }) => (
         <select id={id} value={value} onChange={e => onChange(e.target.value)}>
+            <option value="">--Select a Sort--</option>
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
         </select>
