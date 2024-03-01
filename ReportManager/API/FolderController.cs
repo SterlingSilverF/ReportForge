@@ -67,12 +67,14 @@ namespace ReportManager.API
                 {
                     ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
                     folder.ParentId = parentId;
-                    FolderModel parent = _folderManagementService.GetFolderById(parentId);
+                    FolderModel parent = _folderManagementService.GetFolderById(parentId, false);
                     folder.FolderPath = parent.FolderPath + request.FolderName + "/";
                 }
                 else
                 {
-                    folder.ParentId = _folderManagementService.GetUserFolder(request.Username).Id;
+                    PersonalFolder _userFolder = _folderManagementService.GetUserFolder(request.Username);
+                    folder.ParentId = _userFolder.Id;
+                    folder.FolderPath = _userFolder.FolderPath + request.FolderName + "/";
                 }
 
                 if (request.IsGroupFolder)
@@ -103,12 +105,12 @@ namespace ReportManager.API
         }
 
         [HttpDelete("deleteFolder/{folderId}")]
-        public IActionResult DeleteFolder(string folderId)
+        public IActionResult DeleteFolder(string folderId, bool type)
         {
             try
             {
                 ObjectId objectId = new ObjectId(folderId);
-                bool isDeleted = _folderManagementService.DeleteDBFolder(objectId);
+                bool isDeleted = _folderManagementService.DeleteDBFolder(objectId, type);
 
                 if (isDeleted)
                 {
@@ -157,12 +159,12 @@ namespace ReportManager.API
         }
 
         [HttpGet("getSubFoldersByParentId")]
-        public ActionResult<List<FolderModel>> GetSubFoldersByParentId([FromQuery] string parentId)
+        public ActionResult<List<FolderModel>> GetSubFoldersByParentId(string parentId, string type)
         {
             try
             {
                 ObjectId parentIdObj;
-                if (parentId == "null")
+                if (parentId == "TOP")
                 {
                     parentIdObj = _groupManagementService.GetTopGroup().Folders.FirstOrDefault();
                 }
@@ -170,7 +172,7 @@ namespace ReportManager.API
                 {
                     parentIdObj = new ObjectId(parentId);
                 }
-                var subFolders = _folderManagementService.GetSubFoldersByParentId(parentIdObj);
+                var subFolders = _folderManagementService.GetSubFoldersByParentId(parentIdObj, type);
                 List<FolderDTO> dtos = subFolders.Select(folder => new FolderDTO(folder)).ToList();
                 return Ok(dtos);
             }

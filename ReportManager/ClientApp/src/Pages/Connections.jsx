@@ -3,16 +3,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 
-const Connections = ({ dbIcons, env, token, username, userID, makeApiRequest, goBack, navigate }) => {
+const Connections = ({ dbIcons, username, userID, makeApiRequest, goBack, navigate }) => {
     const [connections, setConnections] = useState([]);
 
     useEffect(() => {
-        makeApiRequest('get', '/api/connections/getConnections')
-            .then((res) => {
-                setConnections(res.data);
-            })
-            .catch((err) => console.error('There was an error fetching connections!', err));
-    }, [makeApiRequest]);
+        if (userID && username)
+            makeApiRequest('get', `/api/connection/GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`)
+                .then((res) => {
+                    setConnections(res.data);
+                })
+                .catch((err) => console.error('There was an error fetching connections!', err));
+    }, [makeApiRequest, userID, username]);
 
     const getIconByConnectionType = (connection) => {
             switch (connection.dbType) {
@@ -33,6 +34,10 @@ const Connections = ({ dbIcons, env, token, username, userID, makeApiRequest, go
         };
     };
 
+    const handleIconClick = (connectionId) => {
+        navigate(`/connectionForm`);
+    }
+
     return (
         <div className="sub-container padding-medium">
             <div className="title-style-one">Connection Explorer</div>
@@ -42,13 +47,12 @@ const Connections = ({ dbIcons, env, token, username, userID, makeApiRequest, go
             <hr />
             <div className="grid-container">
                 {connections.map((connection, index) => (
-                    <div key={index} className="image-label-pair grid-item">
-                        <FontAwesomeIcon
+                    <div key={index} className="image-label-pair grid-item" onClick={() => handleIconClick(connection.id)}>
+                        <img
                             className="connection-icon"
-                            icon={getIconByConnectionType(connection)}
-                            size="5x"
-                        />
-                        <label>{connection.name}</label>
+                            src={getIconByConnectionType(connection)}
+                            alt={connection.serverName} />
+                        <label>{connection.ownerName} - {connection.serverName}</label>
                     </div>
                 ))}
             </div>

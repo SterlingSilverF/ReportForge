@@ -280,23 +280,38 @@ namespace ReportManager.API
                 return BadRequest(new { message = "Failed to register the admin user" });
             }
 
+            // Create admin group folder
+            string adminGroupFolderPath = Path.Combine(groupsPath, request.groupname + "/");
+            if (!_folderManagementService.CreatePhysicalFolder(adminGroupFolderPath))
+            {
+                return BadRequest(new { message = "Failed to create the group folder" });
+            }
+
+            FolderModel groupFolder = new FolderModel
+            {
+                FolderPath = adminGroupFolderPath,
+                FolderName = request.groupname,
+                IsObjectFolder = true
+                // ParentId = null
+            };
+
+            var groupFolderId = _folderManagementService.CreateDBFolder(groupFolder);
+            if (groupFolderId == null)
+            {
+                return BadRequest(new { message = "Failed to create the group folder in DB" });
+            }
+
             // Create the first admin group
             _Group adminGroup = new _Group
             {
                 GroupName = request.groupname,
-                Folders = new HashSet<ObjectId>(),
+                Folders = new HashSet<ObjectId> { groupFolder.Id },
                 GroupOwners = new HashSet<string> { request.username },
                 GroupMembers = new HashSet<string> { request.username },
                 IsTopGroup = true
                 // ParentId = null
             };
             adminGroup = _groupManagementService.CreateAdminGroup(adminGroup);
-
-            // Create the first group folder (physical only)
-            if (!_folderManagementService.CreatePhysicalFolder("Groups/" + request.groupname))
-            {
-                return BadRequest(new { message = "Failed to create the group folder" });
-            }
 
             PersonalFolder _folder = new PersonalFolder
             {

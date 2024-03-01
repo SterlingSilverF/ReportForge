@@ -56,9 +56,18 @@ namespace ReportManager.Services
             return true;
         }
 
-        public List<ReportConfigurationModel> GetReportsByFolder(ObjectId folderId, string type)
+        public List<ReportConfigurationModel> GetReportsByFolder(ObjectId folderId, bool type)
         {
-            var reportType = ParseReportType(type);
+            ReportType reportType;
+            if (type)
+            {
+                reportType = ReportType.Personal;
+            }
+            else
+            {
+                reportType = ReportType.Group;
+            }
+
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.FolderId, folderId);
             return GetReportCollection(reportType).Find(filter).ToList();
         }
@@ -282,13 +291,12 @@ namespace ReportManager.Services
         public ReportConfigurationModel TransformRequestToModel(ReportFormContextRequest request, SharedService _sharedService, bool existing)
         {
             var userIdObjectId = _sharedService.StringToObjectId(request.UserId);
-            var connectionStringId = _sharedService.StringToObjectId(request.SqlRequest.SelectedConnection);
+            var connectionStringId = _sharedService.StringToObjectId(request.SelectedConnection);
             var folderId = _sharedService.StringToObjectId(request.SelectedFolder);
-            var ownerId = request.ReportType.Equals("User", StringComparison.OrdinalIgnoreCase)
+            var ownerId = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
                 ? userIdObjectId
                 : _sharedService.StringToObjectId(request.SelectedGroup);
             
-
             var model = new ReportConfigurationModel
             {
                 ReportName = request.ReportName,
@@ -344,11 +352,11 @@ namespace ReportManager.Services
         {
             return frequencyType.ToLower() switch
             {
-                "daily" => ScheduleType.Daily,
-                "weekly" => ScheduleType.Weekly,
-                "monthly" => ScheduleType.Monthly,
-                "quarterly" => ScheduleType.Quarterly,
-                "yearly" => ScheduleType.Yearly,
+                "days" => ScheduleType.Daily,
+                "weeks" => ScheduleType.Weekly,
+                "months" => ScheduleType.Monthly,
+                "quarters" => ScheduleType.Quarterly,
+                "years" => ScheduleType.Yearly,
                 _ => throw new ArgumentException("Invalid frequency type"),
             };
         }

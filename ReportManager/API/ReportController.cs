@@ -33,16 +33,15 @@ namespace ReportManager.API
             public List<OrderByItem> OrderBys { get; set; } = new List<OrderByItem>();
         }
 
-        public class ReportFormContextRequest
+        public class ReportFormContextRequest : BuildSQLRequest
         {
             public string Action { get; set; }
             public string UserId { get; set; }
             public string ReportName { get; set; }
             public string ReportDescription { get; set; }
             public string ReportType { get; set; }
-            public string SelectedGroup { get; set; }
+            public string ?SelectedGroup { get; set; }
             public string SelectedFolder { get; set; }
-            public BuildSQLRequest SqlRequest { get; set; }
             public string CompiledSQL { get; set; }
             public string OutputFormat { get; set; }
             public int ReportFrequencyValue { get; set; }
@@ -50,12 +49,6 @@ namespace ReportManager.API
             public string ReportGenerationTime { get; set; }
             public string EmailReports { get; set; }
             public string EmailRecipients { get; set; }
-
-            public ReportFormContextRequest()
-            {
-                // Existing shared properties copy over
-                SqlRequest = new BuildSQLRequest();
-            }
         }
 
         public class ReportSubsetRequest
@@ -169,11 +162,10 @@ namespace ReportManager.API
         }
 
         [HttpGet("getFolderReports")]
-        public IActionResult GetFolderReports([FromQuery] string folderId, [FromQuery] bool isPersonal)
+        public IActionResult GetFolderReports(string folderId, bool type)
         {
             ObjectId folderObjectId;
-            // If none specified, do highest group folder
-            if (folderId == "null")
+            if (folderId == "TOP")
             {
                 var group = _groupManagementService.GetTopGroup();
                folderObjectId = group.Folders.FirstOrDefault();
@@ -181,8 +173,7 @@ namespace ReportManager.API
             else {
                 folderObjectId = _sharedService.StringToObjectId(folderId);
             }
-            
-            var folder = _folderManagementService.GetFolderById(folderObjectId);
+            var folder = _folderManagementService.GetFolderById(folderObjectId, type);
             if (folder == null)
             {
                 return BadRequest("Invalid Folder ID");
@@ -191,8 +182,7 @@ namespace ReportManager.API
             List<ReportConfigurationModel> reports;
             try
             {
-                ReportType reportType = isPersonal ? ReportType.Personal : ReportType.Group;
-                reports = _reportManagementService.GetReportsByFolder(folderObjectId, reportType.ToString());
+                reports = _reportManagementService.GetReportsByFolder(folderObjectId, type);
             }
             catch (Exception ex)
             {

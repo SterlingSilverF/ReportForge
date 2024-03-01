@@ -13,14 +13,14 @@ const Reports = ({ env, token, username, userID, makeApiRequest, goBack, navigat
 
     useEffect(() => {
         // Fetch subfolders
-        makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&isPersonal=${isPersonal}`)
+        makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${isPersonal}`)
             .then((folderRes) => {
                 setFolders(folderRes.data);
             })
             .catch((err) => console.error('There was an error fetching folders!', err));
 
         // Fetch reports
-        makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&isPersonal=${isPersonal}`)
+        makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
             .then((reportRes) => {
                 setReports(reportRes.data);
             })
@@ -41,7 +41,7 @@ const Reports = ({ env, token, username, userID, makeApiRequest, goBack, navigat
                             className="folder"
                             icon={folder.isGroupFolder ? faPeopleRoof : faFolder}
                             size="5x"
-                            onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=false`)}
+                            onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=${isPersonal}`)}
                         />
                         <label className={folder.isGroupFolder ? '' : 'rpf-red'}>{folder.folderName}</label>
                     </div>

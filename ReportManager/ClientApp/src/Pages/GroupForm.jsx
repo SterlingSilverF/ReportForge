@@ -11,7 +11,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
     const groupId = queryParams.get('groupId');
     const [groupConnectionStrings, setGroupConnectionStrings] = useState([]);
     const [groupFolders, setGroupFolders] = useState([]);
-    const [isTopGroup, setIsTopGroup] = useState(false);
     const [formTitle, setFormTitle] = useState('Create New Group');
     const [buttonText, setButtonText] = useState('Create Group');
     const [successText, setSuccessText] = useState('Group created successfully.');
@@ -21,7 +20,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
     const [userGroups, setUserGroups] = useState([]);
     const [selectedOwners, setSelectedOwners] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
-    const [parentGroupId, setParentGroupId] = useState(null);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
     const [usernames, setUsernames] = useState([]);
@@ -34,12 +32,10 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                 .then(response => {
                     const group = response.data;
                     setGroupName(group.groupName);
-                    setParentGroupId(group.parentId);
                     setSelectedOwners(group.groupOwners);
                     setSelectedMembers(group.groupMembers);
                     setGroupConnectionStrings(group.groupConnectionStrings);
                     setGroupFolders(group.folders);
-                    setIsTopGroup(group.isTopGroup);
                     setIsEditMode(true);
                     setFormTitle('Edit Group');
                     setButtonText('Save Changes');
@@ -51,8 +47,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
         }
     }, [groupId, makeApiRequest]);
 
-
-    // TODO: handlesuccess groupform
     const handleSuccess = () => {
         setSuccess(true);
         setMessage(successText);
@@ -64,7 +58,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
 
     const resetForm = () => {
         setGroupName('');
-        setParentGroupId(userGroups[0]?.id || null);
         setMessage('');
         setSuccess(false);
     };
@@ -76,23 +69,11 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
         }
     }, [username]);
 
-
     useEffect(() => {
         if (username) {
-            makeApiRequest('get', '/api/group/getTopGroup')
-                .then(response => {
-                    setParentGroupId(response.data);
-                })
-                .catch(error => {
-                    console.error('Could not fetch top group:', error);
-                });
-
             makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
                 .then(response => {
                     setUserGroups(response.data);
-                    if (!parentGroupId) {
-                        setParentGroupId(response.data[0]?.id);
-                    }
                 })
                 .catch(error => {
                     console.error('Could not fetch user groups:', error);
@@ -100,7 +81,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
 
             makeApiRequest('get', '/api/shared/getAllUsernames')
                 .then(response => {
-                    // Exclude the user's own username from the options
                     const filteredUsernames = response.data.filter(u => u !== username);
                     setUsernames(filteredUsernames);
                 })
@@ -111,7 +91,7 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
     }, [makeApiRequest, username]);
 
     const handleCreateGroup = () => {
-        if (groupname && username && parentGroupId) {
+        if (groupname && username) {
             let payload = {};
 
             if (isEditMode) {
@@ -121,9 +101,7 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                     groupOwners: selectedOwners,
                     groupMembers: selectedMembers,
                     groupConnectionStrings: groupConnectionStrings,
-                    folders: groupFolders,
-                    parentId: parentGroupId,
-                    isTopGroup: isTopGroup
+                    folders: groupFolders
                 };
 
                 makeApiRequest('put', `/api/group/updateGroup`, payload)
@@ -133,9 +111,8 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                 payload = {
                     groupname: groupname,
                     username: username,
-                    parentId: parentGroupId,
                     ...(selectedOwners && selectedOwners.length > 0 && { groupOwners: selectedOwners }),
-                    ...(selectedMembers && selectedMembers.length > 0 && { groupMembers: selectedMembers }),
+                    ...(selectedMembers && selectedMembers.length > 0 && { groupMembers: selectedMembers })
                 };
 
                 makeApiRequest('post', '/api/group/createGroup', payload)
@@ -160,19 +137,6 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                 <div className="form-element" hidden>
                     <label>Username</label><br />
                     <input type="text" value={username} readOnly className="input-style-default" />
-                </div>
-                <div className="form-element">
-                    <label>Underneath Group:</label><TooltipIcon formName="groupform" fieldName="parent group" />
-                    <br/>
-                    <select
-                        value={parentGroupId}
-                        onChange={e => setParentGroupId(e.target.value)}
-                        className="input-style-default standard-select"
-                        style={{ fontSize: "1em" }}>
-                        {userGroups.map(group => (
-                            <option key={group.id} value={group.id}>{group.groupName}</option>
-                        ))}
-                    </select>
                 </div><br/>
                 <section>
                     <label>Group Owners</label>

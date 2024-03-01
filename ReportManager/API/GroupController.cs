@@ -37,8 +37,6 @@ namespace ReportManager.API
             public string GroupName { get; set; }
             [Required]
             public string username { get; set; }
-            [Required]
-            public string ParentId { get; set; }
             public HashSet<string>? GroupOwners { get; set; }
             public HashSet<string>? GroupMembers { get; set; }
         }
@@ -56,57 +54,37 @@ namespace ReportManager.API
             [Required]
             public HashSet<string> Folders { get; set; }
             public HashSet<string>? GroupConnectionStrings { get; set; }
-            [Required]
-            public string ParentId { get; set; }
-            [Required]
-            public bool IsTopGroup { get; set; }
         }
-
 
         [HttpPost("createGroup")]
         public IActionResult CreateGroup([FromBody] CreateGroupRequest request)
         {
             try
             {
-                ObjectId parsedId = _sharedService.StringToObjectId(request.ParentId);
-                _Group parentGroup = _groupManagementService.GetGroup(parsedId);
-
-                // Determine the folderPath based on whether the parent group is the domain group
-                string folderPath;
-                if (parentGroup.IsTopGroup)
-                {
-                    // Manually build the path for a top-level group
-                    folderPath = basePath + "Groups/" + parentGroup.GroupName + "/" + request.GroupName + "/";
-                }
-                else
-                {
-                    // Use the parent group's folder path for nested groups
-                    FolderModel parentFolder = _folderManagementService.GetFolderById(parentGroup.Folders.FirstOrDefault());
-                    folderPath = parentFolder.FolderPath + request.GroupName + "/";
-                }
+                _Group topGroup = _groupManagementService.GetTopGroup();
+                ObjectId topGroupId = topGroup.Id;
+                FolderModel topGroupFolder = _folderManagementService.GetFolderById(topGroup.Folders.First(), false);
+                string folderPath = basePath + "Groups/" + topGroup.GroupName + "/" + request.GroupName + "/";
 
                 FolderModel folder = new FolderModel
                 {
                     FolderName = request.GroupName,
                     FolderPath = folderPath,
-                    ParentId = parentGroup.IsTopGroup ? null : parsedId,
+                    ParentId = topGroupFolder.Id,
                     IsObjectFolder = true
                 };
 
-                // Create the physical and DB folder
                 if (!_folderManagementService.CreateDBFolder(folder))
                 {
                     return BadRequest(new { message = "Failed to create the group folder." });
                 }
 
-                // Prepare owners and members
                 HashSet<string> owners = new HashSet<string> { request.username };
                 owners.UnionWith(request.GroupOwners ?? Enumerable.Empty<string>());
 
                 HashSet<string> members = new HashSet<string> { request.username };
                 members.UnionWith(request.GroupMembers ?? Enumerable.Empty<string>());
 
-                // Create the group entity
                 _Group group = new _Group
                 {
                     GroupName = request.GroupName,
@@ -114,10 +92,9 @@ namespace ReportManager.API
                     GroupMembers = members,
                     Folders = new HashSet<ObjectId> { folder.Id },
                     IsTopGroup = false,
-                    ParentId = parsedId
+                    ParentId = topGroupId
                 };
 
-                // Attempt to create the group in the database
                 _groupManagementService.CreateGroup(group);
 
                 return Ok(new { message = "Group created successfully." });

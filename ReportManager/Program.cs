@@ -7,6 +7,7 @@ using Serilog.Events;
 using FluentValidation.AspNetCore;
 using ReportManager.Models.SettingsModels;
 using System.Configuration;
+using System.Text.Json;
 
 var loggerConfiguration = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -21,7 +22,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // SERVICES
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddCors(options =>
 {

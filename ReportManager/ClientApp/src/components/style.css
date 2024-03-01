@@ -901,6 +901,10 @@ input[type="radio"] {
     margin-right: 15%;
 }
 
+.connection-icon:hover{
+    cursor: pointer;
+}
+
 /* Report Designer */
 .dual-listbox {
     display: flex;

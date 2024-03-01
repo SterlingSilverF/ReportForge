@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import HOC from '../components/HOC';
+import { useLocation } from 'react-router-dom';
 
 const FolderForm = ({ navigate, username, makeApiRequest }) => {
     const [folderName, setFolderName] = useState('');
@@ -11,13 +12,16 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
 
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const folderId = queryParams.get('folderId');
+    const [isEditMode, setIsEditMode] = useState(false);
+
     const handleSuccess = () => {
-        setSuccess(true);
         setMessage('Folder created successfully.');
     };
 
     const handleError = (err) => {
-        setSuccess(false);
         setMessage("Something went wrong.");
     };
 
@@ -35,7 +39,24 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
         return missingFields;
     };
 
+    // isEditMode
+    useEffect(() => {
+        if (folderId) {
+            makeApiRequest('get', `/api/folder/GetFolderById?folderId=${folderId}`)
+                .then(response => {
+                    const folder = response.data;
+                    setFolderName(folder.folderName);
+                    setParentId(folder.parentId);
+                    setGroupId(folder.groupId);
+                    setIsEditMode(true);
+                })
+                .catch(error => {
+                    console.error('Could not fetch folder by ID:', error);
+                });
+        }
+    }, [folderId, makeApiRequest]);
 
+    // On load fetch user's groups and personal folders
     useEffect(() => {
         if (username) {
             makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
@@ -56,6 +77,7 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
         }
     }, [username, makeApiRequest]);
 
+    // If group, then get group folders
     useEffect(() => {
         if (folderType === 'group' && groupId) {
             makeApiRequest('get', `/api/folder/getFoldersByGroupId?groupId=${groupId}`)
@@ -71,11 +93,9 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
     const handleCreateFolder = () => {
         const missingFields = validateFolderForm();
 
-        // If there are missing fields, construct and display an error message
         if (missingFields.length > 0) {
             const fieldsList = missingFields.join(", ");
             setMessage(`Please fill out the following required fields: ${fieldsList}.`);
-            setSuccess(false);
             return;
         }
 
@@ -87,19 +107,29 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
             IsGroupFolder: folderType === 'group'
         };
 
-        makeApiRequest('post', '/api/folder/createFolder', data)
+        const apiEndpoint = isEditMode ? `/api/folder/updateFolder` : `/api/folder/createFolder`;
+        const httpMethod = isEditMode ? 'put' : 'post';
+
+        if (isEditMode) {
+            data.id = folderId;
+        }
+
+        makeApiRequest(httpMethod, apiEndpoint, data)
             .then(() => {
-                handleSuccess();
+                const successMessage = isEditMode ? 'Folder updated successfully.' : 'Folder created successfully.';
+                setMessage(successMessage);
+                setSuccess(true);
             })
-            .catch((error) => {
-                handleError(error);
+            .catch(() => {
+                setMessage("Something went wrong.");
+                setSuccess(false);
             });
     };
 
     return (
         <div className="sub-container outer">
             <div className="form-header">
-                <h2>Create a New Folder</h2>
+                <h2>Folder Form</h2>
             </div>
             <section className="box form-box">
                 <div className="form-element">

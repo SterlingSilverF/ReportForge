@@ -414,6 +414,12 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         }
 
         try {
+
+            updateReportFormData({
+                filters: dynamicFilters,
+                orderBys: validOrderBys
+            });
+
             const requestBody = {
                 SelectedConnection: reportFormContext.selectedConnection,
                 DbType: reportFormContext.dbType,

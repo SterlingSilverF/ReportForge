@@ -1,29 +1,59 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faPeopleRoof, faFolder, faFile } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faPeopleRoof, faFolder, faFile, faPencil } from '@fortawesome/free-solid-svg-icons';
 
-const Browse = ({ makeApiRequest, navigate, username, userID }) => {
+const Browse = ({ makeApiRequest, username, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [reports, setReports] = useState([]);
-    const { folderId, isPersonal } = useParams();
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const isPersonal = searchParams.get('isPersonal');
+    let folderId = searchParams.get('folderId'); 
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [folderRes, reportRes] = await Promise.all([
-                    makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&isPersonal=${isPersonal}`),
-                    makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&isPersonal=${isPersonal}`)
-                ]);
-                setFolders(folderRes.data);
-                setReports(reportRes.data);
-            } catch (err) {
-                console.error('There was an error!', err);
+        if (username) {
+            if (isPersonal === 'true') {
+                fetchPersonalBaseFolderId(username);
+            } else {
+                folderId = "TOP";
             }
-        };
-        fetchData();
-    }, [makeApiRequest, folderId, userID, isPersonal]);
+        }
+    }, [makeApiRequest, username, isPersonal]);
+
+
+    const fetchPersonalBaseFolderId = async (username) => {
+        try {
+            const res = await makeApiRequest('get', `/api/folder/getPersonalFolders?username=${username}`);
+            const baseFolder = res.data.find(folder => folder.folderName === username);
+            if (baseFolder) {
+                fetchSubFoldersAndReports(baseFolder.id, isPersonal);
+            }
+        } catch (err) {
+            console.error('Error fetching personal base folder:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (folderId && isPersonal) {
+            fetchSubFoldersAndReports(folderId, isPersonal);
+        }
+    }, [makeApiRequest, folderId, isPersonal]);
+
+    const fetchSubFoldersAndReports = async (folderId, isPersonal) => {
+        try {
+            var collection = isPersonal === 'true' ? "Personal" : "Group";
+            const [folderRes, reportRes] = await Promise.all([
+                makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${collection}`),
+                makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
+            ]);
+            setFolders(folderRes.data);
+            setReports(reportRes.data);
+        } catch (err) {
+            console.error('There was an error fetching subfolders and reports:', err);
+        }
+    };
 
     const goBack = () => {
         navigate(-1);
@@ -31,27 +61,27 @@ const Browse = ({ makeApiRequest, navigate, username, userID }) => {
 
     return (
         <div className="sub-container padding-medium">
-            <div className="title-style-one">Your Created Items</div>
+            <div className="title-style-one">
+                {isPersonal === 'true' ? 'Your Created Items' : 'Group Items'}
+            </div>
             <button className="btn-three back" onClick={goBack}>
                 <FontAwesomeIcon icon={faCaretLeft} /> Back
             </button>
             <hr />
             <div className="grid-container">
-                {folders.map((folder, index) => {
-                    return (
-                        <div key={index} className="image-label-pair grid-item">
-                            <FontAwesomeIcon
-                                className="folder"
-                                icon={folder.isGroupFolder ? faPeopleRoof : faFolder}
-                                size="5x"
-                                onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=false`)}
-                            />
-                            <label className={folder.isGroupFolder ? "" : "rpf-red"}>
-                                {folder.folderName}
-                            </label>
-                        </div>
-                    );
-                })}
+                {folders.map((folder, index) => (
+                    <div key={index} className="image-label-pair grid-item">
+                        <FontAwesomeIcon
+                            className="folder"
+                            icon={folder.isGroupFolder ? faPeopleRoof : faFolder}
+                            size="5x"
+                            onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=${isPersonal}`)}
+                        />
+                        <label className={folder.isGroupFolder ? "" : "rpf-red"}>
+                            {folder.folderName}
+                        </label>
+                    </div>
+                ))}
 
                 {reports.map((report, index) => (
                     <div key={index} className="centered-content">

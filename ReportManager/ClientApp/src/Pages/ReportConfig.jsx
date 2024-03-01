@@ -6,6 +6,8 @@ import LoadingComponent from '../components/loading';
 const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
     const [status, setStatus] = useState('loading'); // loading, ready, error
+    const [action, setAction] = useState('create');
+    const [message, setMessage] = useState('');
 
     const handleBackToDesigner = () => {
         navigate('/reportdesigner');
@@ -16,12 +18,46 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
         updateReportFormData({ [name]: value });
     };
 
+    const toPascalCase = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+    const keysToPascalCase = (obj) => {
+        return Object.entries(obj).reduce((acc, [key, value]) => {
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                value = keysToPascalCase(value);
+            } else if (Array.isArray(value)) {
+                value = value.map(item => typeof item === 'object' ? keysToPascalCase(item) : item);
+            }
+            acc[toPascalCase(key)] = value;
+            return acc;
+        }, {});
+    };
+
+    const omitKeys = (obj, keysToOmit) => {
+        return Object.keys(obj).reduce((acc, key) => {
+            if (!keysToOmit.includes(key)) {
+                acc[key] = obj[key];
+            }
+            return acc;
+        }, {});
+    };
+
     const handleSave = () => {
-        const requestBody = {
+        const adjustedReportFormContext = {
             ...reportFormContext,
+            reportType: reportFormContext.reportType === 'User' ? 'Personal' : 'Group',
+        };
+        const body = keysToPascalCase(adjustedReportFormContext);
+
+        const requestBody = {
+            ...body,
+            Filters: body.Filters.map(filter => omitKeys(filter, ['ColumnOptions'])),
+            OrderBys: body.OrderBys.map(orderBy => omitKeys(orderBy, ['ColumnOptions'])),
             Action: action,
             UserId: userID
         };
+
+        const formattedString = JSON.stringify(requestBody, null, 2);
+        console.log(formattedString);
 
         makeApiRequest('post', '/api/report/configureReport', requestBody)
             .then((response) => {
@@ -93,6 +129,7 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
                     <label htmlFor="recipients">Recipients (separate each by a semicolon):</label>
                     <input type="text" id="recipients" name="emailRecipients" value={reportFormContext.emailRecipients || ''} className="input-style-long" onChange={handleInputChange} />
                     <br /><br />
+                    <a>{message}</a>
                 </div>
                 <hr/>
             </section>

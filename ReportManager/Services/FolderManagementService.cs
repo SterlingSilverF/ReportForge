@@ -32,10 +32,19 @@ namespace ReportManager.Services
             return _folders.Find(filter).ToList();
         }
 
-        public FolderModel GetFolderById(ObjectId folderId)
+        public FolderModel GetFolderById(ObjectId folderId, bool isPersonal)
         {
-            var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, folderId);
-            return _folders.Find(filter).FirstOrDefault();
+            if (isPersonal)
+            {
+                var personalFilter = Builders<PersonalFolder>.Filter.Eq(f => f.Id, folderId);
+                PersonalFolder personalFolder = _personalFolders.Find(personalFilter).FirstOrDefault();
+                return personalFolder as FolderModel;
+            }
+            else
+            {
+                var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, folderId);
+                return _folders.Find(filter).FirstOrDefault();
+            }
         }
 
         public PersonalFolder GetUserFolder(string username)
@@ -74,11 +83,13 @@ namespace ReportManager.Services
 
         public bool UpdateDBFolder(FolderModel updatedFolder)
         {
-            var existingFolder = GetFolderById(updatedFolder.Id);
+            bool folderType = updatedFolder is PersonalFolder ? true : false;
+            var existingFolder = GetFolderById(updatedFolder.Id, folderType);
             if (existingFolder == null) return false;
 
-            var result = _folders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder);
-
+            var result = folderType == true
+                ? _personalFolders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder as PersonalFolder)
+                : _folders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder);
             if (existingFolder.FolderName != updatedFolder.FolderName)
             {
                 if (!RenamePhysicalFolder(existingFolder.FolderPath, updatedFolder.FolderName))
@@ -94,9 +105,9 @@ namespace ReportManager.Services
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool DeleteDBFolder(ObjectId folderId)
+        public bool DeleteDBFolder(ObjectId folderId, bool type)
         {
-            var folder = GetFolderById(folderId);
+            var folder = GetFolderById(folderId, type);
             if (folder == null) return false;
 
             var result = _folders.DeleteOne(filter => filter.Id == folderId);
@@ -126,14 +137,28 @@ namespace ReportManager.Services
             return new List<FolderModel>();
         }
 
-        public List<FolderModel> GetSubFoldersByParentId(ObjectId parentId)
+        public List<FolderModel> GetSubFoldersByParentId(ObjectId parentId, string folderType)
         {
-            FolderModel parentFolder = _folders.Find(f => f.Id == parentId).FirstOrDefault();
-            if (parentFolder != null)
+            if (folderType == "Personal")
             {
-                var filter = Builders<FolderModel>.Filter.Eq("ParentId", parentId);
-                return _folders.Find(filter).ToList();
+                PersonalFolder parentFolder = _personalFolders.Find(f => f.Id == parentId).FirstOrDefault();
+                if (parentFolder != null)
+                {
+                    var personalFilter = Builders<PersonalFolder>.Filter.Eq("ParentId", parentId);
+                    var personalFolders = _personalFolders.Find(personalFilter).ToList();
+                    return personalFolders.Cast<FolderModel>().ToList();
+                }
             }
+            else
+            {
+                FolderModel parentFolder = _folders.Find(f => f.Id == parentId).FirstOrDefault();
+                if (parentFolder != null)
+                {
+                    var filter = Builders<FolderModel>.Filter.Eq("ParentId", parentId);
+                    return _folders.Find(filter).ToList();
+                }
+            }
+
             return new List<FolderModel>();
         }
 
