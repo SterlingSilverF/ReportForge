@@ -109,10 +109,24 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const handleColumnSelection = (tableName, columnName, isSelected) => {
         const columnDetails = tableColumns[tableName].find(col => col.columnName === columnName);
         let updatedSelectedColumns;
+
         if (isSelected) {
-            updatedSelectedColumns = [...reportFormContext.selectedColumns, { table: tableName, ...columnDetails }];
+            const newColumn = {
+                table: tableName,
+                columnName: columnDetails.columnName,
+                dataType: columnDetails.dataType,
+                displayOrder: reportFormContext.selectedColumns.length + 1,
+                columnFormatting: {
+                    conversion: 'None',
+                    formatValue: null,
+                    maxLength: null,
+                },
+            };
+            updatedSelectedColumns = [...reportFormContext.selectedColumns, newColumn];
         } else {
-            updatedSelectedColumns = reportFormContext.selectedColumns.filter(col => !(col.table === tableName && col.columnName === columnName));
+            updatedSelectedColumns = reportFormContext.selectedColumns.filter(col =>
+                !(col.table === tableName && col.columnName === columnName)
+            );
         }
 
         updateReportFormData({
@@ -420,11 +434,17 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 orderBys: validOrderBys
             });
 
+            const columnData = reportFormContext.selectedColumns.map(column => ({
+                table: column.table,
+                columnName: column.columnName,
+                dataType: column.dataType,
+            }));
+
             const requestBody = {
                 SelectedConnection: reportFormContext.selectedConnection,
                 DbType: reportFormContext.dbType,
                 SelectedTables: reportFormContext.selectedTables,
-                SelectedColumns: reportFormContext.selectedColumns,
+                SelectedColumns: columnData,
                 JoinConfig: reportFormContext.joinConfig,
                 Filters: dynamicFilters.map(({ columnOptions, ...rest }) => rest),
                 OrderBys: validOrderBys.map(({ columnOptions, ...rest }) => rest)
@@ -432,7 +452,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             //const formattedString = JSON.stringify(requestBody, null, 2);
             //console.log(formattedString);
 
-            makeApiRequest('post', '/api/report/buildAndVerifySql', requestBody)
+            makeApiRequest('post', '/api/report/buildAndVerifySQL', requestBody)
                 .then((response) => {
                     const compiledSQL = response.data;
                     updateReportFormData({ compiledSQL });

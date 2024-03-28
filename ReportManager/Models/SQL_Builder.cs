@@ -2,7 +2,7 @@
 {
     public class SQL_Builder
     {
-        public class ColumnDefinition
+        public class BaseColumnDefinition
         {
             public string Table { get; set; }
             public string ColumnName { get; set; }

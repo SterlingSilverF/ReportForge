@@ -16,15 +16,20 @@ namespace ReportManager.API
         private readonly FolderManagementService _folderManagementService;
         private readonly UserManagementService _userManagementService;
         private readonly SharedService _sharedService;
+        private readonly ReportManagementService _reportManagementService;
+        private readonly ConnectionService _connectionService;
         private readonly IConfiguration _configuration;
         private string basePath;
 
         public GroupController(GroupManagementService groupManagementService, FolderManagementService folderManagementService, 
-            UserManagementService userManagementService, SharedService sharedService, IConfiguration configuration)
+            UserManagementService userManagementService, SharedService sharedService, ReportManagementService reportManagementService,
+            ConnectionService connectionService, IConfiguration configuration)
         {
             _groupManagementService = groupManagementService;
             _folderManagementService = folderManagementService;
+            _reportManagementService = reportManagementService;
             _userManagementService = userManagementService;
+            _connectionService = connectionService;
             _sharedService = sharedService;
             _configuration = configuration;
             var basePathValue = _configuration.GetValue<string>("BasePath");
@@ -57,13 +62,13 @@ namespace ReportManager.API
         }
 
         [HttpPost("createGroup")]
-        public IActionResult CreateGroup([FromBody] CreateGroupRequest request)
+        public async Task<IActionResult> CreateGroup([FromBody] CreateGroupRequest request)
         {
             try
             {
                 _Group topGroup = _groupManagementService.GetTopGroup();
                 ObjectId topGroupId = topGroup.Id;
-                FolderModel topGroupFolder = _folderManagementService.GetFolderById(topGroup.Folders.First(), false);
+                FolderModel topGroupFolder = await _folderManagementService.GetFolderById(topGroup.Folders.First(), false);
                 string folderPath = basePath + "Groups/" + topGroup.GroupName + "/" + request.GroupName + "/";
 
                 FolderModel folder = new FolderModel
@@ -150,6 +155,46 @@ namespace ReportManager.API
 
             var groupDTO = new GroupDTO(group);
             return Ok(groupDTO);
+        }
+
+        [HttpDelete("DeleteGroup")]
+        public async Task<IActionResult> DeleteGroup(string groupId)
+        {
+            ObjectId _groupId = _sharedService.StringToObjectId(groupId);
+            var group = _groupManagementService.GetGroup(_groupId);
+            var reports = _reportManagementService.GetReportsByGroup(_groupId);
+
+            foreach (var report in reports)
+            {
+                var reportDeleteSuccess = _reportManagementService.DeleteReport(report.Id, "Group");
+                // TODO: Implement logging on failure to delete report
+            }
+
+            if (group.GroupConnectionStrings != null)
+            {
+                foreach (var connectionId in group.GroupConnectionStrings)
+                {
+                    var connectionDeleteSuccess = await _connectionService.DeleteServerOrDBConnection(connectionId, OwnerType.Group);
+                    // TODO: Implement logging on failure to delete connection
+                }
+            }
+
+            if (group.Folders != null)
+            {
+                foreach (var folderId in group.Folders)
+                {
+                    var folderDeleteSuccess = await _folderManagementService.DeleteDBFolder(folderId, false);
+                    // TODO: Implement logging on failure to delete folder
+                }
+            }
+
+            var success = await _groupManagementService.DeleteGroupAsync(_groupId);
+            if (!success)
+            {
+                return NotFound(new { message = "Group not found." });
+            }
+
+            return Ok(new { message = "Group deleted successfully." });
         }
     }
 }

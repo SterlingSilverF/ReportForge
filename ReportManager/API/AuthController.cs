@@ -11,8 +11,6 @@ using System.Text;
 using System.Security.Claims;
 using ReportManager.Models.SettingsModels;
 using Microsoft.Extensions.Options;
-using static Org.BouncyCastle.Math.EC.ECCurve;
-using Mysqlx;
 
 namespace ReportManager.API
 {

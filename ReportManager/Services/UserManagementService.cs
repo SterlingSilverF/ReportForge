@@ -36,6 +36,21 @@ namespace ReportManager.Services
             return _usersDB.Find(filter).FirstOrDefault();
         }
 
+        public string GetUsernameById(ObjectId userId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var user = _usersDB.Find(filter).FirstOrDefault();
+
+            if (user != null)
+            {
+                return user.Username;
+            }
+            else
+            {
+                return "Unknown User";
+            }
+        }
+
         public List<string> GetAllUsernames()
         {
             return _usersDB.Find(user => true).Project(user => user.Username).ToList();

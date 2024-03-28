@@ -2,8 +2,9 @@
 import DualListBox from 'react-dual-listbox';
 import 'react-dual-listbox/lib/react-dual-listbox.css';
 import HOC from '../components/HOC';
-import TooltipIcon from '../components/tooltip';
 import { useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleLeft, faAngleRight, faAnglesLeft, faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 
 const GroupForm = ({ makeApiRequest, username, navigate }) => {
     const location = useLocation();
@@ -22,6 +23,8 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertType, setAlertType] = useState('');
     const [usernames, setUsernames] = useState([]);
     const options = usernames.map(u => ({ value: u, label: u }));
 
@@ -124,6 +127,39 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
         }
     };
 
+    const handleDeleteGroup = () => {
+        if (window.confirm('Are you sure you want to delete this group? All items stored under it will be deleted!')) {
+            makeApiRequest('delete', `/api/group/deleteGroup?groupId=${groupId}`)
+                .then(() => {
+                    setAlertMessage('Group deleted successfully.');
+                    setAlertType('success');
+                    setTimeout(() => {
+                       navigate('/');
+                    }, 3000);
+                })
+                .catch((error) => {
+                    setAlertMessage('Error deleting group. Please contact your system administrator.');
+                    setAlertType('error');
+                    console.error('Error deleting group:', error);
+                });
+        }
+    };
+
+    const fontAwesomeIcons = {
+        moveLeft: <FontAwesomeIcon icon={faAngleLeft} />,
+        moveAllLeft: [
+            <FontAwesomeIcon key={0} icon={faAngleLeft} />,
+            <FontAwesomeIcon key={1} icon={faAngleLeft} />,
+        ],
+        moveRight: <FontAwesomeIcon icon={faAngleRight} />,
+        moveAllRight: [
+            <FontAwesomeIcon key={0} icon={faAngleRight} />,
+            <FontAwesomeIcon key={1} icon={faAngleRight} />,
+        ],
+        moveUp: <FontAwesomeIcon icon={faAngleLeft} />,
+        moveDown: <FontAwesomeIcon icon={faAngleRight} />,
+    };
+
     return (
         <div className="sub-container outer">
             <div className="form-header">
@@ -141,6 +177,7 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                 <section>
                     <label>Group Owners</label>
                     <DualListBox
+                        icons={fontAwesomeIcons}
                         options={options}
                         selected={selectedOwners}
                         canFilter
@@ -149,6 +186,7 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                     <br/><br/>
                     <label>Group Members</label>
                     <DualListBox
+                        icons={fontAwesomeIcons}
                         options={options}
                         selected={selectedMembers}
                         onChange={(selected) => setSelectedMembers(selected)}
@@ -157,6 +195,10 @@ const GroupForm = ({ makeApiRequest, username, navigate }) => {
                 </section>
                 <br/>
                 <button onClick={handleCreateGroup} className="btn-three">{buttonText}</button>
+                <br/>
+                {isEditMode && (
+                    <button onClick={handleDeleteGroup} className="btn-five">Delete Group</button>
+                )}
                 <label className="result-label"></label>
                 <p className="success-message">{message}</p>
             </section>

@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faUsers } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 
-const Groups = ({ makeApiRequest, username, token, navigate }) => {
+const Groups = ({ makeApiRequest, username, navigate }) => {
     const [userGroups, setUserGroups] = useState([]);
 
     useEffect(() => {
-        if (username && token) {
+        if (username) {
             makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
                 .then(response => {
                     setUserGroups(response.data);
@@ -16,7 +16,7 @@ const Groups = ({ makeApiRequest, username, token, navigate }) => {
                     console.error('Could not fetch user groups:', error);
                 });
         }
-    }, [username, token, makeApiRequest]);
+    }, [username, makeApiRequest]);
 
     return (
         <div className="sub-container">

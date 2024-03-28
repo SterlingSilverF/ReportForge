@@ -1,9 +1,9 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faFile, faCaretLeft, faPeopleRoof } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faFile, faCaretLeft, faPeopleRoof, faPencil } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 
-const Reports = ({ env, token, username, userID, makeApiRequest, goBack, navigate }) => {
+const Reports = ({ username, userID, makeApiRequest, goBack, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [reports, setReports] = useState([]);
 
@@ -43,14 +43,25 @@ const Reports = ({ env, token, username, userID, makeApiRequest, goBack, navigat
                             size="5x"
                             onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=${isPersonal}`)}
                         />
+                        {!folder.isGroupFolder && (
+                            <FontAwesomeIcon
+                                className="folder-edit"
+                                icon={faPencil}
+                                size="1x"
+                                onClick={() => navigate(`/folderform?folderId=${folder.id}&isPersonal=${isPersonal}`)}
+                            />
+                        )}
                         <label className={folder.isGroupFolder ? '' : 'rpf-red'}>{folder.folderName}</label>
                     </div>
                 ))}
 
                 {reports.map((report, index) => (
-                    <div key={index} className="centered-content">
-                        <FontAwesomeIcon icon={faFile} size="3x" />
-                        <label>{report.ReportName}</label>
+                    <div
+                        key={index}
+                        className="image-label-pair clickable"
+                        onClick={() => navigate(`/reportinformation?reportId=${report.id}&isPersonal=${isPersonal}`)}>
+                        <FontAwesomeIcon icon={faFile} size="3x" className="rpf-silverblue report" />
+                        <label>{report.reportName}</label>
                     </div>
                 ))}
             </div>

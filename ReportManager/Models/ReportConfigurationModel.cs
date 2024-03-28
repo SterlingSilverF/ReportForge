@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using ReportManager.Models;
+using static ReportManager.Models.SQL_Builder;
 
 namespace ReportManager.Models
 {
@@ -9,8 +10,7 @@ namespace ReportManager.Models
         public string ReportName { get; set; }
         public string? Description { get; set; }
         public ObjectId ConnectionStringId { get; set; }
-        public ScheduleInfo Schedule { get; set; }
-        public List<Job>? ReportJobs { get; set; }
+        public List<ScheduleInfo> Schedules { get; set; }
         public ObjectId FolderId { get; set; }
         public ObjectId CreatorId { get; set; }
         public DateTime CreatedDate { get; set; }
@@ -19,14 +19,15 @@ namespace ReportManager.Models
         public ObjectId OwnerID { get; set; }
         public OwnerType OwnerType { get; set; }
         public string CompiledSQL { get; set; }
+        public List<ColumnDefinition> SelectedColumns { get; set; }
+        public List<string> EmailRecipients { get; set; }
+        public ReportFormat Format { get; set; }
     }
 
-    public class ReportColumn
+    public class ColumnDefinition : BaseColumnDefinition
     {
-        public string Table { get; set; }
-        public string ColumnName { get; set; }
-        public int DisplayOrder { get; set; }
-        //public ColumnFormatting? ColumnFormatting { get; set; }
+        public int? DisplayOrder { get; set; }
+        public ColumnFormatting? ColumnFormatting { get; set; }
     }
 
     public class ColumnFormatting
@@ -79,29 +80,12 @@ namespace ReportManager.Models
         Yearly
     }
 
-    public class Job
-    {
-        public ScheduleInfo ScheduleInfo { get; set; }
-        public ReportFormat ReportFormat { get; set; }
-    }
-
     public enum ReportFormat
     {
-        CSV,
-        XLS,
-        XLSX,
-        PDF,
-        TXT,
-        JSON
-    }
-
-    public class EmailJob: Job
-    {
-        public List<string> Recipients { get; set; }
-    }
-
-    public class FileTransferJob: Job
-    {
-        public string Destination { get; set; }
+        csv,
+        xlsx,
+        pdf,
+        txt,
+        json
     }
 }

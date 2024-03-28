@@ -78,24 +78,15 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
             <hr/>
                 <div>
                     <h5>Report Name:</h5>
-                    <input
-                        type="text"
-                        value={reportFormContext.reportName}
-                        onChange={handleInputChange}
-                        className="input-style-medium"
-                    /><br />
+                    <p>{reportFormContext.reportName}</p>
                     <label>Description:</label><br />
-                    <textarea
-                        value={reportFormContext.reportDescription}
-                        onChange={handleInputChange}
-                        className="input-style-long"
-                    />
-                    <br /><br /><br />
+                    <p>{reportFormContext.reportDescription}</p>
+                    <br/>
                     <h5>Automatic Report Creation</h5>
                     <label>Select Output Format:</label>
                     <select name="outputFormat" value={reportFormContext.outputFormat} onChange={handleInputChange}>
                         <option value="csv">CSV</option>
-                        <option value="excel">Excel</option>
+                        <option value="xlsx">Excel</option>
                         <option value="json">JSON</option>
                         <option value="txt">Text</option>
                         <option value="pdf">PDF</option>

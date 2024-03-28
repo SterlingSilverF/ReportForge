@@ -9,21 +9,15 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
     const [folders, setFolders] = useState([]);
     const [userGroups, setUserGroups] = useState([]);
     const [folderType, setFolderType] = useState('group');
+    const [folderData, setFolderData] = useState([]);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
 
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const folderId = queryParams.get('folderId');
+    const isPersonal = queryParams.get('isPersonal');
     const [isEditMode, setIsEditMode] = useState(false);
-
-    const handleSuccess = () => {
-        setMessage('Folder created successfully.');
-    };
-
-    const handleError = (err) => {
-        setMessage("Something went wrong.");
-    };
 
     const resetForm = () => {
         window.location.reload();
@@ -41,20 +35,24 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
 
     // isEditMode
     useEffect(() => {
-        if (folderId) {
-            makeApiRequest('get', `/api/folder/GetFolderById?folderId=${folderId}`)
+        if (folderId && isPersonal) {
+            makeApiRequest('get', `/api/folder/GetFolderById?folderId=${folderId}&isPersonal=${isPersonal}`)
                 .then(response => {
                     const folder = response.data;
+                    setFolderData(folder);
                     setFolderName(folder.folderName);
                     setParentId(folder.parentId);
                     setGroupId(folder.groupId);
+                    setFolderType(folder.isGroupFolder ? 'group' : 'personal');
                     setIsEditMode(true);
                 })
                 .catch(error => {
                     console.error('Could not fetch folder by ID:', error);
                 });
+        } else {
+            setIsEditMode(false);
         }
-    }, [folderId, makeApiRequest]);
+    }, [folderId, makeApiRequest, isPersonal]);
 
     // On load fetch user's groups and personal folders
     useEffect(() => {
@@ -126,10 +124,47 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
             });
     };
 
+    const handleUpdateFolder = () => {
+        const missingFields = validateFolderForm();
+
+        if (missingFields.length > 0) {
+            const fieldsList = missingFields.join(", ");
+            setMessage(`Please fill out the following required fields: ${fieldsList}.`);
+            return;
+        }
+
+        makeApiRequest('put', '/api/folder/updateFolder', folderData)
+            .then(response => {
+                setMessage("Folder updated successfully.");
+                setSuccess(true);
+            })
+            .catch(error => {
+                console.log(error);
+                setMessage("Folder failed to update.");
+                setSuccess(false);
+            });
+    };
+
+    const handleDeleteFolder = () => {
+        if (window.confirm('Are you sure you want to delete this folder?')) {
+            makeApiRequest('delete', `/api/folder/deleteFolder?folderId=${folderId}&isPersonal=${isPersonal}`)
+                .then(() => {
+                    alert('Folder deleted successfully.');
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 2000);
+                })
+                .catch(error => {
+                    alert('Error deleting folder. Please try again later.');
+                    console.error('Error deleting folder:', error);
+                });
+        }
+    };
+
     return (
         <div className="sub-container outer">
             <div className="form-header">
-                <h2>Folder Form</h2>
+                <h2>{isEditMode ? 'Edit Folder' : 'Create Folder'}</h2>
             </div>
             <section className="box form-box">
                 <div className="form-element">
@@ -196,7 +231,13 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
                     </div>
                 )}
                 <br />
-                <button onClick={handleCreateFolder} className="btn-three">Create Folder</button><br />
+                <button onClick={isEditMode ? handleUpdateFolder : handleCreateFolder} className="btn-three">
+                    {isEditMode ? 'Update Folder' : 'Create Folder'}
+                </button>
+                <br/>
+                {isEditMode && (
+                    <button onClick={handleDeleteFolder} className="btn-five">Delete Folder</button>
+                )}
                 <p className="success-message">{message}</p>
             </section>
             {success && (

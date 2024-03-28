@@ -27,15 +27,15 @@ public class ConnectionService
         _database = _client.GetDatabase(settings.Value.MongoDbName);
     }
 
-    public IMongoCollection<BaseConnectionModel> GetServerCollection(BaseConnectionModel conn)
+    public IMongoCollection<BaseConnectionModel> GetServerCollection(OwnerType ownerType)
     {
-        string collectionName = conn.OwnerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
         return _database.GetCollection<BaseConnectionModel>(collectionName);
     }
 
-    public IMongoCollection<DBConnectionModel> GetDBCollection(BaseConnectionModel conn)
+    public IMongoCollection<DBConnectionModel> GetDBCollection(OwnerType ownerType)
     {
-        string collectionName = conn.OwnerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
+        string collectionName = ownerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
         return _database.GetCollection<DBConnectionModel>(collectionName);
     }
 
@@ -88,6 +88,21 @@ public class ConnectionService
         return result?.Id;
     }
 
+    public async Task<bool> DeleteServerOrDBConnection(ObjectId connectionId, OwnerType ownerType)
+    {
+        var serverCollection = GetServerCollection(ownerType);
+        var dbCollection = GetDBCollection(ownerType);
+        var connectionStringCollection = _database.GetCollection<BuiltConnectionString>("ConnectionStrings");
+
+        var serverDeleteResult = await serverCollection.DeleteOneAsync(Builders<BaseConnectionModel>.Filter.Eq("_id", connectionId));
+        var dbDeleteResult = await dbCollection.DeleteOneAsync(Builders<DBConnectionModel>.Filter.Eq("_id", connectionId));
+        var connectionStringDeleteResult = await connectionStringCollection.DeleteOneAsync(Builders<BuiltConnectionString>.Filter.Eq("ConnectionId", connectionId));
+
+        return serverDeleteResult.IsAcknowledged && serverDeleteResult.DeletedCount > 0 ||
+               dbDeleteResult.IsAcknowledged && dbDeleteResult.DeletedCount > 0 ||
+               connectionStringDeleteResult.IsAcknowledged && connectionStringDeleteResult.DeletedCount > 0;
+    }
+
     public async Task<ObjectId?> AddServerConnection(BaseConnectionModel serverConnection, bool saveConnection)
     {
         var (isSuccessful, message) = PreviewConnection(serverConnection);
@@ -101,7 +116,7 @@ public class ConnectionService
             return serverConnection.Id;
         }
 
-        var collection = GetServerCollection(serverConnection);
+        var collection = GetServerCollection(serverConnection.OwnerType);
         await collection.InsertOneAsync(serverConnection);
         System.Diagnostics.Debug.WriteLine($"New server connection saved for {serverConnection.Id} under {serverConnection.OwnerID}");
         return serverConnection.Id;
@@ -110,7 +125,7 @@ public class ConnectionService
     public async Task<ObjectId?> SaveNewDBConnection(DBConnectionModel connectionModel)
     {
         connectionModel.Password = connectionModel.Password;
-        var collection = GetDBCollection(connectionModel);
+        var collection = GetDBCollection(connectionModel.OwnerType);
         await collection.InsertOneAsync(connectionModel);
         System.Diagnostics.Debug.WriteLine($"New DB connection saved for {connectionModel.Id} under {connectionModel.OwnerID}");
         return connectionModel.Id;
@@ -484,14 +499,14 @@ public class ConnectionService
 
     public BaseConnectionModel? GetServerConnectionById(ObjectId connectionId, OwnerType ownerType)
     {
-        var collection = GetServerCollection(new BaseConnectionModel { OwnerType = ownerType });
+        var collection = GetServerCollection(ownerType);
         var filter = Builders<BaseConnectionModel>.Filter.Eq("_id", connectionId);
         return collection.Find(filter).FirstOrDefault();
     }
 
     public DBConnectionModel? GetDBConnectionById(ObjectId connectionId, OwnerType ownerType)
     {
-        var collection = GetDBCollection(new BaseConnectionModel { OwnerType = ownerType });
+        var collection = GetDBCollection(ownerType);
         var filter = Builders<DBConnectionModel>.Filter.Eq("_id", connectionId);
         return collection.Find(filter).FirstOrDefault();
     }
@@ -517,30 +532,16 @@ public class ConnectionService
         return dbConnection;
     }
 
-    public bool DeleteServerConnection(ObjectId connectionId)
-    {
-        var collection = _database.GetCollection<BaseConnectionModel>("ServerConnections");
-        var result = collection.DeleteOne(x => x.Id == connectionId);
-        return result.IsAcknowledged && result.DeletedCount > 0;
-    }
-
-    public bool DeleteDBConnection(ObjectId connectionId)
-    {
-        var collection = _database.GetCollection<DBConnectionModel>("DBConnections");
-        var result = collection.DeleteOne(x => x.Id == connectionId);
-        return result.IsAcknowledged && result.DeletedCount > 0;
-    }
-
     public bool UpdateServerConnection(BaseConnectionModel updatedServer)
     {
-        var collection = GetServerCollection(updatedServer);
+        var collection = GetServerCollection(updatedServer.OwnerType);
         var result = collection.ReplaceOne(x => x.Id == updatedServer.Id, updatedServer);
         return result.IsAcknowledged && result.ModifiedCount > 0;
     }
 
     public bool UpdateDBConnection(DBConnectionModel updatedDB)
     {
-        var collection = GetDBCollection(updatedDB);
+        var collection = GetDBCollection(updatedDB.OwnerType);
         var result = collection.ReplaceOne(x => x.Id == updatedDB.Id, updatedDB);
         return result.IsAcknowledged && result.ModifiedCount > 0;
     }

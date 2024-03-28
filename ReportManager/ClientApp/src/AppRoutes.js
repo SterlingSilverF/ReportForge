@@ -13,6 +13,7 @@ import Connections from "./Pages/Connections";
 import Browse from "./Pages/Browse";
 import GroupForm from "./Pages/GroupForm";
 import GroupInformation from "./Pages/GroupInformation";
+import ReportInformation from "./Pages/ReportInformation";
 import ConnectionForm from "./Pages/ConnectionForm";
 import UserManagement from "./Pages/UserManager";
 import FolderForm from "./Pages/FolderForm";
@@ -115,6 +116,11 @@ const AppRoutes = [
     {
         path: '/groupinformation',
         element: <GroupInformation />,
+        includeNavbar: true
+    },
+    {
+        path: '/reportinformation',
+        element: <ReportInformation />,
         includeNavbar: true
     },
     {

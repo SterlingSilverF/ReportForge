@@ -1,4 +1,6 @@
-﻿namespace ReportManager.Models
+﻿using static ReportManager.Models.SQL_Builder;
+
+namespace ReportManager.Models
 {
     public class FolderDTO
     {
@@ -86,7 +88,6 @@
         }
     }
 
-
     public class DBConnectionDTO : ServerConnectionDTO
     {
         public string? FriendlyName { get; set; }
@@ -116,5 +117,32 @@
         public string OwnerName { get; set; }
         public string OwnerType { get; set; }
         public string DbType { get; set; }
+    }
+
+    public class ReportInfoDTO
+    {
+        public string Id { get; set; }
+        public string ReportName { get; set; }
+        public string? Description { get; set; }
+        public string CreatorName { get; set; }
+        public string CreatedDate { get; set; }
+        public string LastModifiedDate { get; set; }
+        public string LastModifiedByName { get; set; }
+        public string OwnerName { get; set; }
+        public string OwnerType { get; set; }
+    }
+
+    // Retain reportconfig enum but allow easy json deserialization
+    public class ColumnDefinitionDTO : BaseColumnDefinition
+    {
+        public int? DisplayOrder { get; set; }
+        public ColumnFormattingDTO? ColumnFormatting { get; set; }
+    }
+
+    public class ColumnFormattingDTO
+    {
+        public string Conversion { get; set; }
+        public string? FormatValue { get; set; }
+        public int? MaxLength { get; set; }
     }
 }

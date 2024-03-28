@@ -32,18 +32,18 @@ namespace ReportManager.Services
             return _folders.Find(filter).ToList();
         }
 
-        public FolderModel GetFolderById(ObjectId folderId, bool isPersonal)
+        public async Task<FolderModel> GetFolderById(ObjectId folderId, bool isPersonal)
         {
             if (isPersonal)
             {
                 var personalFilter = Builders<PersonalFolder>.Filter.Eq(f => f.Id, folderId);
-                PersonalFolder personalFolder = _personalFolders.Find(personalFilter).FirstOrDefault();
+                PersonalFolder personalFolder = await _personalFolders.Find(personalFilter).FirstOrDefaultAsync();
                 return personalFolder as FolderModel;
             }
             else
             {
                 var filter = Builders<FolderModel>.Filter.Eq(f => f.Id, folderId);
-                return _folders.Find(filter).FirstOrDefault();
+                return await _folders.Find(filter).FirstOrDefaultAsync();
             }
         }
 
@@ -81,15 +81,17 @@ namespace ReportManager.Services
             }
         }
 
-        public bool UpdateDBFolder(FolderModel updatedFolder)
+        public async Task<bool> UpdateDBFolder(FolderModel updatedFolder)
         {
             bool folderType = updatedFolder is PersonalFolder ? true : false;
-            var existingFolder = GetFolderById(updatedFolder.Id, folderType);
+            var existingFolder = await GetFolderById(updatedFolder.Id, folderType);
+
             if (existingFolder == null) return false;
 
             var result = folderType == true
-                ? _personalFolders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder as PersonalFolder)
-                : _folders.ReplaceOne(filter => filter.Id == updatedFolder.Id, updatedFolder);
+                ? await _personalFolders.ReplaceOneAsync(filter => filter.Id == updatedFolder.Id, updatedFolder as PersonalFolder)
+                : await _folders.ReplaceOneAsync(filter => filter.Id == updatedFolder.Id, updatedFolder);
+
             if (existingFolder.FolderName != updatedFolder.FolderName)
             {
                 if (!RenamePhysicalFolder(existingFolder.FolderPath, updatedFolder.FolderName))
@@ -105,17 +107,30 @@ namespace ReportManager.Services
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool DeleteDBFolder(ObjectId folderId, bool type)
+        public async Task<bool> DeleteDBFolder(ObjectId folderId, bool type)
         {
-            var folder = GetFolderById(folderId, type);
+            var folder = await GetFolderById(folderId, type);
             if (folder == null) return false;
 
-            var result = _folders.DeleteOne(filter => filter.Id == folderId);
-
-            if (result.IsAcknowledged && result.DeletedCount > 0)
+            if (type)
             {
-                return DeletePhysicalFolder(folder.FolderPath);
+                var result = await _personalFolders.DeleteOneAsync(filter => filter.Id == folderId);
+
+                if (result.IsAcknowledged && result.DeletedCount > 0)
+                {
+                    return DeletePhysicalFolder(folder.FolderPath);
+                }
             }
+            else
+            {
+                var result = await _folders.DeleteOneAsync(filter => filter.Id == folderId);
+
+                if (result.IsAcknowledged && result.DeletedCount > 0)
+                {
+                    return DeletePhysicalFolder(folder.FolderPath);
+                }
+            }
+
             return false;
         }
 

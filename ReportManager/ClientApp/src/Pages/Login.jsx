@@ -71,8 +71,8 @@ const Login = ({ navigate, makeApiRequest, token }) => {
                     <br />
                     <input type="submit" value="Log In" className="btn-one" />
                     <div className="link-container">
-                        <a href="/register" className="forgot-pass">Register</a>
-                        <a href="#" className="forgot-pass">Forgot Password</a>
+                        <a href="/register" className="rpf-silverblue">Register</a>
+                        <a href="#" className="rpf-silverblue">Forgot Password</a>
                     </div>
                 </form>
             )}

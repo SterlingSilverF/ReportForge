@@ -2,15 +2,18 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Org.BouncyCastle.Asn1.Ocsp;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
 using ReportManager.Models;
 using System.Drawing;
 using System.Text;
 using System.Xml.Linq;
 using static ReportManager.API.ReportController;
 using static ReportManager.Models.SQL_Builder;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using Table = iText.Layout.Element.Table;
+using Cell = iText.Layout.Element.Cell;
 
 namespace ReportManager.Services
 {
@@ -70,6 +73,15 @@ namespace ReportManager.Services
 
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.FolderId, folderId);
             return GetReportCollection(reportType).Find(filter).ToList();
+        }
+
+        public List<ReportConfigurationModel> GetReportsByGroup(ObjectId groupId)
+        {
+            var filter = Builders<ReportConfigurationModel>.Filter.And(
+                Builders<ReportConfigurationModel>.Filter.Eq(r => r.OwnerType, OwnerType.Group),
+                Builders<ReportConfigurationModel>.Filter.Eq(r => r.OwnerID, groupId));
+
+            return _reports.Find(filter).ToList();
         }
 
         public ReportConfigurationModel GetReportById(ObjectId reportId, string type)
@@ -160,27 +172,48 @@ namespace ReportManager.Services
 
         public byte[] GeneratePdf(List<Dictionary<string, object>> data, string reportName)
         {
-            var document = new PdfDocument();
-            var page = document.AddPage();
-            var graphics = XGraphics.FromPdfPage(page);
-            var titleFont = new XFont("Verdana", 14.0, XFontStyleEx.Bold);
-            var contentFont = new XFont("Verdana", 10.0, XFontStyleEx.Regular);
-
-            float yPoint = 20;
-            graphics.DrawString(reportName, titleFont, XBrushes.Black, new XRect(0, 0, page.Width, page.Height), XStringFormats.TopCenter);
-            yPoint += 40;
-
-            foreach (var row in data)
+            try
             {
-                string line = string.Join(", ", row.Select(kv => $"{kv.Key}: {kv.Value}"));
-                graphics.DrawString(line, contentFont, XBrushes.Black, new XRect(0, yPoint, page.Width, page.Height), XStringFormats.TopLeft);
-                yPoint += 20;
+                using (var memoryStream = new MemoryStream())
+                {
+                    var writer = new PdfWriter(memoryStream);
+                    var pdf = new PdfDocument(writer);
+                    var document = new Document(pdf);
+
+                    var title = new Paragraph(reportName)
+                        .SetTextAlignment(TextAlignment.CENTER)
+                    .SetFontSize(14);
+
+                    document.Add(title);
+
+                    if (data.Count > 0)
+                    {
+                        var table = new Table(data[0].Count);
+                        table.SetWidth(UnitValue.CreatePercentValue(100));
+                        foreach (var key in data[0].Keys)
+                        {
+                            table.AddHeaderCell(new Cell().Add(new Paragraph(key)));
+                        }
+
+                        foreach (var row in data)
+                        {
+                            foreach (var cell in row.Values)
+                            {
+                                table.AddCell(new Cell().Add(new Paragraph(cell.ToString())));
+                            }
+                        }
+
+                        document.Add(table);
+                    }
+
+                    document.Close();
+                    return memoryStream.ToArray();
+                }
             }
-
-            using (var stream = new MemoryStream())
+            catch (Exception ex)
             {
-                document.Save(stream, false);
-                return stream.ToArray();
+                // TODO: logging
+                return null;
             }
         }
 
@@ -210,7 +243,7 @@ namespace ReportManager.Services
             return sql;
         }
 
-        private string BuildSelectClause(List<ColumnDefinition> selectedColumns)
+        private string BuildSelectClause(List<BaseColumnDefinition> selectedColumns)
         {
             string selectClause = "";
             foreach (var column in selectedColumns)
@@ -223,27 +256,44 @@ namespace ReportManager.Services
 
         private string BuildFromClause(List<string> selectedTables, List<JoinConfigItem> joinConfig)
         {
-            string fromClause = "";
+            StringBuilder fromClauseBuilder = new StringBuilder();
+
             if (selectedTables.Count > 0)
             {
-                fromClause += selectedTables[0];
+                fromClauseBuilder.Append(selectedTables[0]);
             }
 
             for (int i = 1; i < selectedTables.Count; i++)
             {
-                var join = joinConfig.FirstOrDefault(j => j.TableOne == selectedTables[i - 1] || j.TableTwo == selectedTables[i]);
+                var join = joinConfig.FirstOrDefault(j =>
+                    (selectedTables[i - 1] == j.TableOne && selectedTables[i] == j.TableTwo) ||
+                    (selectedTables[i - 1] == j.TableTwo && selectedTables[i] == j.TableOne));
+
                 if (join != null && join.IsValid)
                 {
-                    fromClause += $" INNER JOIN {selectedTables[i]} ON {join.TableOne}.{join.ColumnOne} = {join.TableTwo}.{join.ColumnTwo}";
+                    string joinTableOne = join.TableOne;
+                    string joinTableTwo = join.TableTwo;
+                    string joinColumnOne = join.ColumnOne;
+                    string joinColumnTwo = join.ColumnTwo;
+
+                    if (selectedTables[i - 1] == join.TableTwo && selectedTables[i] == join.TableOne)
+                    {
+                        // Swap tables and columns
+                        joinTableOne = join.TableTwo;
+                        joinTableTwo = join.TableOne;
+                        joinColumnOne = join.ColumnTwo;
+                        joinColumnTwo = join.ColumnOne;
+                    }
+
+                    fromClauseBuilder.Append($" INNER JOIN {joinTableTwo} ON {joinTableOne}.{joinColumnOne} = {joinTableTwo}.{joinColumnTwo}");
                 }
                 else
                 {
-                    // TODO: logging
-                    throw new Exception("Join conditions missing!");
+                    throw new Exception("Join conditions missing or invalid!");
                 }
             }
 
-            return fromClause;
+            return fromClauseBuilder.ToString();
         }
 
         private string BuildWhereClause(List<FilterItem> filters)
@@ -296,56 +346,59 @@ namespace ReportManager.Services
             var ownerId = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
                 ? userIdObjectId
                 : _sharedService.StringToObjectId(request.SelectedGroup);
-            
+
+            var schedules = new List<ScheduleInfo>
+            {
+                new ScheduleInfo
+                {
+                    ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                    Iteration = request.ReportFrequencyValue,
+                    ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                }
+            };
+
+            var selectedColumns = request.SelectedColumns.Select(columnDto => new ColumnDefinition
+            {
+                Table = columnDto.Table,
+                ColumnName = columnDto.ColumnName,
+                DataType = columnDto.DataType,
+                DisplayOrder = columnDto.DisplayOrder,
+                ColumnFormatting = columnDto.ColumnFormatting != null ? new ColumnFormatting
+                {
+                    Conversion = Enum.Parse<ConversionType>(columnDto.ColumnFormatting.Conversion),
+                    FormatValue = columnDto.ColumnFormatting.FormatValue,
+                    MaxLength = columnDto.ColumnFormatting.MaxLength
+                } : null
+            }).ToList();
+
             var model = new ReportConfigurationModel
             {
                 ReportName = request.ReportName,
                 Description = request.ReportDescription,
                 ConnectionStringId = connectionStringId,
+                Schedules = schedules,
                 FolderId = folderId,
-                CompiledSQL = request.CompiledSQL,
-                Schedule = new ScheduleInfo
-                {
-                    ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
-                    Iteration = request.ReportFrequencyValue,
-                    ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
-                },
                 CreatorId = userIdObjectId,
                 LastModifiedBy = userIdObjectId,
                 OwnerID = ownerId,
                 LastModifiedDate = DateTime.UtcNow,
-                ReportJobs = GenerateReportJobs(request)
+                OwnerType = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
+                    ? OwnerType.User
+                    : OwnerType.Group,
+                CompiledSQL = request.CompiledSQL,
+                SelectedColumns = selectedColumns,
+                EmailRecipients = request.EmailReports.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                    ? request.EmailRecipients.Split(';').ToList()
+                    : new List<string>(),
+                Format = Enum.Parse<ReportFormat>(request.OutputFormat)
             };
 
             if (!existing)
             {
-                model.CreatorId = userIdObjectId;
                 model.CreatedDate = DateTime.UtcNow;
             }
 
             return model;
-        }
-
-        private List<Job> GenerateReportJobs(ReportFormContextRequest request)
-        {
-            var jobs = new List<Job>();
-
-            if (request.EmailReports.Equals("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                var emailJob = new EmailJob
-                {
-                    ReportFormat = ConvertToReportFormat(request.OutputFormat),
-                    Recipients = request.EmailRecipients.Split(';').ToList(),
-                    ScheduleInfo = new ScheduleInfo
-                    {
-                        ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
-                        Iteration = request.ReportFrequencyValue,
-                        ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
-                    }
-                };
-                jobs.Add(emailJob);
-            }
-            return jobs;
         }
 
         private ScheduleType ConvertToScheduleType(string frequencyType)
@@ -358,20 +411,6 @@ namespace ReportManager.Services
                 "quarters" => ScheduleType.Quarterly,
                 "years" => ScheduleType.Yearly,
                 _ => throw new ArgumentException("Invalid frequency type"),
-            };
-        }
-
-        private ReportFormat ConvertToReportFormat(string outputFormat)
-        {
-            return outputFormat.ToLower() switch
-            {
-                "csv" => ReportFormat.CSV,
-                "xls" => ReportFormat.XLS,
-                "xlsx" => ReportFormat.XLSX,
-                "pdf" => ReportFormat.PDF,
-                "txt" => ReportFormat.TXT,
-                "json" => ReportFormat.JSON,
-                _ => throw new ArgumentException("Invalid report output format", nameof(outputFormat)),
             };
         }
 

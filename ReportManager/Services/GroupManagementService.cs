@@ -36,10 +36,10 @@ namespace ReportManager.Services
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public bool DeleteGroup(ObjectId groupId)
+        public async Task<bool> DeleteGroupAsync(ObjectId groupId)
         {
             var filter = Builders<_Group>.Filter.Eq(g => g.Id, groupId);
-            var result = _groupsDB.DeleteOne(filter);
+            var result = await _groupsDB.DeleteOneAsync(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
 

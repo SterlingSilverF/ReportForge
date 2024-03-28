@@ -1,10 +1,10 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
 import MessageDisplay from '../components/MessageDisplay';
 import { useReportForm } from '../contexts/ReportFormContext';
 
 const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
-    // State variables
     const { reportFormContext, updateReportFormData } = useReportForm();
     const [groups, setGroups] = useState([]);
     const [connections, setConnections] = useState([]);
@@ -12,6 +12,30 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     const [message, setMessage] = useState('');
     const [messageSuccess, setMessageSuccess] = useState(true);
     const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
+
+    const [isEditMode, setIsEditMode] = useState(false);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const reportId = queryParams.get('reportId');
+    const type = queryParams.get('type');
+
+    // isEditMode
+    useEffect(() => {
+        const fetchReportData = async () => {
+            if (reportId && type) {
+                try {
+                    const response = await makeApiRequest('get', `/api/report/GetReportById?reportId=${reportId}&type=${type}`);
+                    const reportData = response.data;
+                    updateReportFormData(reportData);
+                    setIsEditMode(true);
+                } catch (error) {
+                    console.error('Could not fetch report data:', error);
+                }
+            }
+        };
+
+        fetchReportData();
+    }, [reportId, type]);
 
     const fetchConnections = async (ownerIdParam, ownerTypeParam) => {
         const ownerId = ownerIdParam || (reportFormContext.reportType === 'Group' ? reportFormContext.selectedGroup : userID);
@@ -122,13 +146,29 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         }
         const _dbType = selectedConnection.dbType;
         updateReportFormData({ dbType: _dbType });
-        navigate('/reportdesigner');
+        navigate(`/reportdesigner?isEditMode=${isEditMode}`);
+    };
+
+    const handleSaveUpdates = async () => {
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            await makeApiRequest('put', `/api/report/UpdateReport`, reportFormContext);
+            setMessage('Report updated successfully.');
+            setMessageSuccess(true);
+        } catch (error) {
+            console.error('Error updating report:', error);
+            setMessage('An error occurred while updating the report.');
+            setMessageSuccess(false);
+        }
     };
 
     return (
         <div className="report-form-style">
             <div className="report-form-header">
-                <h2>Create a New Report</h2>
+                <h2>{isEditMode ? 'Edit Report' : 'Create a New Report'}</h2>
                 <hr />
             </div>
             <section className="report-form-box">
@@ -165,6 +205,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                             <select
                                 value={reportFormContext.reportType}
                                 onChange={handleReportTypeChange}
+                                disabled={isEditMode}
                                 className="input-style-default standard-select">
                                 <option value="User">Personal</option>
                                 <option value="Group">Group</option>
@@ -176,6 +217,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                             <div style={{ flex: 1 }}>
                                 <label>Group:</label>
                                 <select
+                                    disabled={isEditMode}
                                     value={reportFormContext.selectedGroup || ''}
                                     onChange={async (e) => {
                                         const newSelectedGroup = e.target.value;
@@ -208,6 +250,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                 <div className="form-element">
                     <label>Connection:</label><br />
                     <select
+                        disabled={isEditMode}
                         value={reportFormContext.selectedConnection || ''}
                         onChange={(e) => handleChange('selectedConnection', e.target.value)}
                         className="input-style-medium">
@@ -232,8 +275,20 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                     </select>
                 </div>
                 {message && <MessageDisplay message={message} isSuccess={messageSuccess} />}
-                <br/>
-                <button onClick={handleSubmit} className="btn-three btn-restrict">Proceed to Designer</button>
+                <br />
+                <div>
+                    {isEditMode && (
+                        <>
+                            <button onClick={() => navigate(-1)} className="btn-three btn-restrict">
+                                Cancel
+                            </button>
+                            <button onClick={handleSaveUpdates} className="btn-three btn-restrict">
+                                Save Updates
+                            </button>
+                        </>
+                    )}
+                    <button onClick={handleSubmit} className="btn-three btn-restrict">Proceed to Designer</button>
+                </div>
                 <br />
             </section>
         </div>

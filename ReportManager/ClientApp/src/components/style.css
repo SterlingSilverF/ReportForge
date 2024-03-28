@@ -33,6 +33,10 @@
     color: var(--rpf-orange);
 }
 
+.rpf-silverblue {
+    color: var(--rpf-silverblue) !important;
+}
+
 .rpf-silver-bg {
     background-color: var(--rpf-silver);
 }
@@ -318,7 +322,6 @@ input, select {
     border: none;
     cursor: pointer;
     color: black;
-    transition: background-color 0.1s;
     font-size: 14px;
 }
 
@@ -344,21 +347,19 @@ input, select {
     }
 
 .btn-five {
-    background-color: var(--rpf-grey);
+    background-color: var(--rpf-red);
     letter-spacing: 1px;
     font-weight: bold;
-    padding: 6px 10px;
+    text-transform: uppercase;
+    padding: 6px 8px;
     border: none;
     cursor: pointer;
     color: black;
-    border-radius: 4px;
-    transition: background-color 0.2s;
     font-size: 12px;
     margin-right: 5px;
 }
 
     .btn-five:hover {
-        background-color: var(--rpf-red);
         color: white;
     }
 
@@ -495,11 +496,21 @@ input, select {
     display: inline-block;
     margin-right: 20px;
     text-align: center;
+    position: relative;
 }
     .image-label-pair label {
         font-size: 14px;
         display: block;
     }
+
+.report{
+    margin-bottom: 12px;
+    margin-top: 15px;
+}
+
+.report:hover{
+    cursor: pointer;
+}
 
 .folder {
     color: var(--rpf-gold);
@@ -905,6 +916,18 @@ input[type="radio"] {
     cursor: pointer;
 }
 
+.folder-edit {
+    position: absolute;
+    top: 10px;
+    right: 55px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+    .folder-edit:hover {
+        transform: scale(1.1);
+    }
+
 /* Report Designer */
 .dual-listbox {
     display: flex;
@@ -914,6 +937,7 @@ input[type="radio"] {
 
 .btn-restrict {
     justify-self: center;
+    margin-right: 10px;
 }
 
 .listbox-container {
@@ -1076,3 +1100,96 @@ input[type="radio"] {
     max-width: 650px;
     margin: 0 auto;
 }
+
+/* Report Information */
+.report-info {
+    display: flex;
+}
+
+.report-info-labels {
+    flex: 0 0 120px;
+    margin-right: 20px;
+    text-align: right;
+}
+
+.report-info-values {
+    flex: 1;
+    width: 850px;
+}
+
+    .report-info-labels p,
+    .report-info-values p {
+        margin: 0;
+        padding: 2px 0;
+    }
+
+.advanced-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+    .advanced-table th,
+    .advanced-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .advanced-table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+    }
+
+        .advanced-table th:first-child,
+        .advanced-table td:first-child {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .advanced-table th:nth-child(2),
+        .advanced-table td:nth-child(2) {
+            /* Set fixed width for second column */
+            width: 125px;
+        }
+
+        .advanced-table th:nth-child(3),
+        .advanced-table td:nth-child(3) {
+            /* Set fixed width for third column */
+            width: 150px;
+        }
+
+        .advanced-table th:last-child,
+        .advanced-table td:last-child {
+            /* Set the last column to take up the remaining space */
+            width: auto;
+        }
+
+    .advanced-table input[type="number"],
+    .advanced-table select {
+        width: 90%;
+        box-sizing: border-box;
+    }
+
+
+
+
+.input-style-number {
+    border: none;
+    border-bottom: 1px solid black;
+    outline: none;
+}
+
+.input-style-number {
+    -moz-appearance: textfield;
+}
+
+    .input-style-number::-webkit-inner-spin-button,
+    .input-style-number::-webkit-outer-spin-button {
+        -webkit-appearance: inner-spin-button !important;
+        opacity: 1 !important;
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+    }

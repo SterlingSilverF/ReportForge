@@ -34,7 +34,18 @@ namespace ReportManager.API
         {
             [Required]
             public string FolderName { get; set; }
+
             public string FolderPath { get; set; }
+
+            public string FolderType { get; set; }
+
+            public string Id { get; set; }
+
+            public string ParentId { get; set; }
+
+            public bool IsGroupFolder { get; set; }
+
+            public string OwnerId { get; set; }
         }
 
         public FolderController(FolderManagementService folderManagementService, UserManagementService userManagementService,
@@ -47,7 +58,7 @@ namespace ReportManager.API
         }
 
         [HttpPost("createFolder")]
-        public IActionResult CreateFolder(CreateFolderRequest request)
+        public async Task<IActionResult> CreateFolder(CreateFolderRequest request)
         {
             try
             {
@@ -67,7 +78,7 @@ namespace ReportManager.API
                 {
                     ObjectId parentId = _sharedService.StringToObjectId(request.ParentId);
                     folder.ParentId = parentId;
-                    FolderModel parent = _folderManagementService.GetFolderById(parentId, false);
+                    FolderModel parent = await _folderManagementService.GetFolderById(parentId, false);
                     folder.FolderPath = parent.FolderPath + request.FolderName + "/";
                 }
                 else
@@ -88,7 +99,7 @@ namespace ReportManager.API
                     folder = new PersonalFolder
                     {
                         FolderName = folder.FolderName,  // Retain all previous properties
-                        ParentId = folder.ParentId,  
+                        ParentId = folder.ParentId,
                         FolderPath = folder.FolderPath,
                         IsObjectFolder = folder.IsObjectFolder,
                         Owner = user.Id
@@ -104,13 +115,13 @@ namespace ReportManager.API
             }
         }
 
-        [HttpDelete("deleteFolder/{folderId}")]
-        public IActionResult DeleteFolder(string folderId, bool type)
+        [HttpDelete("deleteFolder")]
+        public async Task<IActionResult> DeleteFolder(string folderId, bool isPersonal)
         {
             try
             {
                 ObjectId objectId = new ObjectId(folderId);
-                bool isDeleted = _folderManagementService.DeleteDBFolder(objectId, type);
+                bool isDeleted = await _folderManagementService.DeleteDBFolder(objectId, isPersonal);
 
                 if (isDeleted)
                 {
@@ -127,11 +138,12 @@ namespace ReportManager.API
             }
         }
 
-        [HttpPost("updateFolder")]
-        public IActionResult UpdateFolder(UpdateFolderRequest request)
+        [HttpPut("updateFolder")]
+        public async Task<IActionResult> UpdateFolder([FromBody] UpdateFolderRequest request)
         {
             var mappedFolder = _sharedService.MapObjectToModel<FolderModel>(request);
-            return _folderManagementService.UpdateDBFolder(mappedFolder) ? Ok("Folder updated.") : BadRequest("Update failed.");
+            var updateResult = await _folderManagementService.UpdateDBFolder(mappedFolder);
+            return updateResult ? Ok("Folder updated.") : BadRequest("Update failed.");
         }
 
         [HttpGet("getPersonalFolders")]
@@ -199,6 +211,27 @@ namespace ReportManager.API
             }
 
             return Ok(allFolders);
+        }
+
+        [HttpGet("getFolderById")]
+        public async Task<ActionResult<FolderDTO>> GetFolderById(ObjectId folderId, bool isPersonal)
+        {
+            try
+            {
+                var folder = await _folderManagementService.GetFolderById(folderId, isPersonal);
+                if (folder != null)
+                {
+                    return Ok(new FolderDTO(folder));
+                }
+                else
+                {
+                    return BadRequest("Folder not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }

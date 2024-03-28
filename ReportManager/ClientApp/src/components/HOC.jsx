@@ -55,7 +55,6 @@ const HOC = (WrappedComponent, requireAuth = true) => {
         return <WrappedComponent
             {...props}
             env={env}
-            token={token}
             navigate={navigate}
             username={username}
             userID={userID}

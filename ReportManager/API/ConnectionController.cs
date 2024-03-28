@@ -296,19 +296,23 @@ namespace ReportManager.API
             return Ok("Updated successfully");
         }
 
-        [HttpDelete("DeleteServerConnection/{connectionId}")]
-        public ActionResult DeleteServerConnection(string connectionId)
+        [HttpDelete("DeleteConnection/{connectionId}")]
+        public async Task<ActionResult> DeleteConnection(string connectionId, string ownerType)
         {
             if (string.IsNullOrWhiteSpace(connectionId))
             {
                 return BadRequest("Connection ID is required.");
+            }
+            if (!Enum.TryParse(ownerType, true, out OwnerType _ownerType))
+            {
+                return BadRequest("Invalid owner type.");
             }
 
             try
             {
                 ObjectId id = _sharedService.StringToObjectId(connectionId);
 
-                bool isSuccess = _connectionService.DeleteServerConnection(id);
+                bool isSuccess = await _connectionService.DeleteServerOrDBConnection(id, _ownerType);
                 if (isSuccess)
                 {
                     return Ok("Server connection deleted successfully.");

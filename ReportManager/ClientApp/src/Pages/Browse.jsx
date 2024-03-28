@@ -77,6 +77,14 @@ const Browse = ({ makeApiRequest, username, navigate }) => {
                             size="5x"
                             onClick={() => navigate(`/reports?folderId=${folder.id}&isPersonal=${isPersonal}`)}
                         />
+                        {!folder.isGroupFolder && (
+                            <FontAwesomeIcon
+                                className="folder-edit"
+                                icon={faPencil}
+                                size="1x"
+                                onClick={() => navigate(`/folderform?folderId=${folder.id}&isPersonal=${isPersonal}`)}
+                            />
+                        )}
                         <label className={folder.isGroupFolder ? "" : "rpf-red"}>
                             {folder.folderName}
                         </label>
