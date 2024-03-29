@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Runtime.InteropServices;
-using static ReportManager.Models.SQL_Builder;
 using MongoDB.Bson.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -34,9 +33,8 @@ namespace ReportManager.API
             public List<OrderByItem> OrderBys { get; set; } = new List<OrderByItem>();
         }
 
-        public class ReportFormContextRequest : BuildSQLRequest
+        public class ReportFormContext : BuildSQLRequest
         {
-            public string Action { get; set; }
             public string UserId { get; set; }
             public string ReportName { get; set; }
             public string ReportDescription { get; set; }
@@ -108,34 +106,6 @@ namespace ReportManager.API
             }
         }
 
-        /*private ReportFormContextRequest MapReportToFormContext(ReportConfigurationModel report)
-        {
-            return new ReportFormContextRequest
-            {
-                SelectedConnection = report.ConnectionStringId.ToString(),
-                DbType = 
-                SelectedTables = 
-                SelectedColumns = 
-                JoinConfig = 
-                Filters = 
-                OrderBys = 
-                Action = "Update",
-                UserId = report.CreatorId.ToString(),
-                ReportName = report.ReportName,
-                ReportDescription = report.Description,
-                ReportType = report.OwnerType.ToString(),
-                SelectedGroup = isPersonal ? null : report.OwnerID.ToString(),
-                SelectedFolder = report.FolderId.ToString(),
-                CompiledSQL = report.CompiledSQL,
-                OutputFormat = report.
-                ReportFrequencyValue = GetReportFrequencyValue(report),
-                ReportFrequencyType = GetReportFrequencyType(report),
-                ReportGenerationTime = GetReportGenerationTime(report),
-                EmailReports = GetEmailReports(report),
-                EmailRecipients = GetEmailRecipients(report)
-            };
-        }*/
-
         private string FormatDateTime(DateTime dateTime)
         {
             TimeZoneInfo systemTimeZone = TimeZoneInfo.Local;
@@ -160,21 +130,13 @@ namespace ReportManager.API
             _folderManagementService = folderManagementService;
         }
 
-        [HttpPost("ConfigureReport")]
-        public IActionResult ConfigureReport([FromBody] ReportFormContextRequest request)
+        [HttpPost("CreateReport")]
+        public IActionResult CreateReport([FromBody] ReportFormContext request)
         {
             try
             {
-                bool existing = request.Action.Equals("Create", StringComparison.OrdinalIgnoreCase) ? false : true;
-                var reportModel = _reportManagementService.TransformRequestToModel(request, _sharedService, existing);
-                if (existing)
-                {
-                    _reportManagementService.UpdateReport(reportModel, request.ReportType);
-                }
-                else
-                {
-                    _reportManagementService.CreateReport(reportModel, request.ReportType);
-                }
+                var reportModel = _reportManagementService.TransformRequestToModel(request, _sharedService, false);
+                _reportManagementService.CreateReport(reportModel, request.ReportType);
                 return Ok();
             }
             catch (Exception ex)
@@ -184,14 +146,30 @@ namespace ReportManager.API
             }
         }
 
-        [HttpPost("buildAndVerifySQL")]
+        [HttpPut("UpdateReport")]
+        public IActionResult UpdateReport([FromBody] ReportFormContext request)
+        {
+            try
+            {
+                var reportModel = _reportManagementService.TransformRequestToModel(request, _sharedService, true);
+                _reportManagementService.UpdateReport(reportModel, request.ReportType);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Logging
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPost("BuildAndVerifySQL")]
         public IActionResult BuildSQL([FromBody] BuildSQLRequest request)
         {
             string SQL = _reportManagementService.BuildSQLQuery(request);
             return Ok(SQL);
         }
 
-        [HttpPost("exportReport")]
+        [HttpPost("ExportReport")]
         public async Task<IActionResult> ExportReport([FromBody] ExportRequest request)
         {
             var reportName = request.ReportName;
@@ -239,7 +217,7 @@ namespace ReportManager.API
             return File(fileBytes, contentType, fileName);
         }
 
-        [HttpGet("getUserReports")]
+        [HttpGet("GetUserReports")]
         public IActionResult GetUserReports([FromQuery] string userId)
         {
             ObjectId _userId = _sharedService.StringToObjectId(userId);
@@ -254,8 +232,8 @@ namespace ReportManager.API
             return reports.Count;
         }
 
-        [HttpGet("getReportById")]
-        public IActionResult GetReportById(string reportId, string type)
+        [HttpGet("GetReportById")]
+        public IActionResult GetReportById(string reportId, string type, bool fullDataset = false)
         {
             try
             {
@@ -267,9 +245,17 @@ namespace ReportManager.API
                     return NotFound();
                 }
 
-                bool isPersonal = type == "Personal";
-                ReportInfoDTO reportInfoDTO = MapReportToDTO(report, isPersonal);
-                return Ok(reportInfoDTO);
+                if (fullDataset)
+                {
+                    var reportFormContext = _reportManagementService.TransformModelToRequest(report);
+                    return Ok(reportFormContext);
+                }
+                else
+                {
+                    bool isPersonal = type == "Personal";
+                    ReportInfoDTO reportInfoDTO = MapReportToDTO(report, isPersonal);
+                    return Ok(reportInfoDTO);
+                }
             }
             catch (Exception ex)
             {

@@ -393,7 +393,6 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             return "Join configuration is required for multiple selected tables.";
         }
 
-        // Assuming joinsInfo is accessible and contains validity information for joins
         for (let join of reportFormContext.joinConfig) {
             if (!join.isValid) {
                 return `The join configuration for '${join.tables.join(" and ")}' is invalid.`;

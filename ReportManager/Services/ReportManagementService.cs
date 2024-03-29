@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Text;
 using System.Xml.Linq;
 using static ReportManager.API.ReportController;
-using static ReportManager.Models.SQL_Builder;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
@@ -338,67 +337,203 @@ namespace ReportManager.Services
             return orderByClause;
         }
 
-        public ReportConfigurationModel TransformRequestToModel(ReportFormContextRequest request, SharedService _sharedService, bool existing)
+        public ReportConfigurationModel TransformRequestToModel(ReportFormContext request, SharedService _sharedService, bool existing)
         {
-            var userIdObjectId = _sharedService.StringToObjectId(request.UserId);
-            var connectionStringId = _sharedService.StringToObjectId(request.SelectedConnection);
-            var folderId = _sharedService.StringToObjectId(request.SelectedFolder);
-            var ownerId = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
-                ? userIdObjectId
-                : _sharedService.StringToObjectId(request.SelectedGroup);
-
-            var schedules = new List<ScheduleInfo>
+            try
             {
-                new ScheduleInfo
+                var userIdObjectId = _sharedService.StringToObjectId(request.UserId);
+                var connectionStringId = _sharedService.StringToObjectId(request.SelectedConnection);
+                var folderId = _sharedService.StringToObjectId(request.SelectedFolder);
+                var ownerId = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
+                    ? userIdObjectId
+                    : _sharedService.StringToObjectId(request.SelectedGroup);
+
+                var schedules = new List<ScheduleInfo>
                 {
-                    ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
-                    Iteration = request.ReportFrequencyValue,
-                    ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                    new ScheduleInfo
+                    {
+                        ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                        Iteration = request.ReportFrequencyValue,
+                        ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                    }
+                };
+
+                var selectedColumns = request.SelectedColumns
+                    .Select(columnDto => new ColumnDefinition
+                    {
+                        Table = columnDto.Table,
+                        ColumnName = columnDto.ColumnName,
+                        DataType = columnDto.DataType,
+                        DisplayOrder = columnDto.DisplayOrder,
+                        ColumnFormatting = columnDto.ColumnFormatting != null
+                            ? new ColumnFormatting
+                            {
+                                Conversion = Enum.Parse<ConversionType>(columnDto.ColumnFormatting.Conversion),
+                                FormatValue = columnDto.ColumnFormatting.FormatValue,
+                                MaxLength = columnDto.ColumnFormatting.MaxLength
+                            }
+                            : null
+                    })
+                    .ToList();
+
+                var joinConfigItems = request.JoinConfig
+                    .Select(joinItem => new JoinConfigItem
+                    {
+                        TableOne = joinItem.TableOne,
+                        TableTwo = joinItem.TableTwo,
+                        ColumnOne = joinItem.ColumnOne,
+                        ColumnTwo = joinItem.ColumnTwo,
+                        IsValid = joinItem.IsValid
+                    })
+                    .ToList();
+
+                var filterItems = request.Filters
+                    .Select(filterItem => new FilterItem
+                    {
+                        Id = filterItem.Id,
+                        Table = filterItem.Table,
+                        Column = filterItem.Column,
+                        Condition = filterItem.Condition,
+                        Value = filterItem.Value,
+                        AndOr = filterItem.AndOr
+                    })
+                    .ToList();
+
+                var orderByItems = request.OrderBys
+                    .Select(orderByItem => new OrderByItem
+                    {
+                        Id = orderByItem.Id,
+                        Table = orderByItem.Table,
+                        Column = orderByItem.Column,
+                        Direction = orderByItem.Direction,
+                        ColumnOptions = orderByItem.ColumnOptions
+                    })
+                    .ToList();
+
+                var model = new ReportConfigurationModel
+                {
+                    ReportName = request.ReportName,
+                    Description = request.ReportDescription,
+                    ConnectionStringId = connectionStringId,
+                    Schedules = schedules,
+                    FolderId = folderId,
+                    CreatorId = userIdObjectId,
+                    LastModifiedBy = userIdObjectId,
+                    OwnerID = ownerId,
+                    LastModifiedDate = DateTime.UtcNow,
+                    OwnerType = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
+                        ? OwnerType.User
+                        : OwnerType.Group,
+                    CompiledSQL = request.CompiledSQL,
+                    SelectedColumns = selectedColumns,
+                    EmailRecipients = request.EmailReports.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                        ? request.EmailRecipients.Split(';').ToList()
+                        : new List<string>(),
+                    Format = Enum.Parse<ReportFormat>(request.OutputFormat),
+                    JoinConfig = joinConfigItems,
+                    Filters = filterItems,
+                    OrderBys = orderByItems
+                };
+
+                if (!existing)
+                {
+                    model.CreatedDate = DateTime.UtcNow;
                 }
-            };
 
-            var selectedColumns = request.SelectedColumns.Select(columnDto => new ColumnDefinition
-            {
-                Table = columnDto.Table,
-                ColumnName = columnDto.ColumnName,
-                DataType = columnDto.DataType,
-                DisplayOrder = columnDto.DisplayOrder,
-                ColumnFormatting = columnDto.ColumnFormatting != null ? new ColumnFormatting
-                {
-                    Conversion = Enum.Parse<ConversionType>(columnDto.ColumnFormatting.Conversion),
-                    FormatValue = columnDto.ColumnFormatting.FormatValue,
-                    MaxLength = columnDto.ColumnFormatting.MaxLength
-                } : null
-            }).ToList();
-
-            var model = new ReportConfigurationModel
-            {
-                ReportName = request.ReportName,
-                Description = request.ReportDescription,
-                ConnectionStringId = connectionStringId,
-                Schedules = schedules,
-                FolderId = folderId,
-                CreatorId = userIdObjectId,
-                LastModifiedBy = userIdObjectId,
-                OwnerID = ownerId,
-                LastModifiedDate = DateTime.UtcNow,
-                OwnerType = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
-                    ? OwnerType.User
-                    : OwnerType.Group,
-                CompiledSQL = request.CompiledSQL,
-                SelectedColumns = selectedColumns,
-                EmailRecipients = request.EmailReports.Equals("yes", StringComparison.OrdinalIgnoreCase)
-                    ? request.EmailRecipients.Split(';').ToList()
-                    : new List<string>(),
-                Format = Enum.Parse<ReportFormat>(request.OutputFormat)
-            };
-
-            if (!existing)
-            {
-                model.CreatedDate = DateTime.UtcNow;
+                return model;
             }
+            catch (Exception ex)
+            {
+                // TODO: logging
+                throw new Exception("An error occurred while transforming the request to model.", ex);
+            }
+        }
 
-            return model;
+        public ReportFormContext TransformModelToRequest(ReportConfigurationModel model)
+        {
+            try
+            {
+                var selectedColumns = model.SelectedColumns
+                    .Select(column => new ColumnDefinitionDTO
+                    {
+                        Table = column.Table,
+                        ColumnName = column.ColumnName,
+                        DataType = column.DataType,
+                        DisplayOrder = column.DisplayOrder,
+                        ColumnFormatting = column.ColumnFormatting != null
+                            ? new ColumnFormattingDTO
+                            {
+                                Conversion = column.ColumnFormatting.Conversion.ToString(),
+                                FormatValue = column.ColumnFormatting.FormatValue,
+                                MaxLength = column.ColumnFormatting.MaxLength
+                            }
+                            : null
+                    })
+                    .ToList();
+
+                var filters = model.Filters?
+                    .Select(filter => new FilterItem
+                    {
+                        Id = filter.Id,
+                        Table = filter.Table,
+                        Column = filter.Column,
+                        Condition = filter.Condition,
+                        Value = filter.Value,
+                        AndOr = filter.AndOr
+                    })
+                    .ToList();
+
+                var orderBys = model.OrderBys?
+                    .Select(orderBy => new OrderByItem
+                    {
+                        Id = orderBy.Id,
+                        Table = orderBy.Table,
+                        Column = orderBy.Column,
+                        Direction = orderBy.Direction,
+                        ColumnOptions = orderBy.ColumnOptions
+                    })
+                    .ToList();
+
+                var joinConfig = model.JoinConfig?
+                    .Select(joinItem => new JoinConfigItem
+                    {
+                        TableOne = joinItem.TableOne,
+                        TableTwo = joinItem.TableTwo,
+                        ColumnOne = joinItem.ColumnOne,
+                        ColumnTwo = joinItem.ColumnTwo,
+                        IsValid = joinItem.IsValid
+                    })
+                    .ToList();
+
+                var request = new ReportFormContext
+                {
+                    ReportName = model.ReportName,
+                    ReportDescription = model.Description,
+                    SelectedConnection = model.ConnectionStringId.ToString(),
+                    SelectedFolder = model.FolderId.ToString(),
+                    UserId = model.CreatorId.ToString(),
+                    SelectedGroup = model.OwnerType == OwnerType.Group ? model.OwnerID.ToString() : null,
+                    ReportType = model.OwnerType == OwnerType.User ? "Personal" : "Group",
+                    CompiledSQL = model.CompiledSQL,
+                    OutputFormat = model.Format.ToString(),
+                    ReportGenerationTime = model.Schedules.FirstOrDefault()?.ExecuteTime.ToString(),
+                    ReportFrequencyValue = model.Schedules.FirstOrDefault()?.Iteration ?? 0,
+                    ReportFrequencyType = model.Schedules.FirstOrDefault()?.ScheduleType.ToString(),
+                    EmailReports = model.EmailRecipients != null && model.EmailRecipients.Any() ? "yes" : "no",
+                    EmailRecipients = model.EmailRecipients != null ? string.Join(";", model.EmailRecipients) : null,
+                    SelectedColumns = selectedColumns,
+                    Filters = filters,
+                    OrderBys = orderBys,
+                    JoinConfig = joinConfig
+                };
+
+                return request;
+            }
+            catch (Exception ex)
+            {
+                // TODO: logging
+                throw new Exception("An error occurred while transforming the model to request.", ex);
+            }
         }
 
         private ScheduleType ConvertToScheduleType(string frequencyType)

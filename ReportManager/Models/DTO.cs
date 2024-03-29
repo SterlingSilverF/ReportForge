@@ -1,6 +1,4 @@
-﻿using static ReportManager.Models.SQL_Builder;
-
-namespace ReportManager.Models
+﻿namespace ReportManager.Models
 {
     public class FolderDTO
     {

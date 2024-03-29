@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using ReportManager.Models;
-using static ReportManager.Models.SQL_Builder;
 
 namespace ReportManager.Models
 {
@@ -22,6 +21,16 @@ namespace ReportManager.Models
         public List<ColumnDefinition> SelectedColumns { get; set; }
         public List<string> EmailRecipients { get; set; }
         public ReportFormat Format { get; set; }
+        public List<JoinConfigItem> JoinConfig { get; set; }
+        public List<FilterItem> Filters { get; set; }
+        public List<OrderByItem> OrderBys { get; set; }
+    }
+
+    public class BaseColumnDefinition
+    {
+        public string Table { get; set; }
+        public string ColumnName { get; set; }
+        public string DataType { get; set; }
     }
 
     public class ColumnDefinition : BaseColumnDefinition
@@ -45,23 +54,32 @@ namespace ReportManager.Models
         StringToMoney   // Convert a string representation of money to specific money formats
     }
 
-    public class Filter
+    public class JoinConfigItem
     {
-        public OperationType Operation { get; set; }
-        public string ColumnName { get; set; }
-        public List<string> Values { get; set; } = new List<string>();
+        public string TableOne { get; set; }
+        public string TableTwo { get; set; }
+        public string ColumnOne { get; set; }
+        public string ColumnTwo { get; set; }
+        public bool IsValid { get; set; }
     }
 
-    public enum OperationType
+    public class FilterItem
     {
-        Equals,
-        NotEquals,
-        GreaterThan,
-        GreaterThanOrEqualTo,
-        LessThan,
-        LessThanOrEqualTo,
-        Between,
-        In
+        public string Id { get; set; }
+        public string Table { get; set; }
+        public string Column { get; set; }
+        public string Condition { get; set; }
+        public string Value { get; set; }
+        public string? AndOr { get; set; }
+    }
+
+    public class OrderByItem
+    {
+        public string Id { get; set; }
+        public string Table { get; set; }
+        public string Column { get; set; }
+        public string Direction { get; set; }
+        public List<string> ColumnOptions { get; set; } = new List<string>();
     }
 
     public class ScheduleInfo

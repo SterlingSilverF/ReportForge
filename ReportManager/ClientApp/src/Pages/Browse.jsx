@@ -92,9 +92,12 @@ const Browse = ({ makeApiRequest, username, navigate }) => {
                 ))}
 
                 {reports.map((report, index) => (
-                    <div key={index} className="centered-content">
-                        <FontAwesomeIcon icon={faFile} size="3x" />
-                        <label>{report.ReportName}</label>
+                    <div
+                        key={index}
+                        className="image-label-pair clickable"
+                        onClick={() => navigate(`/reportinformation?reportId=${report.id}&isPersonal=${isPersonal}`)}>
+                        <FontAwesomeIcon icon={faFile} size="3x" className="rpf-silverblue report" />
+                        <label>{report.reportName}</label>
                     </div>
                 ))}
             </div>

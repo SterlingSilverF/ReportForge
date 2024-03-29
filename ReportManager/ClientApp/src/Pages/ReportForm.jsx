@@ -24,7 +24,10 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         const fetchReportData = async () => {
             if (reportId && type) {
                 try {
-                    const response = await makeApiRequest('get', `/api/report/GetReportById?reportId=${reportId}&type=${type}`);
+                    const response = await makeApiRequest(
+                        'get',
+                        `/api/report/GetReportById?reportId=${reportId}&type=${type}&fullDataset=true`
+                    );
                     const reportData = response.data;
                     updateReportFormData(reportData);
                     setIsEditMode(true);
