@@ -10,3 +10,6 @@
 2024-03-30 23:29:43.964 -05:00 [INF] Application Starting
 2024-03-30 23:29:44.182 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
 2024-03-30 23:29:44.354 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-03-30 23:47:03.311 -05:00 [INF] Application Starting
+2024-03-30 23:47:03.529 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.
+2024-03-30 23:47:03.711 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\source\repos\ReportManager\ReportManager\wwwroot. Static files may be unavailable.

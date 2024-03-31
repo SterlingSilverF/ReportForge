@@ -31,18 +31,19 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         const loadDesignerPageData = async () => {
             if (reportFormContext.selectedConnection && reportFormContext.reportType && reportFormContext.dbType) {
                 try {
-                    var url = `/api/database/LoadDesignerPage?connectionId=${reportFormContext.selectedConnection}&dbType=${reportFormContext.dbType}&ownerType=${reportFormContext.reportType}`
+                    var url = `/api/database/LoadDesignerPage?connectionId=${reportFormContext.selectedConnection}&dbType=${reportFormContext.dbType}&ownerType=${reportFormContext.reportType}`;
                     const response = await makeApiRequest('post', url);
                     setTables(response.data);
                     setStatus('ready');
                     console.log("Tables loaded successfully.");
+                    const tableColumnsData = {};
+                    for (const table of response.data) {
+                        const columns = await fetchTableColumns(table, true);
+                        tableColumnsData[table] = columns;
+                    }
+                    setTableColumns(tableColumnsData);
 
-                    // Existing data or edit
                     if (reportFormContext.selectedColumns) {
-                        for (const table of reportFormContext.selectedTables) {
-                            const columns = await fetchTableColumns(table, true);
-                            setTableColumns(prevState => ({ ...prevState, [table]: columns }));
-                        }
                         if (reportFormContext.joinConfig.length > 0) {
                             const extractedJoins = await extractJoinsFromContext();
                             setJoinsInfo(extractedJoins);
@@ -56,6 +57,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 }
             }
         };
+
         loadDesignerPageData();
     }, [reportFormContext.selectedConnection, reportFormContext.reportType, reportFormContext.dbType, reportFormContext.selectedColumns, reportFormContext.selectedTables]);
 
@@ -96,6 +98,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             const columns = await fetchTableColumns(tableName, true);
             setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
         }
+
         updateReportFormData({ selectedTables: newSelectedTables });
 
         // Remove any joins referencing the removed table
@@ -108,22 +111,24 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         const orderedTables = reorderTables(newSelectedTables, updatedJoinsInfo);
         setOrderedTables(orderedTables);
 
-        // Remove filters
-        const updatedFilters = reportFormContext.filters.filter(filter =>
-            filter.table !== tableName
-        ).map(filter => ({
-            ...filter,
-            columnOptions: newSelectedTables.includes(filter.table) ? tableColumns[filter.table] : []
-        }));
+        // Update filters
+        const updatedFilters = reportFormContext.filters.map(filter => {
+            if (filter.table === tableName) {
+                const columnOptions = tableColumns[tableName]?.map(column => column.columnName) || [];
+                return { ...filter, table: tableName, column: '', dataType: '', columnOptions };
+            }
+            return filter;
+        });
         updateReportFormData({ filters: updatedFilters });
 
-        // Remove order bys
-        const updatedOrderBys = reportFormContext.orderBys.filter(orderBy =>
-            orderBy.table !== tableName
-        ).map(orderBy => ({
-            ...orderBy,
-            columnOptions: newSelectedTables.includes(orderBy.table) ? tableColumns[orderBy.table] : []
-        }));
+        // Update order bys
+        const updatedOrderBys = reportFormContext.orderBys.map(orderBy => {
+            if (orderBy.table === tableName) {
+                const columnOptions = tableColumns[tableName]?.map(column => column.columnName) || [];
+                return { ...orderBy, table: tableName, column: '', columnOptions };
+            }
+            return orderBy;
+        });
         updateReportFormData({ orderBys: updatedOrderBys });
     };
 
@@ -238,6 +243,14 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         const column = tableColumns[tableName]?.find(col => col.columnName === columnName);
         return column ? column.dataType : null;
     }
+
+    const getColumnNames = (tableName) => {
+        return tableColumns[tableName]?.map(column => column.columnName) || [];
+    };
+
+    const getColumnInfo = (tableName, columnName) => {
+        return tableColumns[tableName]?.find(column => column.columnName === columnName);
+    };
 
     function checkDataTypeCompatibility(type1, type2, dbType) {
         const complexTypes = ['BLOB', 'IMAGE', 'BYTEA', 'BINARY', 'VARBINARY', 'LONG VARBINARY'];
@@ -647,7 +660,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 )}
                 <hr />
-                <DynamicInputs fetchTableColumns={fetchTableColumns} inputValues={inputValues} setInputValues={setInputValues} />
+                <DynamicInputs getColumnNames={getColumnNames} getColumnInfo={getColumnInfo} inputValues={inputValues} setInputValues={setInputValues} />
                 <br /><br /><hr />
                 <p>{message}</p>
                 <button className="btn-three btn-restrict" onClick={updateReportFormContextWithJoins}>PREVIEW REPORT</button>

@@ -2,6 +2,7 @@
 import DOMPurify from 'dompurify';
 
 const FilterValueInput = ({ dataType, value, onChange }) => {
+    console.log('Data Type:', dataType);
     const handleChange = (event) => {
         const sanitizedValue = DOMPurify.sanitize(event.target.value);
         onChange(sanitizedValue);
