@@ -3,24 +3,40 @@
   "WorkspaceRootPath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\components\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\previewreport.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\previewreport.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\components\\filtervalueinput.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\filtervalueinput.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\components\\dynamicinputs.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\dynamicinputs.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\models\\reportconfigurationmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\models\\reportconfigurationmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\contexts\\reportformcontext.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\contexts\\reportformcontext.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\reportdesigner.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\reportdesigner.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\reportform.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\reportform.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\contexts\\reportformcontext.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\contexts\\reportformcontext.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\browse.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -31,16 +47,8 @@
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\reports.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\components\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\reportconfig.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\reportconfig.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\components\\advancedsection.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\advancedsection.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,33 +58,35 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 0,
               "Title": "style.css",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\style.css",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\components\\style.css",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\style.css",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\components\\style.css",
-              "ViewState": "AQIAAIkEAAAAAAAAAAAAAKIEAAAzAAAA",
+              "ViewState": "AQIAACkEAAAAAAAAAAAAADkEAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2023-12-18T05:15:18.755Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "ReportFormContext.js",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\contexts\\ReportFormContext.js",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\contexts\\ReportFormContext.js",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\contexts\\ReportFormContext.js",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\contexts\\ReportFormContext.js",
-              "ViewState": "AQIAAAQAAAAAAAAAAAAqwCsAAAAGAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABkAAAAHAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2024-03-18T04:58:06.271Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
@@ -85,44 +95,84 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ReportForm.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportForm.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\ReportForm.jsx",
-              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportForm.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\ReportForm.jsx",
-              "ViewState": "AQIAAAkAAAAAAAAAAAAYwCgAAAAZAAAA",
+              "Title": "PreviewReport.jsx",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\PreviewReport.jsx",
+              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\PreviewReport.jsx",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\PreviewReport.jsx",
+              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\PreviewReport.jsx",
+              "ViewState": "AQIAAAQAAAAAAAAAAAAAAAQAAAAqAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-03-28T03:31:56.122Z",
+              "WhenOpened": "2024-03-31T04:28:40.059Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
+              "Title": "FilterValueInput.jsx",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\FilterValueInput.jsx",
+              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\components\\FilterValueInput.jsx",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\FilterValueInput.jsx",
+              "RelativeToolTip": "ReportManager\\ClientApp\\src\\components\\FilterValueInput.jsx",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAAxAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2024-03-29T19:07:45.807Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "dynamicinputs.jsx",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\dynamicinputs.jsx",
+              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\components\\dynamicinputs.jsx",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\dynamicinputs.jsx",
+              "RelativeToolTip": "ReportManager\\ClientApp\\src\\components\\dynamicinputs.jsx",
+              "ViewState": "AQIAAOoAAAAAAAAAAAAAAPEAAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2024-03-29T17:21:29.771Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ReportConfigurationModel.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Models\\ReportConfigurationModel.cs",
+              "RelativeDocumentMoniker": "ReportManager\\Models\\ReportConfigurationModel.cs",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Models\\ReportConfigurationModel.cs",
+              "RelativeToolTip": "ReportManager\\Models\\ReportConfigurationModel.cs",
+              "ViewState": "AQIAADEAAAAAAAAAAABBwEkAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-29T17:23:47.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "ReportDesigner.jsx",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportDesigner.jsx",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\ReportDesigner.jsx",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportDesigner.jsx",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\ReportDesigner.jsx",
-              "ViewState": "AQIAAOwBAAAAAAAAAAAAANcBAAAMAAAA",
+              "ViewState": "AQIAAFoAAAAAAAAAAAAYwH8AAAAGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
               "WhenOpened": "2024-03-29T14:18:06.963Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "ReportManagementService.cs",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\ReportManagementService.cs",
               "RelativeDocumentMoniker": "ReportManager\\Services\\ReportManagementService.cs",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\ReportManagementService.cs",
               "RelativeToolTip": "ReportManager\\Services\\ReportManagementService.cs",
-              "ViewState": "AQIAALYBAAAAAAAAAAAuwMQBAAAJAAAA",
+              "ViewState": "AQIAAEcBAAAAAAAAAAAuwOwBAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-29T13:34:06.709Z"
+              "WhenOpened": "2024-03-29T13:34:06.709Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 8,
               "Title": "ReportController.cs",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\API\\ReportController.cs",
               "RelativeDocumentMoniker": "ReportManager\\API\\ReportController.cs",
@@ -135,51 +185,42 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
               "Title": "Browse.jsx",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\Browse.jsx",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\Browse.jsx",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\Browse.jsx",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\Browse.jsx",
-              "ViewState": "AQIAAEgAAAAAAAAAAAAAAGUAAAATAAAA",
+              "ViewState": "AQIAAEYAAAAAAAAAAABBwGUAAAATAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-03-28T03:27:22.743Z"
+              "WhenOpened": "2024-03-28T03:27:22.743Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
               "Title": "Reports.jsx",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\Reports.jsx",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\Reports.jsx",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\Reports.jsx",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\Reports.jsx",
-              "ViewState": "AQIAACQAAAAAAAAAAAAAAEEAAAATAAAA",
+              "ViewState": "AQIAACIAAAAAAAAAAABBwEEAAAATAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-03-28T03:40:08.525Z"
+              "WhenOpened": "2024-03-28T03:40:08.525Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "ReportConfig.jsx",
               "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportConfig.jsx",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\ReportConfig.jsx",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\Pages\\ReportConfig.jsx",
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\ReportConfig.jsx",
-              "ViewState": "AQIAAB8AAAAAAAAAAABBwEUAAAAGAAAA",
+              "ViewState": "AQIAAB0AAAAAAAAAAABRwEUAAAAGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-03-27T15:33:41.478Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AdvancedSection.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\AdvancedSection.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\components\\AdvancedSection.jsx",
-              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\src\\components\\AdvancedSection.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\components\\AdvancedSection.jsx",
-              "ViewState": "AQIAAB8AAAAAAAAAAABBwDUAAAAWAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-03-16T23:10:59.097Z"
+              "WhenOpened": "2024-03-27T15:33:41.478Z",
+              "EditorCaption": ""
             }
           ]
         }

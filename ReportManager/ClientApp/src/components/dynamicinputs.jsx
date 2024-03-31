@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { useReportForm } from '../contexts/ReportFormContext';
+import FilterValueInput from './FilterValueInput';
 
 const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
     const MAX_FILTERS = 6;
@@ -164,7 +165,7 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
     );
 
     const calculateSpacerHeight = (itemCount) => {
-        const baseHeight = 215;
+        const baseHeight = 205;
         const minHeight = 40;
         const dynamicHeight = Math.max(baseHeight - (itemCount * 24), minHeight);
         return `${dynamicHeight}px`;
@@ -179,18 +180,22 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
                     <a href="/guides/conditionals">Read More</a>
                 </div>
                 <button className="report-designer-button" onClick={addNewFilter}>Add</button>
-                <button className="report-designer-button" onClick={() => reportFormContext.filters.length && removeFilter(reportFormContext.filters[reportFormContext.filters.length - 1].id)}>Remove</button>
+                {reportFormContext.filters.length > 0 && (
+                    <button className="report-designer-button" onClick={() => removeFilter(reportFormContext.filters[reportFormContext.filters.length - 1].id)}>Remove</button>
+                )}
                 <div style={{ height: '40px' }}></div>
                 <h4>Order By</h4>
                 <div className="explanation-box eb-mini">
                     <p>Display what kind of data first?</p>
                 </div>
                 <button className="report-designer-button" onClick={addNewOrderBy}>Add</button>
-                <button className="report-designer-button" onClick={() => reportFormContext.orderBys.length && removeOrderBy(reportFormContext.orderBys[reportFormContext.orderBys.length - 1].id)}>Remove</button>
+                {reportFormContext.orderBys.length > 0 && (
+                    <button className="report-designer-button" onClick={() => removeOrderBy(reportFormContext.orderBys[reportFormContext.orderBys.length - 1].id)}>Remove</button>
+                )}
             </div>
 
             <div>
-                <label>Select Table</label>
+                <label style={{ marginBottom: '7px' }}>Select Table</label>
                 {reportFormContext.filters.map((filter) => (
                     <TableSelect
                         key={filter.id}
@@ -211,7 +216,7 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
             </div>
 
             <div>
-                <label>Select Column</label>
+                <label style={{ marginBottom: '7px' }}>Select Column</label>
                 {reportFormContext.filters.map((filter) => (
                     <ColumnSelect
                         key={filter.id}
@@ -232,7 +237,7 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
             </div>
 
             <div>
-                <label>Condition</label>
+                <label style={{ marginBottom: '7px' }}>Condition</label>
                 {reportFormContext.filters.map((filter) => (
                     <ConditionSelect
                         key={filter.id}
@@ -252,14 +257,13 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
             </div>
             <div>
                 <div>
-                    <label>Value</label>
-                    {Object.entries(inputValues).map(([id, value]) => (
-                        <div key={id}>
-                            <input
-                                type="text"
-                                value={value}
-                                className="input-style-short"
-                                onChange={(e) => handleValueChange(id, e.target.value)}
+                    <label style={{ marginBottom: '7px' }}>Value</label>
+                    {reportFormContext.filters.map((filter) => (
+                        <div key={`filter-value-${filter.id}`}>
+                            <FilterValueInput
+                                dataType={filter.dataType}
+                                value={inputValues[`filter-value-${filter.id}`] || ''}
+                                onChange={(value) => handleValueChange(`filter-value-${filter.id}`, value)}
                             />
                         </div>
                     ))}
@@ -267,7 +271,7 @@ const DynamicInputs = ({ fetchTableColumns, inputValues, setInputValues }) => {
             </div>
             {reportFormContext.filters.length > 1 ? (
                 <div>
-                    <label>Operator</label>
+                    <label style={{ marginBottom: '7px' }}>Operator</label>
                     {reportFormContext.filters.map((filter, index) => (
                         index < reportFormContext.filters.length - 1 && (
                             <AndOrSelect

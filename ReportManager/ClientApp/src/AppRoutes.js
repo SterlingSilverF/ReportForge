@@ -30,13 +30,12 @@ import ReportsGuides from "./Pages/guides/ReportGuides";
 import CapstoneMaterials from "./Pages/guides/CapstoneMaterials";
 
 /* DB Icons */
-import mssql from './components/mssql.png';
-import oracle from './components/oracle.png';
-import mysql from './components/mysql.png';
-import postgres from './components/postgres.png';
-import mongodb from './components/mongoDB.png';
-import DB2 from './components/DB2_IBM.png';
-
+import mssql from './components/Images/mssql.png';
+import oracle from './components/Images/oracle.png';
+import mysql from './components/Images/mysql.png';
+import postgres from './components/Images/postgres.png';
+import mongodb from './components/Images/mongoDB.png';
+import DB2 from './components/Images/DB2_IBM.png';
 
 const dbIcons = {
     mssql,

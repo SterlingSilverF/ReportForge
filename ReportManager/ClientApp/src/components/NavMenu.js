@@ -5,7 +5,7 @@ import './style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
-import icon from '../components/blacksmith.png';
+import icon from '../components/Images/blacksmith.png';
 
 export class NavMenu extends Component {
     static displayName = NavMenu.name;

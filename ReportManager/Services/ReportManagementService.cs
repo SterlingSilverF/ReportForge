@@ -405,8 +405,7 @@ namespace ReportManager.Services
                         Id = orderByItem.Id,
                         Table = orderByItem.Table,
                         Column = orderByItem.Column,
-                        Direction = orderByItem.Direction,
-                        ColumnOptions = orderByItem.ColumnOptions
+                        Direction = orderByItem.Direction
                     })
                     .ToList();
 
@@ -489,8 +488,7 @@ namespace ReportManager.Services
                         Id = orderBy.Id,
                         Table = orderBy.Table,
                         Column = orderBy.Column,
-                        Direction = orderBy.Direction,
-                        ColumnOptions = orderBy.ColumnOptions
+                        Direction = orderBy.Direction
                     })
                     .ToList();
 

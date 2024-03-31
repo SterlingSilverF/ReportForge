@@ -88,6 +88,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const handleTableSelect = async (tableName) => {
         const isSelected = reportFormContext.selectedTables.includes(tableName);
         let newSelectedTables;
+
         if (isSelected) {
             newSelectedTables = reportFormContext.selectedTables.filter(t => t !== tableName);
         } else {
@@ -96,13 +97,34 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
         }
         updateReportFormData({ selectedTables: newSelectedTables });
+
+        // Remove any joins referencing the removed table
         const updatedJoinsInfo = joinsInfo.filter(join =>
             join.tableOne.name !== tableName && join.tableTwo.name !== tableName
         );
         setJoinsInfo(updatedJoinsInfo);
 
+        // Reorder tables based on updated joins
         const orderedTables = reorderTables(newSelectedTables, updatedJoinsInfo);
         setOrderedTables(orderedTables);
+
+        // Remove filters
+        const updatedFilters = reportFormContext.filters.filter(filter =>
+            filter.table !== tableName
+        ).map(filter => ({
+            ...filter,
+            columnOptions: newSelectedTables.includes(filter.table) ? tableColumns[filter.table] : []
+        }));
+        updateReportFormData({ filters: updatedFilters });
+
+        // Remove order bys
+        const updatedOrderBys = reportFormContext.orderBys.filter(orderBy =>
+            orderBy.table !== tableName
+        ).map(orderBy => ({
+            ...orderBy,
+            columnOptions: newSelectedTables.includes(orderBy.table) ? tableColumns[orderBy.table] : []
+        }));
+        updateReportFormData({ orderBys: updatedOrderBys });
     };
 
     // When a column is selected from "Availible Tables"
@@ -517,109 +539,113 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     </div>
                 </div>
                 <br />
-                <h2>Select Shared Columns</h2>
-                <div className="flex-grid dual-listbox select-shared" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    <div style={{ flex: '1 1 auto' }}>
-                        <div className="listbox-container">
-                            <select id="tableSelectOne" value={selectedTableOne} onChange={handleTableOneJoinChange}>
-                                <option value="">--Select a Table--</option>
-                                {reportFormContext.selectedTables.filter(table => table !== selectedTableTwo).map((table, index) => (
-                                    <option key={index} value={table}>{table}</option>
-                                ))}
-                            </select>
-                            <div>
-                                <ul className="listbox" id="tableColSelectOne">
-                                    {columnsTableOne.map((column, index) => (
-                                        <li key={index} className="radio-item">
-                                            <input
-                                                type="radio"
-                                                name="selectedColumnOne"
-                                                value={column}
-                                                checked={selectedJoinColumnOne === column}
-                                                onChange={(e) => setSelectedJoinColumnOne(e.target.value)}
-                                            />{column}
-                                        </li>
+                {reportFormContext.selectedTables.length > 1 && (
+                <div>
+                    <h2>Select Shared Columns</h2>
+                    <div className="flex-grid dual-listbox select-shared" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 auto' }}>
+                            <div className="listbox-container">
+                                <select id="tableSelectOne" value={selectedTableOne} onChange={handleTableOneJoinChange}>
+                                    <option value="">--Select a Table--</option>
+                                    {reportFormContext.selectedTables.filter(table => table !== selectedTableTwo).map((table, index) => (
+                                        <option key={index} value={table}>{table}</option>
                                     ))}
-                                </ul>
+                                </select>
+                                <div>
+                                    <ul className="listbox" id="tableColSelectOne">
+                                        {columnsTableOne.map((column, index) => (
+                                            <li key={index} className="radio-item">
+                                                <input
+                                                    type="radio"
+                                                    name="selectedColumnOne"
+                                                    value={column}
+                                                    checked={selectedJoinColumnOne === column}
+                                                    onChange={(e) => setSelectedJoinColumnOne(e.target.value)}
+                                                />{column}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div style={{ flex: '1 1 auto' }}>
-                        <div className="listbox-container">
-                            <select id="tableSelectTwo" value={selectedTableTwo} onChange={handleTableTwoJoinChange}>
-                                <option value="">--Select a Table--</option>
-                                {reportFormContext.selectedTables.filter(table => table !== selectedTableOne).map((table, index) => (
-                                    <option key={index} value={table}>{table}</option>
-                                ))}
-                            </select>
-                            <div>
-                                <ul className="listbox" id="tableColSelectTwo">
-                                    {columnsTableTwo.map((column, index) => (
-                                        <li key={index} className="radio-item">
-                                            <input
-                                                type="radio"
-                                                name="selectedColumnTwo"
-                                                value={column}
-                                                checked={selectedJoinColumnTwo === column}
-                                                onChange={(e) => setSelectedJoinColumnTwo(e.target.value)}
-                                            /> {column}
-                                        </li>
+                        <div style={{ flex: '1 1 auto' }}>
+                            <div className="listbox-container">
+                                <select id="tableSelectTwo" value={selectedTableTwo} onChange={handleTableTwoJoinChange}>
+                                    <option value="">--Select a Table--</option>
+                                    {reportFormContext.selectedTables.filter(table => table !== selectedTableOne).map((table, index) => (
+                                        <option key={index} value={table}>{table}</option>
                                     ))}
-                                </ul>
+                                </select>
+                                <div>
+                                    <ul className="listbox" id="tableColSelectTwo">
+                                        {columnsTableTwo.map((column, index) => (
+                                            <li key={index} className="radio-item">
+                                                <input
+                                                    type="radio"
+                                                    name="selectedColumnTwo"
+                                                    value={column}
+                                                    checked={selectedJoinColumnTwo === column}
+                                                    onChange={(e) => setSelectedJoinColumnTwo(e.target.value)}
+                                                /> {column}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
+                        <div className="explanation-box eb-medium" style={{ flex: '1 1 auto' }}>
+                            <p>To correlate two separate sets of information in a single report via a database, each set (table) must be "joined" to the query.</p>
+                            <p>Joining involves linking tables through a common column. Most often it is the same column name and the unique identifier for ONE of the tables involved.</p>
+                            <p>Each table needs to be joined only once, like a chain.</p>
+                            <a href="/guides/table-joins">Learn More</a>
+                        </div>
                     </div>
-                    <div className="explanation-box eb-medium" style={{ flex: '1 1 auto' }}>
-                        <p>To correlate two separate sets of information in a single report via a database, each set (table) must be "joined" to the query.</p>
-                        <p>Joining involves linking tables through a common column. Most often it is the same column name and the unique identifier for ONE of the tables involved.</p>
-                        <p>Each table needs to be joined only once, like a chain.</p>
-                        <a href="/guides/table-joins">Learn More</a>
-                    </div>
-                </div>
-                <button type="button" id="joinButton" className="report-designer-button" onClick={handleJoinClick}>Join</button>
-                <br />
-                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '.5fr 1fr 1fr 1fr', gridGap: '10px', alignItems: 'start' }}>
-                    <div style={{ gridColumn: '1 / 2' }}>
-                        <h5>Table Join Checklist</h5>
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {orderedTables.map((tableName, index) => {
-                                const isAlreadyJoined = joinsInfo.some(join =>
-                                    join.tableOne.name === tableName || join.tableTwo.name === tableName
-                                );
-                                const isJoined = isAlreadyJoined && joinsInfo.find(join =>
-                                    join.tableOne.name === tableName || join.tableTwo.name === tableName
-                                ).isValid;
-                                return (
-                                    <li key={index}>
-                                        {isJoined ? '✅' : '❌'} {tableName}
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                    <div style={{ gridColumn: '2 / 3' }}>
-                        <h5>Joined Columns</h5>
-                        {joinsInfo.map((join, index) => (
-                            <div key={index}>
-                                <b>{join.tableOne.name} -&gt; {join.tableTwo.name}</b>
-                                <ul>
-                                    <li>{join.tableOne.column} = {join.tableTwo.column}</li>
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                    <div style={{ gridColumn: '3 / 4' }}>
-                        <h5>Join Valid</h5>
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                    <button type="button" id="joinButton" className="report-designer-button" onClick={handleJoinClick}>Join</button>
+                    <br />
+                    <div className="grid" style={{ display: 'grid', gridTemplateColumns: '.5fr 1fr 1fr 1fr', gridGap: '10px', alignItems: 'start' }}>
+                        <div style={{ gridColumn: '1 / 2' }}>
+                            <h5>Table Join Checklist</h5>
+                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                                {orderedTables.map((tableName, index) => {
+                                    const isAlreadyJoined = joinsInfo.some(join =>
+                                        join.tableOne.name === tableName || join.tableTwo.name === tableName
+                                    );
+                                    const isJoined = isAlreadyJoined && joinsInfo.find(join =>
+                                        join.tableOne.name === tableName || join.tableTwo.name === tableName
+                                    ).isValid;
+                                    return (
+                                        <li key={index}>
+                                            {isJoined ? '✅' : '❌'} {tableName}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                        <div style={{ gridColumn: '2 / 3' }}>
+                            <h5>Joined Columns</h5>
                             {joinsInfo.map((join, index) => (
-                                <li key={index}>
-                                    {join.isValid ? '✅' : '❌'} {join.tableOne.name} & {join.tableTwo.name}
-                                </li>
+                                <div key={index}>
+                                    <b>{join.tableOne.name} -&gt; {join.tableTwo.name}</b>
+                                    <ul>
+                                        <li>{join.tableOne.column} = {join.tableTwo.column}</li>
+                                    </ul>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
+                        <div style={{ gridColumn: '3 / 4' }}>
+                            <h5>Join Valid</h5>
+                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                                {joinsInfo.map((join, index) => (
+                                    <li key={index}>
+                                        {join.isValid ? '✅' : '❌'} {join.tableOne.name} & {join.tableTwo.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
+                    <p>To proceed, only green check marks can be displayed.</p>
                 </div>
-                <p>To proceed, only green check marks can be displayed.</p>
+                )}
                 <hr />
                 <DynamicInputs fetchTableColumns={fetchTableColumns} inputValues={inputValues} setInputValues={setInputValues} />
                 <br /><br /><hr />

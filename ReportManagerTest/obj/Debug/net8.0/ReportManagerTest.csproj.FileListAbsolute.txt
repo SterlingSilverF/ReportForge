@@ -1,4 +1,10 @@
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\CoverletSourceRootsMapping_ReportManagerTest
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.csproj.AssemblyReference.cache
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.AssemblyInfoInputs.cache
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.AssemblyInfo.cs
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.csproj.CoreCompileInputs.cache
+C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.sourcelink.json
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\testhost.dll
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\ReportManager.deps.json
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\ReportManager.runtimeconfig.json
@@ -327,12 +333,6 @@ C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\Mi
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\ReportManager.dll
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\ReportManager.pdb
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\bin\Debug\net8.0\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.csproj.AssemblyReference.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.AssemblyInfoInputs.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.AssemblyInfo.cs
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.csproj.CoreCompileInputs.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.sourcelink.json
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportMa.F2257581.Up2Date
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\ReportManagerTest.dll
 C:\Users\Silver\source\repos\ReportManager\ReportManagerTest\obj\Debug\net8.0\refint\ReportManagerTest.dll

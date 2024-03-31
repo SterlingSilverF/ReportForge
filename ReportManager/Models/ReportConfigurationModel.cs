@@ -79,7 +79,6 @@ namespace ReportManager.Models
         public string Table { get; set; }
         public string Column { get; set; }
         public string Direction { get; set; }
-        public List<string> ColumnOptions { get; set; } = new List<string>();
     }
 
     public class ScheduleInfo

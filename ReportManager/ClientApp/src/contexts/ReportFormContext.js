@@ -14,22 +14,8 @@ export const ReportFormProvider = ({ children }) => {
         selectedTables: [],
         selectedColumns: [],
         joinConfig: [],
-        filters: [{
-            id: `Filter_0`,
-            table: '',
-            column: '',
-            condition: '',
-            value: '',
-            columnOptions: [],
-            andOr: ''
-        }],
-        orderBys: [{
-            id: `OrderBy_0`,
-            table: '',
-            column: '',
-            direction: '',
-            columnOptions: []
-        }],
+        filters: [],
+        orderBys: [],
         compiledSQL: '',
         outputFormat: 'csv',
         reportFrequencyValue: 1,
@@ -41,7 +27,7 @@ export const ReportFormProvider = ({ children }) => {
 
     const updateReportFormData = (newData) => {
         setReportFormData(prevFormData => ({ ...prevFormData, ...newData }));
-    };
+    }; 
 
     return (
         <ReportFormContext.Provider value={{ reportFormContext, updateReportFormData }}>
