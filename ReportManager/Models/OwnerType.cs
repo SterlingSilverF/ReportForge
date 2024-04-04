@@ -2,7 +2,7 @@
 {
     public enum OwnerType
     {
-        User,
+        Personal,
         Group
     }
 }

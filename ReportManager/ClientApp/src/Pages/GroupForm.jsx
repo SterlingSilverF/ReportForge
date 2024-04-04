@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleLeft, faAngleRight, faAnglesLeft, faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 
 const GroupForm = ({ makeApiRequest, username, navigate }) => {
+    // TODO: create context for group form
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const groupId = queryParams.get('groupId');

@@ -113,7 +113,7 @@ namespace ReportManagerTest
                 Password = "TestPassword",
                 AuthType = "Basic",
                 OwnerID = ObjectId.GenerateNewId(),
-                OwnerType = OwnerType.User
+                OwnerType = OwnerType.Personal
             };
 
             var dbConnectionDTO = new DBConnectionDTO(dbConnectionModel);

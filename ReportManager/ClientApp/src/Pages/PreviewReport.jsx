@@ -4,6 +4,7 @@ import { useReportForm } from '../contexts/ReportFormContext';
 import LoadingComponent from '../components/loading';
 import { AgGridReact } from 'ag-grid-react';
 import AdvancedSection from "../components/AdvancedSection";
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const PreviewReport = ({ makeApiRequest, navigate, token }) => {
@@ -14,6 +15,10 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
     const [rowData, setRowData] = useState([]);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [showSQL, setShowSQL] = useState(false);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const reportId = queryParams.get('reportId');
+
 
     const handleExport = (fileType) => {
         if (fileType === 'csv') {
@@ -25,7 +30,7 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
                 reportname: reportFormContext.reportName,
                 data: serializedData
             };
-            axios.defaults.baseURL = 'https://localhost:7280';
+            
             axios.post('/api/report/exportReport', requestBody, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -122,7 +127,9 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
     }, [reportFormContext, makeApiRequest]);
 
     const handleBackToDesigner = () => {
-        navigate('/reportdesigner');
+        const url = '/reportdesigner';
+        const queryParams = reportId !== null ? `?reportId=${reportId}` : '';
+        navigate(`${url}${queryParams}`);
     };
 
     const toggleAdvanced = () => {
@@ -141,7 +148,11 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
     const handleProceed = async () => {
         try {
             await updateSelectedColumnsFromColumnDefs();
-            navigate('/reportconfig');
+            let reportConfigUrl = '/reportconfig';
+            if (reportId !== null) {
+                reportConfigUrl += `?reportId=${reportId}`;
+            }
+            navigate(reportConfigUrl);
         } catch (error) {
             console.error('Error updating selected columns:', error);
         }

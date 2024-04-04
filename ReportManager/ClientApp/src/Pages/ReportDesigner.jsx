@@ -3,15 +3,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import HOC from '../components/HOC';
 import { useReportForm } from '../contexts/ReportFormContext';
+import { useLocation } from 'react-router-dom';
 import DynamicInputs from '../components/dynamicinputs';
 import LoadingComponent from '../components/loading';
 
 const ReportDesigner = ({ makeApiRequest, navigate }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
-
-    const [status, setStatus] = useState('loading'); // loading, ready, error
-    const [message, setMessage] = useState('');
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const reportId = queryParams.get('reportId');
+    const [message, setMessage] = useState('Loading tables...');
+    const [displayLoading, setDisplayLoading] = useState(true);
     const [isSubmitTriggered, setIsSubmitTriggered] = useState(false);
+
     const [tables, setTables] = useState([]);
     const [orderedTables, setOrderedTables] = useState([]);
     const [tableColumns, setTableColumns] = useState({});
@@ -34,8 +38,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     var url = `/api/database/LoadDesignerPage?connectionId=${reportFormContext.selectedConnection}&dbType=${reportFormContext.dbType}&ownerType=${reportFormContext.reportType}`;
                     const response = await makeApiRequest('post', url);
                     setTables(response.data);
-                    setStatus('ready');
+                    setMessage(''); // Update loading message here
+                    setDisplayLoading(false);
                     console.log("Tables loaded successfully.");
+
                     const tableColumnsData = {};
                     for (const table of response.data) {
                         const columns = await fetchTableColumns(table, true);
@@ -43,7 +49,11 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     }
                     setTableColumns(tableColumnsData);
 
+                    // Existing data or edit
                     if (reportFormContext.selectedColumns) {
+                        const uniqueTableNames = [...new Set(reportFormContext.selectedColumns.map(column => column.table))];
+                        setTables(prevTables => [...new Set([...prevTables, ...uniqueTableNames])]);
+
                         if (reportFormContext.joinConfig.length > 0) {
                             const extractedJoins = await extractJoinsFromContext();
                             setJoinsInfo(extractedJoins);
@@ -53,8 +63,13 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     }
                 } catch (error) {
                     console.error("Error loading designer page data:", error);
-                    setStatus('error');
+                    setMessage('Error loading data.');
+                    setDisplayLoading(false);
                 }
+            }
+            else {
+                setMessage('No connection detected. Please restart from page 1 of the form.');
+                setDisplayLoading(false);
             }
         };
 
@@ -212,7 +227,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         updateJoinButtonText(joinExists ? "Unjoin" : "Join");
 
         if (tableName) {
-            const columns = await fetchTableColumns(tableName);
+            const columns = getColumnNames(tableName);
             setColumnsTableOne(columns);
         } else {
             setColumnsTableOne([]);
@@ -228,11 +243,10 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
             (join.tableOne.name === selectedTableOne || join.tableOne.name === tableName) &&
             (join.tableTwo.name === selectedTableOne || join.tableTwo.name === tableName)
         );
-
         updateJoinButtonText(joinExists ? "Unjoin" : "Join");
 
         if (tableName) {
-            const columns = await fetchTableColumns(tableName);
+            const columns = getColumnNames(tableName);
             setColumnsTableTwo(columns);
         } else {
             setColumnsTableTwo([]);
@@ -308,8 +322,8 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     };
 
     async function handleJoinClick() {
-        const typeOne = getColumnDataType(selectedJoinColumnOne, selectedTableOne);
-        const typeTwo = getColumnDataType(selectedJoinColumnTwo, selectedTableTwo);
+        const typeOne = getColumnInfo(selectedTableOne, selectedJoinColumnOne)?.dataType;
+        const typeTwo = getColumnInfo(selectedTableTwo, selectedJoinColumnTwo)?.dataType;
 
         const joinIndex = joinsInfo.findIndex(join =>
             (join.tableOne.name === selectedTableOne || join.tableOne.name === selectedTableTwo) &&
@@ -491,13 +505,16 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                     const compiledSQL = response.data;
                     updateReportFormData({ compiledSQL });
                     setMessage("Success!");
-                    navigate('/previewreport');
+                    let previewReportUrl = '/previewreport';
+
+                    if (reportId !== null) {
+                        previewReportUrl += `?reportId=${reportId}`;
+                    }
+                    navigate(previewReportUrl);
                 })
                 .catch((error) => {
                     setMessage("Failed to build and verify SQL.");
                 });
-
-            
         } catch (error) {
             console.error("Error submitting report configuration:", error);
             setMessage("There was an error building verification SQL.");
@@ -519,7 +536,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 <br />
                 <h2>Select Tables</h2>
-                {status === 'loading' && <LoadingComponent />}
+                <LoadingComponent isLoading={displayLoading} message={message} />
                 <div className="flex-grid">
                     <div>
                         <div style={{ flex: 1 }}>
@@ -528,7 +545,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                                     <label htmlFor="tables">Available Tables</label>
                                     <ul className="listbox" id="allTables">
                                         {tables?.map((table) => (
-                                            <li key={table} className={reportFormContext.selectedTables.includes(table) ? 'selected' : ''}
+                                            <li key={table} className={`clickable ${reportFormContext.selectedTables.includes(table) ? 'selected' : ''}`}
                                                 onClick={() => handleTableSelect(table)}>{table}</li>
                                         ))}
                                     </ul>
@@ -599,7 +616,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                                                     value={column}
                                                     checked={selectedJoinColumnTwo === column}
                                                     onChange={(e) => setSelectedJoinColumnTwo(e.target.value)}
-                                                /> {column}
+                                                />{column}
                                             </li>
                                         ))}
                                     </ul>

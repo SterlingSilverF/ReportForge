@@ -8,7 +8,8 @@ namespace ReportManager.Models
         public ObjectId Id { get; set; }
         public string ReportName { get; set; }
         public string? Description { get; set; }
-        public ObjectId ConnectionStringId { get; set; }
+        public ObjectId ConnectionStringId { get; set; } // FK BuiltConnectionString.ConnectionId
+        public string DbType { get; set; }
         public List<ScheduleInfo> Schedules { get; set; }
         public ObjectId FolderId { get; set; }
         public ObjectId CreatorId { get; set; }

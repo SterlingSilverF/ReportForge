@@ -35,6 +35,7 @@ namespace ReportManager.API
 
         public class ReportFormContext : BuildSQLRequest
         {
+            public string? ReportId { get; set; }
             public string UserId { get; set; }
             public string ReportName { get; set; }
             public string ReportDescription { get; set; }

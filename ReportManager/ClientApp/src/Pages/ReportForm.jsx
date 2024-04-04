@@ -42,7 +42,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
 
     const fetchConnections = async (ownerIdParam, ownerTypeParam) => {
         const ownerId = ownerIdParam || (reportFormContext.reportType === 'Group' ? reportFormContext.selectedGroup : userID);
-        const ownerType = ownerTypeParam || (reportFormContext.reportType === 'Group' ? 'Group' : 'User');
+        const ownerType = ownerTypeParam || (reportFormContext.reportType === 'Group' ? 'Group' : 'Personal');
         const apiEndpoint = `/api/connection/GetAllConnections?ownerId=${ownerId}&ownerTypeString=${ownerType}&connectionType=database`;
 
         try {
@@ -69,10 +69,10 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         }
     }, [reportFormContext.reportType, makeApiRequest, username]);
 
-    // Fetch User connections on load for 'User' report type
+    // Fetch User connections on load for 'Personal' report type
     useEffect(() => {
-        if (reportFormContext.reportType === 'User' && userID) {
-            fetchConnections(userID, 'User');
+        if (reportFormContext.reportType === 'Personal' && userID) {
+            fetchConnections(userID, 'Personal');
         }
         else if (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup) {
             fetchConnections(reportFormContext.selectedGroup, 'Group');
@@ -95,7 +95,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             }
         };
 
-        if ((reportFormContext.reportType === 'User' && username) || (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup)) {
+        if ((reportFormContext.reportType === 'Personal' && username) || (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup)) {
             fetchFolders();
         } else {
             setFolders([]);
@@ -110,8 +110,8 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             selectedConnection: null,
             selectedFolder: null,
         });
-        if (newReportType === 'User') {
-            await fetchConnections(userID, 'User');
+        if (newReportType === 'Personal') {
+            await fetchConnections(userID, 'Personal');
         }
     };
 
@@ -149,8 +149,10 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         }
         const _dbType = selectedConnection.dbType;
         updateReportFormData({ dbType: _dbType });
-        navigate(`/reportdesigner?isEditMode=${isEditMode}`);
+        const url = reportId !== null ? `/reportdesigner?reportId=${reportId}` : '/reportdesigner';
+        navigate(url);
     };
+
 
     const handleSaveUpdates = async () => {
         if (!validateForm()) {
@@ -210,7 +212,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                                 onChange={handleReportTypeChange}
                                 disabled={isEditMode}
                                 className="input-style-default standard-select">
-                                <option value="User">Personal</option>
+                                <option value="Personal">Personal</option>
                                 <option value="Group">Group</option>
                             </select>
                         </div>

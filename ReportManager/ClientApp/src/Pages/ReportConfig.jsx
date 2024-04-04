@@ -2,15 +2,28 @@
 import HOC from '../components/HOC';
 import { useReportForm } from '../contexts/ReportFormContext';
 import LoadingComponent from '../components/loading';
+import { useLocation } from 'react-router-dom';
 
 const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
+    const [isEditMode, setIsEditMode] = useState(false);
     const [status, setStatus] = useState('loading'); // loading, ready, error
     const [action, setAction] = useState('create');
     const [message, setMessage] = useState('');
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const reportId = queryParams.get('reportId');
+
+    useEffect(() => {
+        if (reportId) {
+            setIsEditMode(true);
+        }
+    }, [reportId]);
 
     const handleBackToDesigner = () => {
-        navigate('/reportdesigner');
+        const url = '/reportdesigner';
+        const queryParams = reportId !== null ? `?reportId=${reportId}` : '';
+        navigate(`${url}${queryParams}`);
     };
 
     const handleInputChange = (e) => {
@@ -18,8 +31,7 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
         updateReportFormData({ [name]: value });
     };
 
-    const toPascalCase = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
+    const toPascalCase = (str) => str.charAt(0).toUpperCase() + str.slice(1)
     const keysToPascalCase = (obj) => {
         return Object.entries(obj).reduce((acc, [key, value]) => {
             if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -42,30 +54,26 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
     };
 
     const handleSave = () => {
-        const adjustedReportFormContext = {
-            ...reportFormContext,
-            reportType: reportFormContext.reportType === 'User' ? 'Personal' : 'Group',
-        };
-        const body = keysToPascalCase(adjustedReportFormContext);
-
+        const body = keysToPascalCase(reportFormContext);
         const requestBody = {
             ...body,
             Filters: body.Filters.map(filter => omitKeys(filter, ['ColumnOptions'])),
             OrderBys: body.OrderBys.map(orderBy => omitKeys(orderBy, ['ColumnOptions'])),
-            Action: action,
             UserId: userID
         };
 
         const formattedString = JSON.stringify(requestBody, null, 2);
         console.log(formattedString);
+        const httpMethod = isEditMode && reportId !== null ? 'put' : 'post';
+        const apiEndpoint = isEditMode && reportId !== null ? '/api/report/updateReport' : '/api/report/createReport';
 
-        makeApiRequest('post', '/api/report/configureReport', requestBody)
+        makeApiRequest(httpMethod, apiEndpoint, requestBody)
             .then((response) => {
-                setMessage("Report configuration saved successfully.");
+                setMessage(isEditMode ? "Report updated successfully." : "Report created successfully.");
             })
             .catch((error) => {
-                setMessage("Failed to save report configuration.");
-                console.error("Error saving report configuration:", error);
+                setMessage(isEditMode ? "Failed to update report." : "Failed to create report.");
+                console.error(isEditMode ? "Error updating report:" : "Error creating report:", error);
             });
     };
 
@@ -97,11 +105,11 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
                     <input type="number" name="reportFrequencyValue" min="1" value={reportFormContext.reportFrequencyValue || ''} className="input-style-mini" onChange={handleInputChange} />
 
                     <select name="reportFrequencyType" value={reportFormContext.reportFrequencyType} onChange={handleInputChange}>
-                        <option value="days">Days</option>
-                        <option value="weeks">Weeks</option>
-                        <option value="months">Months</option>
-                        <option value="quarters">Quarters</option>
-                        <option value="years">Years</option>
+                        <option value="daily">Days</option>
+                        <option value="weekly">Weeks</option>
+                        <option value="monthly">Months</option>
+                        <option value="quarterly">Quarters</option>
+                        <option value="yearly">Years</option>
                     </select>
                     <br />
 

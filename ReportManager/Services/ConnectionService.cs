@@ -29,13 +29,13 @@ public class ConnectionService
 
     public IMongoCollection<BaseConnectionModel> GetServerCollection(OwnerType ownerType)
     {
-        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        string collectionName = ownerType == OwnerType.Personal ? "PersonalServerConnections" : "GroupServerConnections";
         return _database.GetCollection<BaseConnectionModel>(collectionName);
     }
 
     public IMongoCollection<DBConnectionModel> GetDBCollection(OwnerType ownerType)
     {
-        string collectionName = ownerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
+        string collectionName = ownerType == OwnerType.Personal ? "PersonalDBConnections" : "GroupDBConnections";
         return _database.GetCollection<DBConnectionModel>(collectionName);
     }
 
@@ -133,7 +133,7 @@ public class ConnectionService
 
     public async Task<BaseConnectionModel?> FindServerConnection(string serverName, int port, string dbType, ObjectId ownerID, OwnerType ownerType)
     {
-        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        string collectionName = ownerType == OwnerType.Personal ? "PersonalServerConnections" : "GroupServerConnections";
         var collection = _database.GetCollection<BaseConnectionModel>(collectionName);
 
         var filter = Builders<BaseConnectionModel>.Filter.Eq(conn => conn.ServerName, serverName) &
@@ -473,7 +473,7 @@ public class ConnectionService
 
     public List<BaseConnectionModel> GetServerConnections(string ownerID, OwnerType ownerType)
     {
-        string collectionName = ownerType == OwnerType.User ? "PersonalServerConnections" : "GroupServerConnections";
+        string collectionName = ownerType == OwnerType.Personal ? "PersonalServerConnections" : "GroupServerConnections";
         var collection = _database.GetCollection<BaseConnectionModel>(collectionName);
         var filter = Builders<BaseConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
         return collection.Find(filter).ToList();
@@ -481,7 +481,7 @@ public class ConnectionService
 
     public List<DBConnectionModel> GetDBConnections(string ownerID, OwnerType ownerType)
     {
-        string collectionName = ownerType == OwnerType.User ? "PersonalDBConnections" : "GroupDBConnections";
+        string collectionName = ownerType == OwnerType.Personal ? "PersonalDBConnections" : "GroupDBConnections";
         var collection = _database.GetCollection<DBConnectionModel>(collectionName);
         var filter = Builders<DBConnectionModel>.Filter.Eq("OwnerID", new ObjectId(ownerID));
         return collection.Find(filter).ToList();

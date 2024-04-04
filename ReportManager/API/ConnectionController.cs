@@ -138,7 +138,7 @@ namespace ReportManager.API
         {
             var allConnections = new List<object>();
             var userGroups = _groupManagementService.GetGroupsByUser(username);
-            var userConnections = _connectionService.FetchConnectionsForOwner(userId, "User", "server", username)
+            var userConnections = _connectionService.FetchConnectionsForOwner(userId, "Personal", "server", username)
                                    .ToList();
 
             allConnections.AddRange(userConnections);

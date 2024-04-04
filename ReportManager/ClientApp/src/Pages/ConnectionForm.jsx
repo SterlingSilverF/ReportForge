@@ -3,13 +3,18 @@ import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
 import { decryptData } from '../components/Cryptonator';
 import MessageDisplay from '../components/MessageDisplay';
+import LoadingComponent from '../components/loading';
 // TODO: ConnectionForm tooltips
 
-const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
+const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     const location = useLocation();
-    const encryptedData = location.state?.data;
-    const connectionDetails = encryptedData ? decryptData(encryptedData) : null;
-    const [title, setTitle] = useState(isEditMode ? 'Edit Connection' : 'Create New Connection'); // TODO: Add connection type to title
+    const queryParams = new URLSearchParams(location.search);
+    const connectionId = queryParams.get('connectionId');
+    const conType = queryParams.get('conType');
+    const ownerId = queryParams.get('ownerId');
+    const ownerType = queryParams.get('ownerType');
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [title, setTitle] = useState(isEditMode ? 'Edit Connection' : 'Create New Connection');
 
     // Form Vars
     const [message, setMessage] = useState('');
@@ -18,6 +23,8 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
     const [userGroups, setUserGroups] = useState([]);
     const [oldOwnerType, setOldOwnerType] = useState('');
     const [deleteIden, setDeleteIden] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // Field controller
     const [useExistingServer, setUseExistingServer] = useState(false);
@@ -64,7 +71,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         Password: '',
         AuthType: authTypesByDB[dbType][0],
         OwnerID: userID,
-        OwnerType: 'User',
+        OwnerType: 'Personal',
         FriendlyName: '',
         DatabaseName: '',
         ConfigType: 'Server',
@@ -108,20 +115,28 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
     ];
 
     useEffect(() => {
-        if (connectionDetails && connectionDetails.id) {
-            const endpoint = connectionDetails.type === 'server'
-                ? `api/Connection/FetchServerConnection?connectionId=${connectionDetails.id}&ownerId=${connectionDetails.ownerId}&ownerType=${connectionDetails.ownerType}`
-                : `api/Connection/FetchDBConnection?connectionId=${connectionDetails.id}&ownerId=${connectionDetails.ownerId}&ownerType=${connectionDetails.ownerType}`;
+        if (connectionId) {
+            setIsLoading(true);
+            const endpoint = conType === 'server'
+                ? `api/Connection/FetchServerConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`
+                : `api/Connection/FetchDBConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`;
+
+            setIsLoading(true);
+            setLoadingMessage('Fetching connection data...');
 
             makeApiRequest('get', endpoint)
                 .then(response => {
                     setFormStateCurrent(response.data);
+                    setIsLoading(false);
+                    setLoadingMessage('');
                 })
                 .catch(error => {
                     console.error('Error fetching connection data:', error);
+                    setIsLoading(false);
+                    setLoadingMessage('Error fetching data.');
                 });
         }
-    }, [connectionDetails, makeApiRequest]);
+    }, [connectionId, conType, ownerType, ownerId, makeApiRequest]);
 
     const _handleChange = (e) => {
         const { name, value } = e.target;
@@ -185,11 +200,14 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
     // Verify connection
     const testConnection = async () => {
         try {
+            setIsLoading(true);
+            setTestResult('');
             const data = await makeApiRequest('post', '/api/connection/verify', serverConnection);
             setTestResult("Connection succeeded.");
         } catch (error) {
             console.error('Error verifying connection:', error.response ? error.response.data : error);
             setTestResult('Connection failed.');
+            setIsLoading(false);
         }
     };
 
@@ -197,7 +215,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         let url = `/api/connection/`;
         if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
             let filter = `ownerTypeString=${formStateCurrent.OwnerType}&connectionType=server`;
-            const ownerId = formStateCurrent.OwnerType === 'User' ? userID : formStateCurrent.OwnerID;
+            const ownerId = formStateCurrent.OwnerType === 'Personal' ? userID : formStateCurrent.OwnerID;
             if (!ownerId || ownerId == "--Select a Group--") {
                 setServerConnections([]);
                 return;
@@ -247,7 +265,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
         let serverId = null;
         const isDuplicatingToNewOwner = formStateCurrent.showConnections === 'All' && formStateCurrent.Id && useExistingServer;
 
-        if (formStateCurrent.OwnerType === 'User') {
+        if (formStateCurrent.OwnerType === 'Personal') {
             data.OwnerID = userID;
             formStateCurrent.OwnerID = userID;
         }
@@ -571,7 +589,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                                 name='OwnerType'
                                 onChange={_handleChange}
                                 className='input-style-short'>
-                                <option value='User'>Current User</option>
+                                <option value='Personal'>Current User</option>
                                 <option value='Group'>Group</option>
                             </select>
                         </div>
@@ -594,7 +612,9 @@ const ConnectionForm = ({ makeApiRequest, username, userID, isEditMode }) => {
                 {!useExistingServer && (
                     <>
                         <button type='button' onClick={testConnection} className='btn-four'>Test Connection</button>
-                        <label className='success-message'>{testResult}</label><br /><br />
+                        <label className='success-message'>{testResult}</label>
+                        <LoadingComponent isLoading={isLoading} message={loadingMessage} />
+                        <br /><br />
                     </>
                 )}
                     <button type="button" onClick={handleSave} className="btn-three">{isEditMode ? 'Update' : 'Save'}</button>

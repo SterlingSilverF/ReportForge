@@ -414,6 +414,7 @@ namespace ReportManager.Services
                     ReportName = request.ReportName,
                     Description = request.ReportDescription,
                     ConnectionStringId = connectionStringId,
+                    DbType = request.DbType,
                     Schedules = schedules,
                     FolderId = folderId,
                     CreatorId = userIdObjectId,
@@ -421,7 +422,7 @@ namespace ReportManager.Services
                     OwnerID = ownerId,
                     LastModifiedDate = DateTime.UtcNow,
                     OwnerType = request.ReportType.Equals("Personal", StringComparison.OrdinalIgnoreCase)
-                        ? OwnerType.User
+                        ? OwnerType.Personal
                         : OwnerType.Group,
                     CompiledSQL = request.CompiledSQL,
                     SelectedColumns = selectedColumns,
@@ -434,6 +435,11 @@ namespace ReportManager.Services
                     OrderBys = orderByItems
                 };
 
+                // I know these could be an if else but it seems safer to leave them as is
+                if (!string.IsNullOrEmpty(request.ReportId))
+                {
+                    model.Id = _sharedService.StringToObjectId(request.ReportId);
+                }
                 if (!existing)
                 {
                     model.CreatedDate = DateTime.UtcNow;
@@ -503,18 +509,25 @@ namespace ReportManager.Services
                     })
                     .ToList();
 
+                var selectedTables = model.SelectedColumns
+                    .Select(column => column.Table)
+                    .Distinct()
+                    .ToList();
+
                 var request = new ReportFormContext
                 {
+                    ReportId = model.Id.ToString(),
                     ReportName = model.ReportName,
                     ReportDescription = model.Description,
                     SelectedConnection = model.ConnectionStringId.ToString(),
+                    DbType = model.DbType,
                     SelectedFolder = model.FolderId.ToString(),
                     UserId = model.CreatorId.ToString(),
                     SelectedGroup = model.OwnerType == OwnerType.Group ? model.OwnerID.ToString() : null,
-                    ReportType = model.OwnerType == OwnerType.User ? "Personal" : "Group",
+                    ReportType = model.OwnerType == OwnerType.Personal ? "Personal" : "Group",
                     CompiledSQL = model.CompiledSQL,
                     OutputFormat = model.Format.ToString(),
-                    ReportGenerationTime = model.Schedules.FirstOrDefault()?.ExecuteTime.ToString(),
+                    ReportGenerationTime = FormatExecuteTime(model.Schedules.FirstOrDefault()?.ExecuteTime),
                     ReportFrequencyValue = model.Schedules.FirstOrDefault()?.Iteration ?? 0,
                     ReportFrequencyType = model.Schedules.FirstOrDefault()?.ScheduleType.ToString(),
                     EmailReports = model.EmailRecipients != null && model.EmailRecipients.Any() ? "yes" : "no",
@@ -522,7 +535,8 @@ namespace ReportManager.Services
                     SelectedColumns = selectedColumns,
                     Filters = filters,
                     OrderBys = orderBys,
-                    JoinConfig = joinConfig
+                    JoinConfig = joinConfig,
+                    SelectedTables = selectedTables
                 };
 
                 return request;
@@ -534,15 +548,25 @@ namespace ReportManager.Services
             }
         }
 
+        private string FormatExecuteTime(TimeOnly? executeTime)
+        {
+            if (executeTime.HasValue)
+            {
+                var formattedTime = executeTime.Value.ToString("hh:mm");
+                return formattedTime;
+            }
+            return null;
+        }
+
         private ScheduleType ConvertToScheduleType(string frequencyType)
         {
             return frequencyType.ToLower() switch
             {
-                "days" => ScheduleType.Daily,
-                "weeks" => ScheduleType.Weekly,
-                "months" => ScheduleType.Monthly,
-                "quarters" => ScheduleType.Quarterly,
-                "years" => ScheduleType.Yearly,
+                "daily" => ScheduleType.Daily,
+                "weekly" => ScheduleType.Weekly,
+                "monthly" => ScheduleType.Monthly,
+                "quarterly" => ScheduleType.Quarterly,
+                "yearly" => ScheduleType.Yearly,
                 _ => throw new ArgumentException("Invalid frequency type"),
             };
         }

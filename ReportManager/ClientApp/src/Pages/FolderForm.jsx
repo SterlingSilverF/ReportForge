@@ -33,7 +33,6 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
         return missingFields;
     };
 
-    // isEditMode
     useEffect(() => {
         if (folderId && isPersonal) {
             makeApiRequest('get', `/api/folder/GetFolderById?folderId=${folderId}&isPersonal=${isPersonal}`)
@@ -54,12 +53,11 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
         }
     }, [folderId, makeApiRequest, isPersonal]);
 
-    // On load fetch user's groups and personal folders
     useEffect(() => {
         if (username) {
             makeApiRequest('get', `/api/group/getUserGroups?username=${username}`)
                 .then(groupsResponse => {
-                    const userGroups = groupsResponse.data.slice(1); // Exclude the first group
+                    const userGroups = groupsResponse.data.slice(1);
                     makeApiRequest('get', `/api/folder/getPersonalFolders?username=${username}`)
                         .then(foldersResponse => {
                             setUserGroups(userGroups);
@@ -75,7 +73,6 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
         }
     }, [username, makeApiRequest]);
 
-    // If group, then get group folders
     useEffect(() => {
         if (folderType === 'group' && groupId) {
             makeApiRequest('get', `/api/folder/getFoldersByGroupId?groupId=${groupId}`)
@@ -146,7 +143,7 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
     };
 
     const handleDeleteFolder = () => {
-        if (window.confirm('Are you sure you want to delete this folder?')) {
+        if (window.confirm('Warning: Deleting this folder will also delete all its subfolders and files. Are you sure you want to proceed?')) {
             makeApiRequest('delete', `/api/folder/deleteFolder?folderId=${folderId}&isPersonal=${isPersonal}`)
                 .then(() => {
                     alert('Folder deleted successfully.');
@@ -234,7 +231,7 @@ const FolderForm = ({ navigate, username, makeApiRequest }) => {
                 <button onClick={isEditMode ? handleUpdateFolder : handleCreateFolder} className="btn-three">
                     {isEditMode ? 'Update Folder' : 'Create Folder'}
                 </button>
-                <br/>
+                <br />
                 {isEditMode && (
                     <button onClick={handleDeleteFolder} className="btn-five">Delete Folder</button>
                 )}

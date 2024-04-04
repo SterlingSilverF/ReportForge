@@ -6,7 +6,7 @@ export const ReportFormProvider = ({ children }) => {
     const [reportFormContext, setReportFormData] = useState({
         reportName: '',
         reportDescription: '',
-        reportType: 'User',
+        reportType: 'Personal',
         selectedGroup: null,
         selectedConnection: null,
         dbType: '',
@@ -19,7 +19,7 @@ export const ReportFormProvider = ({ children }) => {
         compiledSQL: '',
         outputFormat: 'csv',
         reportFrequencyValue: 1,
-        reportFrequencyType: 'months',
+        reportFrequencyType: 'monthly',
         reportGenerationTime: '00:00',
         emailReports: 'no',
         emailRecipients: ''
