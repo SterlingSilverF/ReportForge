@@ -67,29 +67,38 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                 <button className="edit-button" onClick={handleEditClick}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Edit This Report
                 </button>
-                <br /><br />
                 <button className="btn-three back" onClick={goBack}>
                     <FontAwesomeIcon icon={faCaretLeft} /> Back
                 </button>
             </div>
             <div className="report-info">
-                <div className="report-info-labels">
-                    <p>Description:</p>
-                    <p>Created By:</p>
-                    <p>Created At:</p>
-                    <p>Last Modified At:</p>
-                    <p>Last Modified By:</p>
-                    <p>Owner Type:</p>
-                    <p>Owner:</p>
+                <div className="report-info-item">
+                    <p className="report-info-label">Description:</p>
+                    <p className="report-info-value">{reportInfo.description}</p>
                 </div>
-                <div className="report-info-values">
-                    <p>{reportInfo.description}</p>
-                    <p>{reportInfo.creatorName}</p>
-                    <p>{reportInfo.createdDate}</p>
-                    <p>{reportInfo.lastModifiedDate}</p>
-                    <p>{reportInfo.lastModifiedByName}</p>
-                    <p>{reportInfo.ownerType}</p>
-                    <p>{reportInfo.ownerName}</p>
+                <div className="report-info-item">
+                    <p className="report-info-label">Created By:</p>
+                    <p className="report-info-value">{reportInfo.creatorName}</p>
+                </div>
+                <div className="report-info-item">
+                    <p className="report-info-label">Created At:</p>
+                    <p className="report-info-value">{reportInfo.createdDate}</p>
+                </div>
+                <div className="report-info-item">
+                    <p className="report-info-label">Last Modified At:</p>
+                    <p className="report-info-value">{reportInfo.lastModifiedDate}</p>
+                </div>
+                <div className="report-info-item">
+                    <p className="report-info-label">Last Modified By:</p>
+                    <p className="report-info-value">{reportInfo.lastModifiedByName}</p>
+                </div>
+                <div className="report-info-item">
+                    <p className="report-info-label">Owner Type:</p>
+                    <p className="report-info-value">{reportInfo.ownerType}</p>
+                </div>
+                <div className="report-info-item">
+                    <p className="report-info-label">Owner:</p>
+                    <p className="report-info-value">{reportInfo.ownerName}</p>
                 </div>
             </div>
         </div>

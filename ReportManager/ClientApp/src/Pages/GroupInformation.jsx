@@ -119,43 +119,46 @@ const GroupInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                 <button className="edit-button" onClick={handleEditClick}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Edit This Group
                 </button>
-                <br/><br/>
                 <button className="btn-three back" onClick={goBack}>
                     <FontAwesomeIcon icon={faCaretLeft} /> Back
                 </button>
             </div>
-            <div className="group-info">
-                <p>Total group connections: {groupInfo.totalConnections}</p>
-                <p>Total group members: {groupInfo.totalMembers}</p>
-                <p>Total group reports: {groupInfo.totalReports}</p>
-                <p>Group owners: {groupInfo.ownerNames.join(', ')}</p><br />
-                <h4>Generate an Access Code</h4>
-                <label>Code Type</label>
-                <select value={codeType} onChange={(e) => setCodeType(e.target.value)}>
-                    <option value="ReadOnly">Read Only</option>
-                    <option value="User">User</option>
-                    <option value="Developer">Developer</option>
-                </select><br />
-                <label>Expires after</label>
-                <input type="number" id="duration_num" min="1" max="100" step="1" value={expiresAfter} onChange={(e) => setExpiresAfter(e.target.value)}></input>
-                <select value={expiresInUnit} onChange={(e) => setExpiresInUnit(e.target.value)}>
-                    <option value="minute">Minutes</option>
-                    <option value="hour">Hours</option>
-                    <option value="day">Days</option>
-                    <option value="week">Weeks</option>
-                    <option value="month">Months</option>
-                    <option value="never">Never</option>
-                </select>
-                <br />
-                <button className="btn-six" onClick={handleGenerateAccessCode}>Generate Access Code</button><br />
-                <p id="generated_code"></p>
-                <button className="btn-seven" onClick={handleCopyCode}>Copy</button>
-                {isAdmin && (
-                    <button className="btn-seven" onClick={handleClearKeys} style={{ marginLeft: '25px' }}>
-                        Clear Keys
-                    </button>
-                )}
-                <p id="copied_message"></p>
+            <div className="right-container">
+                <div className="metadata-section">
+                    <p>Total group connections: {groupInfo.totalConnections}</p>
+                    <p>Total group members: {groupInfo.totalMembers}</p>
+                    <p>Total group reports: {groupInfo.totalReports}</p>
+                    <p>Group owners: {groupInfo.ownerNames.join(', ')}</p>
+                </div>
+                <div className="access-code-section">
+                    <h4>Generate an Access Code</h4>
+                    <label>Code Type</label>
+                    <select value={codeType} onChange={(e) => setCodeType(e.target.value)}>
+                        <option value="ReadOnly">Read Only</option>
+                        <option value="User">User</option>
+                        <option value="Developer">Developer</option>
+                    </select><br />
+                    <label>Expires after</label>
+                    <input type="number" id="duration_num" min="1" max="100" step="1" value={expiresAfter} onChange={(e) => setExpiresAfter(e.target.value)}></input>
+                    <select value={expiresInUnit} onChange={(e) => setExpiresInUnit(e.target.value)}>
+                        <option value="minute">Minutes</option>
+                        <option value="hour">Hours</option>
+                        <option value="day">Days</option>
+                        <option value="week">Weeks</option>
+                        <option value="month">Months</option>
+                        <option value="never">Never</option>
+                    </select>
+                    <br />
+                    <button className="btn-six" onClick={handleGenerateAccessCode}>Generate Access Code</button><br />
+                    <p id="generated_code"></p>
+                    <button className="btn-seven" onClick={handleCopyCode}>Copy</button>
+                    {isAdmin && (
+                        <button className="btn-seven" onClick={handleClearKeys} style={{ marginLeft: '25px' }}>
+                            Clear Keys
+                        </button>
+                    )}
+                    <p id="copied_message"></p>
+                </div>
             </div>
         </div>
     );
