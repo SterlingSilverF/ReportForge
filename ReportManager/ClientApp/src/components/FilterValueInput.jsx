@@ -9,7 +9,7 @@ const FilterValueInput = ({ dataType, value, onChange }) => {
     };
 
     switch (dataType) {
-        case 'number':
+        /*case 'number':
             return (
                 <input
                     type="number"
@@ -17,7 +17,7 @@ const FilterValueInput = ({ dataType, value, onChange }) => {
                     onChange={handleChange}
                     className="input-style-short"
                 />
-            );
+            );*/
         case 'date':
             return (
                 <input

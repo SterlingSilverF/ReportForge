@@ -63,11 +63,7 @@
         public string? OwnerID { get; set; }
         public string OwnerType { get; set; }
 
-        /*public string? AuthSource { get; set; }
-        public string? ReplicaSet { get; set; }
-        public bool? UseTLS { get; set; }*/
-
-        public ServerConnectionDTO(BaseConnectionModel model)
+        public ServerConnectionDTO(BaseConnectionModel model, string? password = "")
         {
             this.Id = model.Id.ToString();
             this.ServerName = model.ServerName;
@@ -75,14 +71,10 @@
             this.Instance = model.Instance;
             this.DbType = model.DbType;
             this.Username = model.Username;
-            this.Password = model.Password;
+            this.Password = password;
             this.AuthType = model.AuthType;
             this.OwnerID = model.OwnerID.ToString();
             this.OwnerType = model.OwnerType.ToString();
-
-            /*this.AuthSource = model.AuthSource;
-            this.ReplicaSet = model.ReplicaSet;
-            this.UseTLS = model.UseTLS;*/
         }
     }
 
@@ -91,29 +83,21 @@
         public string? FriendlyName { get; set; }
         public string DatabaseName { get; set; }
 
-        public DBConnectionDTO(DBConnectionModel model) : base(model)
+        public DBConnectionDTO(DBConnectionModel model, string? password = null) : base(model, password)
         {
             this.FriendlyName = model.FriendlyName;
             this.DatabaseName = model.DatabaseName;
         }
     }
 
-    public class SimpleServerConnectionDTO
+    public class SimpleConnectionDTO
     {
         public string Id { get; set; }
         public string ServerName { get; set; }
         public string OwnerName { get; set; }
+        public string OwnerId { get; set; }
         public string OwnerType { get; set; }
-        public string DbType { get; set; }
-    }
-
-    public class SimpleDBConnectionDTO
-    {
-        public string Id { get; set; }
-        public string DatabaseName { get; set; }
-        public string FriendlyName { get; set; }
-        public string OwnerName { get; set; }
-        public string OwnerType { get; set; }
+        public string ConnectionType { get; set; }
         public string DbType { get; set; }
     }
 

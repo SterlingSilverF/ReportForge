@@ -4,32 +4,32 @@ import HOC from '../components/HOC';
 import { decryptData } from '../components/Cryptonator';
 import MessageDisplay from '../components/MessageDisplay';
 import LoadingComponent from '../components/loading';
+import { useConnectionForm } from '../contexts/ConnectionFormContext';
 // TODO: ConnectionForm tooltips
 
 const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const connectionId = queryParams.get('connectionId');
-    const conType = queryParams.get('conType');
+    const connectionType = queryParams.get('connectionType');
     const ownerId = queryParams.get('ownerId');
     const ownerType = queryParams.get('ownerType');
-    const [isEditMode, setIsEditMode] = useState(false);
+
+    const { connectionFormData, updateConnectionFormData } = useConnectionForm();
+    const [isEditMode, setIsEditMode] = useState(!!connectionId);
     const [title, setTitle] = useState(isEditMode ? 'Edit Connection' : 'Create New Connection');
 
     // Form Vars
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [message, setMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
     const [testResult, setTestResult] = useState('');
-    const [userGroups, setUserGroups] = useState([]);
     const [oldOwnerType, setOldOwnerType] = useState('');
-    const [deleteIden, setDeleteIden] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState('');
+    const [deleteIdentifier, setDeleteIdentifier] = useState('');
 
     // Field controller
-    const [useExistingServer, setUseExistingServer] = useState(false);
     const defaultFields = useState(['ServerName', 'Port', 'AuthenticationType', 'SaveConnectionUnder']);
-    const [selectedDBProvider, setSelectedDBProvider] = useState('MSSQL');
     const [showDbOptions, setShowDbOptions] = useState(true);
     const [serverConnections, setServerConnections] = useState([]);
     const [selectedServerConnection, setSelectedServerConnection] = useState('');
@@ -38,7 +38,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         Oracle: defaultFields.push('Instance'),
         MySQL: defaultFields,
         PostgreSQL: defaultFields,
-        //MongoDB: defaultFields.push('AuthSource', 'ReplicaSet', 'UseTLS'),
+        // MongoDB: defaultFields.push('AuthSource', 'ReplicaSet', 'UseTLS'),
         DB2: defaultFields
     });
 
@@ -47,7 +47,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         Oracle: 1521,
         MySQL: 3306,
         PostgreSQL: 5432,
-        //MongoDB: 27017,
+        // MongoDB: 27017,
         DB2: 50000,
     };
 
@@ -56,60 +56,12 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         Oracle: ['Credentials'],
         MySQL: ['Credentials'],
         PostgreSQL: ['Credentials'],
-        //MongoDB: ['Credentials'],
+        // MongoDB: ['Credentials'],
         DB2: ['Credentials'],
-    };
-
-    // Models
-    const getDefaultFormState = (dbType) => ({
-        Id: '',
-        ServerName: '',
-        Port: defaultPorts[dbType],
-        Instance: '',
-        DbType: dbType,
-        Username: '',
-        Password: '',
-        AuthType: authTypesByDB[dbType][0],
-        OwnerID: userID,
-        OwnerType: 'Personal',
-        FriendlyName: '',
-        DatabaseName: '',
-        ConfigType: 'Server',
-        /*AuthSource: '',
-        ReplicaSet: '',
-        UseTLS: false,*/
-        Schema: ''
-    });
-
-    const [formStateCurrent, setFormStateCurrent] = useState(getDefaultFormState(selectedDBProvider));
-
-    const serverConnection = {
-        Id: formStateCurrent.Id,
-        ServerName: formStateCurrent.ServerName,
-        Port: formStateCurrent.Port,
-        Instance: formStateCurrent.Instance,
-        DbType: formStateCurrent.DbType,
-        Username: formStateCurrent.Username,
-        Password: formStateCurrent.Password,
-        AuthType: formStateCurrent.AuthType,
-        OwnerID: formStateCurrent.OwnerID,
-        OwnerType: formStateCurrent.OwnerType,
-        /*AuthSource: formStateCurrent.AuthSource,
-        ReplicaSet: formStateCurrent.ReplicaSet,
-        UseTLS: formStateCurrent.UseTLS*/
-    };
-
-    const dbConnection = {
-        Id: formStateCurrent.Id,
-        CollectionCategory: formStateCurrent.OwnerType,
-        FriendlyName: formStateCurrent.FriendlyName,
-        DatabaseName: formStateCurrent.DatabaseName,
-        Schema: formStateCurrent.Schema
     };
 
     const serverValidationRules = ['ServerName', 'Port', 'DbType', 'AuthType', 'OwnerID', 'OwnerType'];
     const dbValidationRules = [
-        'CollectionCategory',
         'FriendlyName',
         'DatabaseName'
     ];
@@ -117,16 +69,56 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     useEffect(() => {
         if (connectionId) {
             setIsLoading(true);
-            const endpoint = conType === 'server'
-                ? `api/Connection/FetchServerConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`
-                : `api/Connection/FetchDBConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`;
+
+            const endpoint =
+                connectionType === 'Server'
+                    ? `api/Connection/FetchServerConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`
+                    : `api/Connection/FetchDBConnection?connectionId=${connectionId}&ownerId=${ownerId}&ownerType=${ownerType}`;
 
             setIsLoading(true);
             setLoadingMessage('Fetching connection data...');
 
             makeApiRequest('get', endpoint)
                 .then(response => {
-                    setFormStateCurrent(response.data);
+                    var data = response.data;
+
+                    if (connectionType === 'Server') {
+                        updateConnectionFormData({
+                            id: data.id,
+                            serverName: data.serverName,
+                            port: data.port || defaultPorts[data.dbType],
+                            dbType: data.dbType,
+                            instance: data.instance,
+                            username: data.username,
+                            authType: data.authType || authTypesByDB[data.dbType][0],
+                            ownerID: data.ownerID,
+                            ownerType: data.ownerType,
+                            configType: connectionType,
+                            selectedServerConnection: data.selectedServerConnection,
+                            serverConnections: data.serverConnections || [],
+                        });
+                    } else {
+                        updateConnectionFormData({
+                            id: data.id,
+                            serverName: data.serverName,
+                            port: data.port || defaultPorts[data.dbType],
+                            dbType: data.dbType,
+                            instance: data.instance,
+                            username: data.username,
+                            authType: data.authType || authTypesByDB[data.dbType][0],
+                            ownerID: data.ownerID,
+                            ownerType: data.ownerType,
+                            configType: connectionType,
+                            selectedServerConnection: data.selectedServerConnection,
+                            userGroups: data.userGroups || [],
+                            serverConnections: data.serverConnections || [],
+                            collectionCategory: data.collectionCategory,
+                            friendlyName: data.friendlyName,
+                            databaseName: data.databaseName,
+                            schema: data.schema,
+                        });
+                    }
+
                     setIsLoading(false);
                     setLoadingMessage('');
                 })
@@ -136,74 +128,93 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                     setLoadingMessage('Error fetching data.');
                 });
         }
-    }, [connectionId, conType, ownerType, ownerId, makeApiRequest]);
+    }, [connectionId, connectionType, ownerType, ownerId, makeApiRequest, updateConnectionFormData, userID]);
 
-    const _handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
 
-        setFormStateCurrent(prevState => {
-            let newState = { ...prevState };
+        let newState = { ...connectionFormData };
 
-            if (name === 'ConfigType') {
-                setDeleteIden(value === 'Server' ? 'ServerName' : 'FriendlyName');
-                newState[name] = value;
-            } else if (name === 'OwnerType') {
-                newState.OwnerID = value === 'Group' ? '' : userID;
-                newState[name] = value;
-            } else if (name === 'DbType') {
-                newState.Port = defaultPorts[value];
-                newState.AuthType = authTypesByDB[value][0];
-                newState[name] = value;
-            } else if (name === 'Id') {
-                if (value.includes('|')) {
-                    const [id, oldOwnerType] = value.split('|');
-                    newState.Id = id;
-                    setOldOwnerType(oldOwnerType);
-                } else {
-                    newState.Id = value;
-                    setOldOwnerType(undefined);
-                }
+        if (name === 'configType') {
+            setDeleteIdentifier(value === 'Server' ? 'ServerName' : 'FriendlyName');
+            newState[name] = value;
+        } else if (name === 'ownerType') {
+            newState.ownerID = value === 'Group' ? '' : userID;
+            newState[name] = value;
+        } else if (name === 'dbType') {
+            newState.port = defaultPorts[value];
+            newState.authType = authTypesByDB[value][0];
+            newState[name] = value;
+        } else if (name === 'id') {
+            if (value.includes('|')) {
+                const [id, oldOwnerType] = value.split('|');
+                newState.id = id;
+                setOldOwnerType(oldOwnerType);
             } else {
-                newState[name] = value;
+                newState.id = value;
+                setOldOwnerType(undefined);
             }
-            return newState;
-        });
+        } else {
+            newState[name] = value;
+        }
+
+        updateConnectionFormData(newState);
     };
 
     // Separation of concerns for toggle
     useEffect(() => {
-        if (formStateCurrent.existingServer) {
-            setSelectedServerConnection(formStateCurrent.existingServer);
+        if (connectionFormData.existingServer) {
+            setSelectedServerConnection(connectionFormData.selectedServerConnection);
         }
-    }, [formStateCurrent.existingServer]);
+    }, [connectionFormData.existingServer, connectionFormData.selectedServerConnection]);
 
     // Load user groups
     useEffect(() => {
-        if (username != '') {
-            setFormStateCurrent(prevFormState => ({
-                ...prevFormState,
-                OwnerID: userID,
-            }));
+        if (username !== '') {
+            updateConnectionFormData({
+                ownerID: userID,
+            });
 
             const fetchUserGroups = async () => {
                 try {
                     const data = await makeApiRequest('get', `/api/group/GetUserGroups?username=${username}`);
-                    setUserGroups(data.data);
+                    updateConnectionFormData({
+                        userGroups: data.data,
+                    });
                 } catch (error) {
                     console.error('Could not fetch user groups:', error.response ? error.response.data : error);
                 }
             };
+
             fetchUserGroups();
         }
-    }, [makeApiRequest, username, userID]);
+    }, [makeApiRequest, username, userID, updateConnectionFormData]);
 
     // Verify connection
     const testConnection = async () => {
         try {
             setIsLoading(true);
             setTestResult('');
-            const data = await makeApiRequest('post', '/api/connection/verify', serverConnection);
+
+            const connectionRequestData = {
+                id: connectionFormData.id,
+                serverName: connectionFormData.serverName,
+                port: connectionFormData.port,
+                instance: connectionFormData.instance,
+                dbType: connectionFormData.dbType,
+                username: connectionFormData.username,
+                password: connectionFormData.password,
+                authType: connectionFormData.authType,
+                ownerID: connectionFormData.ownerID,
+                ownerType: connectionFormData.ownerType,
+                authSource: connectionFormData.authSource,
+                replicaSet: connectionFormData.replicaSet,
+                useTLS: connectionFormData.useTLS,
+            };
+
+            const data = await makeApiRequest('post', '/api/connection/verify', connectionRequestData);
             setTestResult("Connection succeeded.");
+            setIsLoading(false);
         } catch (error) {
             console.error('Error verifying connection:', error.response ? error.response.data : error);
             setTestResult('Connection failed.');
@@ -213,16 +224,22 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
 
     useEffect(() => {
         let url = `/api/connection/`;
-        if (formStateCurrent.showConnections === 'OnlyUserOrGroup') {
-            let filter = `ownerTypeString=${formStateCurrent.OwnerType}&connectionType=server`;
-            const ownerId = formStateCurrent.OwnerType === 'Personal' ? userID : formStateCurrent.OwnerID;
+
+        if (connectionFormData.showConnections === 'OnlyUserOrGroup') {
+            let filter = `ownerTypeString=${connectionFormData.ownerType}&connectionType=server`;
+
+            const ownerId = connectionFormData.ownerType === 'Personal' ? userID : connectionFormData.ownerID;
+
             if (!ownerId || ownerId == "--Select a Group--") {
-                setServerConnections([]);
+                updateConnectionFormData({
+                    serverConnections: [],
+                });
                 return;
             }
+
             filter += `&ownerId=${ownerId}`;
             url += `GetAllConnections?${filter}`;
-        } else if (formStateCurrent.showConnections === 'All') {
+        } else if (connectionFormData.showConnections === 'All') {
             url += `GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`;
         } else {
             return;
@@ -231,19 +248,20 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         const fetchConnections = async () => {
             try {
                 const response = await makeApiRequest('get', url);
-                setServerConnections(response.data);
+                updateConnectionFormData({
+                    serverConnections: response.data,
+                });
             } catch (error) {
                 console.error('Could not fetch connections:', error.response ? error.response.data : error);
             }
         };
 
         fetchConnections();
-    }, [showDbOptions, formStateCurrent, userID, username, makeApiRequest]);
-
+    }, [connectionFormData, userID, username, makeApiRequest, updateConnectionFormData]);
 
     const validateConnectionData = (data, rules, useExistingServer = false) => {
-        const effectiveRules = useExistingServer ? ['Id'] : [...rules];
-        const fieldsToIgnoreForExistingServer = ['ServerName', 'Port', 'DbType', 'AuthType'];
+        const effectiveRules = useExistingServer ? ['id'] : [...rules];
+        const fieldsToIgnoreForExistingServer = ['serverName', 'port', 'dbType', 'authType'];
 
         const missingFields = effectiveRules.filter(rule => {
             if (useExistingServer && fieldsToIgnoreForExistingServer.includes(rule)) {
@@ -259,40 +277,63 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     };
 
     const handleSave = async () => {
-        const isServerConfig = formStateCurrent.ConfigType === 'Server';
-        let data = isServerConfig ? serverConnection : dbConnection;
+        const isServerConfig = connectionFormData.configType === 'Server';
         let endpoint = '';
         let serverId = null;
-        const isDuplicatingToNewOwner = formStateCurrent.showConnections === 'All' && formStateCurrent.Id && useExistingServer;
+        const isDuplicatingToNewOwner = connectionFormData.showConnections === 'All' && connectionFormData.id && connectionFormData.existingServer;
 
-        if (formStateCurrent.OwnerType === 'Personal') {
-            data.OwnerID = userID;
-            formStateCurrent.OwnerID = userID;
+        const connectionRequest = {
+            id: connectionFormData.id,
+            serverName: connectionFormData.serverName,
+            port: connectionFormData.port,
+            instance: connectionFormData.instance,
+            dbType: connectionFormData.dbType,
+            username: connectionFormData.username,
+            password: connectionFormData.password,
+            authType: connectionFormData.authType,
+            ownerID: connectionFormData.ownerID,
+            ownerType: connectionFormData.ownerType,
+            authSource: connectionFormData.authSource,
+            replicaSet: connectionFormData.replicaSet,
+            useTLS: connectionFormData.useTLS,
+        };
+
+        const dbConnectionRequest = {
+            id: connectionFormData.id,
+            collectionCategory: connectionFormData.collectionCategory,
+            friendlyName: connectionFormData.friendlyName,
+            schema: connectionFormData.schema,
+            databaseName: connectionFormData.databaseName,
+        };
+
+        if (connectionFormData.ownerType === 'Personal') {
+            connectionRequest.ownerID = userID;
+            updateConnectionFormData({ ownerID: userID });
         }
 
         if (isDuplicatingToNewOwner) {
-            const duplicateData = {
-                Id: formStateCurrent.Id,
-                OwnerID: formStateCurrent.OwnerID,
-                OwnerType: formStateCurrent.OwnerType,
-                OldOwnerType: oldOwnerType
+            const duplicateConnectionRequest = {
+                id: connectionFormData.id,
+                ownerID: connectionFormData.ownerID,
+                ownerType: connectionFormData.ownerType,
+                oldOwnerType: oldOwnerType,
             };
+
             try {
-                const duplicateResponse = await makeApiRequest('post', '/api/connection/DuplicateServerConnection', duplicateData);
-                dbConnection.Id = duplicateResponse.data;
-                if (formStateCurrent.ConfigType === "Database") {
+                const duplicateResponse = await makeApiRequest('post', '/api/connection/DuplicateServerConnection', duplicateConnectionRequest);
+                connectionRequest.id = duplicateResponse.data;
+                dbConnectionRequest.id = duplicateResponse.data;
+
+                if (connectionFormData.configType === "Database") {
                     endpoint = "/api/connection/AddDBConnection";
-                    data = dbConnection;
-                    const dbCreationResponse = await makeApiRequest('post', endpoint, data);
+                    const dbCreationResponse = await makeApiRequest('post', endpoint, dbConnectionRequest);
                     setMessage("Database connection created successfully.");
                     setIsSuccess(true);
                     return;
-                }
-                else {
+                } else {
                     setIsSuccess(true);
                     setMessage("Server connection copied successfully.");
                 }
-
             } catch (error) {
                 setIsSuccess(false);
                 setMessage("Failed to copy server connection.");
@@ -300,16 +341,16 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
             }
         } else {
             endpoint = isEditMode
-                ? (formStateCurrent.ConfigType === 'Server'
+                ? (connectionFormData.configType === 'Server'
                     ? '/api/connection/UpdateServerConnection'
                     : '/api/connection/UpdateDBConnection')
-                : (formStateCurrent.ConfigType === 'Server'
+                : (connectionFormData.configType === 'Server'
                     ? '/api/connection/AddServerConnection'
                     : '/api/connection/AddDBConnection');
         }
 
         const validationRules = isServerConfig ? serverValidationRules : dbValidationRules;
-        const { isValid, missingFields } = validateConnectionData(data, validationRules);
+        const { isValid, missingFields } = validateConnectionData(connectionRequest, validationRules);
 
         if (!isValid) {
             setMessage(`Missing required fields: ${missingFields.join(', ')}`);
@@ -317,12 +358,11 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
             return;
         }
 
-        if (formStateCurrent.ConfigType === 'Database' && (!dbConnection.Id || dbConnection.Id.trim() === '')) {
+        if (connectionFormData.configType === 'Database' && (!connectionRequest.id || connectionRequest.id.trim() === '')) {
             try {
-                const serverResponse = await makeApiRequest('post', '/api/connection/AddServerConnection', serverConnection);
+                const serverResponse = await makeApiRequest('post', '/api/connection/AddServerConnection', connectionRequest);
                 serverId = serverResponse.data;
-                dbConnection.Id = serverId;
-                data = dbConnection;
+                dbConnectionRequest.id = serverId;
             } catch (error) {
                 setIsSuccess(false);
                 setMessage("Server connection creation failed.");
@@ -331,17 +371,17 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         }
 
         try {
-            const saveResponse = await makeApiRequest('post', endpoint, data);
+            const saveResponse = await makeApiRequest('post', endpoint, connectionFormData.configType === 'Server' ? connectionRequest : dbConnectionRequest);
             if (saveResponse.data && saveResponse.data.id) {
                 serverId = saveResponse.data.id;
                 setMessage("Server connection already exists under this owner.");
             } else {
                 setIsSuccess(true);
-                setMessage(formStateCurrent.ConfigType === 'Server' ? 'Server connection saved.' : 'Database connection saved.');
+                setMessage(connectionFormData.configType === 'Server' ? 'Server connection saved.' : 'Database connection saved.');
             }
         } catch (error) {
             setIsSuccess(false);
-            console.log(data);
+            console.log(connectionFormData.configType === 'Server' ? connectionRequest : dbConnectionRequest);
             console.log(error);
             setMessage("Saving failed.");
         }
@@ -370,14 +410,14 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                 <h2>{title}</h2>
             </div>
             <section className='box form-box'>
-            <br/>
+                <br />
                 {/* Configuration Type Selector */}
                 <div className='form-element' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div style={{ width: '80%', textAlign: 'left', paddingBottom: '5px' }}>
                         <label>Select Configuration Type</label>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%', alignItems: 'center' }}>
-                        <select className='input-style-default standard-select' name='ConfigType' onChange={_handleChange}>
+                        <select className='input-style-default standard-select' name='configType' onChange={handleChange}>
                             <option value='Server'>Server Configuration</option>
                             <option value='Database'>DB Configuration</option>
                         </select>
@@ -385,191 +425,171 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                             <input
                                 type='checkbox'
                                 name='useExistingServer'
-                                checked={useExistingServer}
-                                onChange={(e) => setUseExistingServer(e.target.checked)}
+                                checked={connectionFormData.existingServer}
+                                onChange={(e) => updateConnectionFormData({ existingServer: e.target.checked })}
                             />
                             <label>Use Existing Server Connection</label>
                         </div>
                     </div>
                 </div>
 
-
                 {/* Existing Server Checkbox and Dropdown */}
-                {(useExistingServer) && (
+                {connectionFormData.existingServer && (
                     <div>
-                        {useExistingServer && (
-                            <div>
-                                <label>Show Connections From:</label><br/>
-                                <label style={{ marginRight: '20px' }}>
-                                    <input
-                                        type='radio'
-                                        name='showConnections'
-                                        value='OnlyUserOrGroup'
-                                        checked={formStateCurrent.showConnections === 'OnlyUserOrGroup'}
-                                        onChange={() => setFormStateCurrent({ ...formStateCurrent, showConnections: 'OnlyUserOrGroup' })}
-                                    />
-                                    'Save Under' Selection (User or Group)
-                                </label>
-                                <label>
-                                    <input
-                                        type='radio'
-                                        name='showConnections'
-                                        value='All'
-                                        checked={formStateCurrent.showConnections === 'All'}
-                                        onChange={() => setFormStateCurrent({ ...formStateCurrent, showConnections: 'All' })}
-                                    />
-                                    All
-                                </label><br />
-                                <select
-                                    name='Id'
-                                    onChange={_handleChange}
-                                    className='input-style-default standard-select'>
-                                    <option value="">--Select a Connection--</option>
-                                    {serverConnections.map((server, index) =>
-                                        <option key={index} value={`${server.id}|${server.ownerType}`}>
-                                            {server.serverName} - ({server.dbType}{server.ownerName ? `, ${server.ownerName}` : ''})
-                                        </option>
-                                    )}
-                                </select><br /><br />
-                            </div>
-                        )}
+                        <div>
+                            <label>Show Connections From:</label><br />
+                            <label style={{ marginRight: '20px' }}>
+                                <input
+                                    type='radio'
+                                    name='showConnections'
+                                    value='OnlyUserOrGroup'
+                                    checked={connectionFormData.showConnections === 'OnlyUserOrGroup'}
+                                    onChange={() => updateConnectionFormData({ showConnections: 'OnlyUserOrGroup' })}
+                                />
+                                'Save Under' Selection (User or Group)
+                            </label>
+                            <label>
+                                <input
+                                    type='radio'
+                                    name='showConnections'
+                                    value='All'
+                                    checked={connectionFormData.showConnections === 'All'}
+                                    onChange={() => updateConnectionFormData({ showConnections: 'All' })}
+                                />
+                                All
+                            </label><br />
+                            <select
+                                name='id'
+                                onChange={handleChange}
+                                className='input-style-default standard-select'>
+                                <option value="">--Select a Connection--</option>
+                                {connectionFormData.serverConnections.map((server, index) =>
+                                    <option key={index} value={`${server.id}|${server.ownerType}`}>
+                                        {server.serverName} - ({server.dbType}{server.ownerName ? `, ${server.ownerName}` : ''})
+                                    </option>
+                                )}
+                            </select><br /><br />
+                        </div>
                     </div>
                 )}
 
                 {/* Common Fields */}
-                {useExistingServer === false && (
+                {!connectionFormData.existingServer && (
                     <>
-                    <div>
-                        <label>Database Provider</label><br/>
-                        <select
-                            name='DbType'
-                            onChange={_handleChange}
-                            className='input-style-default standard-select'
-                            style={{ fontSize: '1em' }}>
-                            <option value='MSSQL'>Microsoft SQL Server</option>
-                            <option value='Oracle'>Oracle</option>
-                            <option value='MySQL'>MySQL</option>
-                            <option value='PostgreSQL'>PostgreSQL</option>
-                            {/*<option value='MongoDB'>MongoDB</option>*/}
-                            <option value='DB2'>DB2</option>
-                        </select>
-                    </div><br/>
+                        <div>
+                            <label>Database Provider</label><br />
+                            <select
+                                name='dbType'
+                                onChange={handleChange}
+                                className='input-style-default standard-select'
+                                style={{ fontSize: '1em' }}>
+                                <option value='MSSQL'>Microsoft SQL Server</option>
+                                <option value='Oracle'>Oracle</option>
+                                <option value='MySQL'>MySQL</option>
+                                <option value='PostgreSQL'>PostgreSQL</option>
+                                <option value='DB2'>DB2</option>
+                            </select>
+                        </div><br />
                         <div className='form-element'>
                             <label>Server Name or IP Address: *</label><br />
-                            <input name='ServerName' onChange={_handleChange} className='input-style-default' />
+                            <input
+                                name='serverName'
+                                value={connectionFormData.serverName}
+                                onChange={(e) => updateConnectionFormData({ serverName: e.target.value })}
+                                className='input-style-default'
+                            />
                         </div>
                         <div className='form-element' style={{ alignItems: 'center' }}>
                             <label style={{ marginRight: '5px' }}>Port: *</label>
                             <input
                                 type='number'
-                                name='Port'
-                                value={formStateCurrent.Port}
-                                onChange={_handleChange}
+                                name='port'
+                                value={connectionFormData.port}
+                                onChange={(e) => updateConnectionFormData({ port: e.target.value })}
                                 className='input-style-mini'
                             />
-                            {(formStateCurrent.DbType === 'MSSQL' || formStateCurrent.DbType === 'Oracle') && (
+                            {(connectionFormData.dbType === 'MSSQL' || connectionFormData.dbType === 'Oracle') && (
                                 <>
                                     <label style={{ marginLeft: '20px', marginRight: '10px' }}>
-                                        {formStateCurrent.DbType === 'Oracle' ? 'SID or Service Name' : 'Instance'}:
+                                        {connectionFormData.dbType === 'Oracle' ? 'SID or Service Name' : 'Instance'}:
                                     </label>
                                     <input
-                                        name="Instance"
-                                        value={formStateCurrent.Instance}
-                                        onChange={_handleChange}
-                                        className={formStateCurrent.DbType === 'Oracle' ? 'input-style-short' : 'input-style-mini'} />
+                                        name="instance"
+                                        value={connectionFormData.instance}
+                                        onChange={(e) => updateConnectionFormData({ instance: e.target.value })}
+                                        className={connectionFormData.dbType === 'Oracle' ? 'input-style-short' : 'input-style-mini'}
+                                    />
                                 </>
                             )}
                         </div>
                         <div className='form-element'>
                             <label>Authentication Type</label><br />
                             <select
-                                name='AuthType'
-                                onChange={_handleChange}
+                                name='authType'
+                                value={connectionFormData.authType}
+                                onChange={handleChange}
                                 className='input-style-default standard-select'>
-                                {authTypesByDB[formStateCurrent.DbType].map(type => <option key={type} value={type}>{type}</option>)}
+                                {authTypesByDB[connectionFormData.dbType].map(type => <option key={type} value={type}>{type}</option>)}
                             </select>
                         </div>
-                        {formStateCurrent.AuthType === 'Credentials' && (
+                        {connectionFormData.authType === 'Credentials' && (
                             <>
                                 <div className='form-element'>
                                     <label>Username: *</label><br />
-                                    <input name='Username' onChange={_handleChange} className='input-style-default' />
+                                    <input
+                                        name='username'
+                                        value={connectionFormData.username}
+                                        onChange={(e) => updateConnectionFormData({ username: e.target.value })}
+                                        className='input-style-default'
+                                    />
                                 </div>
                                 <div className='form-element'>
                                     <label>Password: *</label><br />
-                                    <input type='Password' name='Password' onChange={_handleChange} className='input-style-default' />
+                                    <input
+                                        type='password'
+                                        name='password'
+                                        value={connectionFormData.password}
+                                        onChange={(e) => updateConnectionFormData({ password: e.target.value })}
+                                        className='input-style-default'
+                                    />
                                 </div>
                             </>
                         )}
                     </>
                 )}
 
-                {/* Database Fields */}
-                {formStateCurrent.ConfigType === 'Database' && (
+                {connectionFormData.configType === 'Database' && (
                     <>
-                    <br/>
+                        <br />
                         <div className='form-element'>
                             <label>Database Name: *</label><br />
                             <input
-                                name='DatabaseName'
-                                value={formStateCurrent.DatabaseName}
-                                onChange={_handleChange}
+                                name='databaseName'
+                                value={connectionFormData.databaseName}
+                                onChange={(e) => updateConnectionFormData({ databaseName: e.target.value })}
                                 className='input-style-default'
                             />
                         </div>
                         <div className='form-element'>
-                            <label>Friendly Name:</label><br />
+                            <label>Friendly Name*:</label><br />
                             <input
-                                name='FriendlyName'
-                                value={formStateCurrent.FriendlyName}
-                                onChange={_handleChange}
+                                name='friendlyName'
+                                value={connectionFormData.friendlyName}
+                                onChange={(e) => updateConnectionFormData({ friendlyName: e.target.value })}
                                 className='input-style-default'
                             />
                         </div>
                         <div className='form-element'>
                             <label>Schema:</label><br />
                             <input
-                                name='Schema'
-                                value={formStateCurrent.Schema}
-                                onChange={_handleChange}
+                                name='schema'
+                                value={connectionFormData.schema}
+                                onChange={(e) => updateConnectionFormData({ schema: e.target.value })}
                                 className='input-style-default'
                             />
                         </div>
                     </>
                 )}
-
-                {/* MongoDB Only */}
-                {/*{formStateCurrent.DbType === 'MongoDB' && (
-                    <>
-                        <br />
-                        <label>MongoDB Connection Configuration</label>
-                        <br />
-                        <div className='form-element'>
-                            <label>Auth Source</label><br />
-                            <input
-                                name='AuthSource'
-                                value={formStateCurrent.AuthSource}
-                                onChange={_handleChange}
-                                className='input-style-default' />
-                        </div>
-                        <div className='form-element'>
-                            <label>Replica Set</label><br />
-                            <input
-                                name='ReplicaSet'
-                                value={formStateCurrent.ReplicaSet}
-                                onChange={_handleChange}
-                                className='input-style-default' />
-                        </div>
-                        <div className='form-element'>
-                            <input
-                                type='checkbox'
-                                name='UseTLS'
-                                checked={formStateCurrent.UseTLS}
-                                onChange={(e) => setFormStateCurrent(prevState => ({ ...prevState, UseTLS: e.target.checked }))} />
-                            <label>Use SSL</label>
-                        </div>
-                    </>
-                )}*/}
 
                 {/* Save Connection Fields */}
                 <div className='form-element' style={{ display: 'flex', flexDirection: 'column' }}>
@@ -577,7 +597,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                         <div style={{ flex: 1 }}>
                             <label>Save Connection Under</label>
                         </div>
-                        {formStateCurrent.OwnerType === 'Group' && (
+                        {connectionFormData.ownerType === 'Group' && (
                             <div style={{ flex: 1 }}>
                                 <label>Select Group</label>
                             </div>
@@ -586,22 +606,30 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                     <div style={{ display: 'flex' }}>
                         <div style={{ flex: 1 }}>
                             <select
-                                name='OwnerType'
-                                onChange={_handleChange}
+                                name='ownerType'
+                                value={connectionFormData.ownerType}
+                                onChange={handleChange}
                                 className='input-style-short'>
                                 <option value='Personal'>Current User</option>
                                 <option value='Group'>Group</option>
                             </select>
                         </div>
-                        {formStateCurrent.OwnerType === 'Group' && (
+                        {connectionFormData.ownerType === 'Group' && (
                             <div style={{ flex: 1 }}>
                                 <select
-                                    name='OwnerID'
-                                    onChange={_handleChange}
+                                    name='ownerID'
+                                    value={connectionFormData.ownerID}
+                                    onChange={handleChange}
                                     className='input-style-default'>
-                                    <option value={null}>--Select a Group--</option>
-                                    {userGroups.map((group, index) =>
-                                        <option key={index} value={group.id}>{group.groupName}</option>)}
+                                    <option value="">--Select a Group--</option>
+                                    {connectionFormData.userGroups.map((group, index) => (
+                                        <option
+                                            key={index}
+                                            value={group.id}
+                                            selected={group.id === connectionFormData.ownerID}>
+                                            {group.groupName}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         )}
@@ -609,7 +637,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                 </div>
 
                 <br />
-                {!useExistingServer && (
+                {!connectionFormData.existingServer && (
                     <>
                         <button type='button' onClick={testConnection} className='btn-four'>Test Connection</button>
                         <label className='success-message'>{testResult}</label>
@@ -617,11 +645,12 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                         <br /><br />
                     </>
                 )}
-                    <button type="button" onClick={handleSave} className="btn-three">{isEditMode ? 'Update' : 'Save'}</button>
-                    {isEditMode && (
-                    <button type="button" onClick={deleteConnection} className="btn-three">
-                            Delete
-                        </button>
+                <button type="button" onClick={handleSave} className="btn-three">{isEditMode ? 'Update' : 'Save'}</button>
+                <br />
+                {isEditMode && (
+                    <button type="button" onClick={() => deleteConnection(connectionFormData.id, connectionFormData.configType)} className="btn-three">
+                        Delete
+                    </button>
                 )}
                 {message && <MessageDisplay message={message} isSuccess={isSuccess} className="success-message" />}
             </section>

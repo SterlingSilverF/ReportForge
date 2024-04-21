@@ -2,9 +2,7 @@
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
 import HOC from '../components/HOC';
-
 
 const GroupInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     const location = useLocation();
@@ -118,7 +116,7 @@ const GroupInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                 </div>
                 <button className="edit-button" onClick={handleEditClick}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Edit This Group
-                </button>
+                </button> 
                 <button className="btn-three back" onClick={goBack}>
                     <FontAwesomeIcon icon={faCaretLeft} /> Back
                 </button>

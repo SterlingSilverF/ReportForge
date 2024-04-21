@@ -420,54 +420,43 @@ public class ConnectionService
         return connections;
     }
 
-    public List<object> FetchConnectionsForOwner(string ownerId, string ownerTypeString, string connectionType, string ownerName = null)
+    public List<SimpleConnectionDTO> FetchConnectionsForOwner(string ownerId, string ownerTypeString, string connectionType, string ownerName = null)
     {
-        var connections = new List<object>();
-        if (!Enum.TryParse(ownerTypeString, true, out OwnerType ownerType))
-        {
-            throw new ArgumentException($"Invalid owner type: {ownerTypeString}");
-        }
+        var connections = new List<SimpleConnectionDTO>();
+        OwnerType ownerType = (OwnerType)Enum.Parse(typeof(OwnerType), ownerTypeString, true);
 
-        bool useSimpleDTO = !string.IsNullOrEmpty(ownerName);
         if (connectionType == "server" || connectionType == "both")
         {
             var serverConnections = GetServerConnections(ownerId, ownerType);
-            if (useSimpleDTO)
+
+            connections.AddRange(serverConnections.Select(model => new SimpleConnectionDTO
             {
-                connections.AddRange(serverConnections.Select(model => new SimpleServerConnectionDTO
-                {
-                    Id = model.Id.ToString(),
-                    ServerName = model.ServerName,
-                    OwnerName = ownerName,
-                    OwnerType = ownerType.ToString(),
-                    DbType = model.DbType
-                }));
-            }
-            else
-            {
-                connections.AddRange(serverConnections.Select(model => new ServerConnectionDTO(model)));
-            }
+                Id = model.Id.ToString(),
+                ServerName = model.ServerName,
+                OwnerName = ownerName,
+                OwnerId = ownerId,
+                OwnerType = ownerType.ToString(),
+                ConnectionType = "Server",
+                DbType = model.DbType
+            }));
         }
+
         if (connectionType == "database" || connectionType == "both")
         {
             var dbConnections = GetDBConnections(ownerId, ownerType);
-            if (useSimpleDTO)
+
+            connections.AddRange(dbConnections.Select(model => new SimpleConnectionDTO
             {
-                connections.AddRange(dbConnections.Select(model => new SimpleDBConnectionDTO
-                {
-                    Id = model.Id.ToString(),
-                    DatabaseName = model.DatabaseName,
-                    FriendlyName = model.FriendlyName,
-                    OwnerName = ownerName,
-                    OwnerType = ownerType.ToString(),
-                    DbType = model.DbType
-                }));
-            }
-            else
-            {
-                connections.AddRange(dbConnections.Select(model => new DBConnectionDTO(model)));
-            }
+                Id = model.Id.ToString(),
+                ServerName = model.FriendlyName ?? model.DatabaseName,
+                OwnerName = ownerName,
+                OwnerId = ownerId,
+                OwnerType = ownerType.ToString(),
+                ConnectionType = "Database",
+                DbType = model.DbType
+            }));
         }
+
         return connections;
     }
 

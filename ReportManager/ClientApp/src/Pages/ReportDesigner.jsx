@@ -677,7 +677,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
                 </div>
                 )}
                 <hr />
-                <DynamicInputs getColumnNames={getColumnNames} getColumnInfo={getColumnInfo} inputValues={inputValues} setInputValues={setInputValues} />
+                <DynamicInputs getColumnNames={getColumnNames} getColumnInfo={getColumnInfo} inputValues={inputValues} setInputValues={setInputValues} tableColumns={tableColumns} />
                 <br /><br /><hr />
                 <p>{message}</p>
                 <button className="btn-three btn-restrict" onClick={updateReportFormContextWithJoins}>PREVIEW REPORT</button>

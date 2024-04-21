@@ -4,6 +4,7 @@ import AppRoutes from './AppRoutes';
 import { Layout } from './components/Layout';
 import './components/dynamicIcons';
 import { ReportFormProvider } from './contexts/ReportFormContext';
+import { ConnectionFormProvider } from './contexts/ConnectionFormContext';
 
 export default class App extends Component {
     static displayName = App.name;
@@ -11,17 +12,19 @@ export default class App extends Component {
     render() {
         return (
             <ReportFormProvider>
-                <Routes>
-                    {AppRoutes.map((route, index) => {
-                        const element = route.includeNavbar ?
-                            <Layout>{route.element}</Layout> :
-                            route.element;
+                <ConnectionFormProvider>
+                    <Routes>
+                        {AppRoutes.map((route, index) => {
+                            const element = route.includeNavbar ? (
+                                <Layout>{route.element}</Layout>
+                            ) : (
+                                route.element
+                            );
 
-                        return (
-                            <Route key={index} path={route.path} element={element} />
-                        );
-                    })}
-                </Routes>
+                            return <Route key={index} path={route.path} element={element} />;
+                        })}
+                    </Routes>
+                </ConnectionFormProvider>
             </ReportFormProvider>
         );
     }

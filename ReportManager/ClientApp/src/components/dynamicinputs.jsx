@@ -2,7 +2,7 @@
 import { useReportForm } from '../contexts/ReportFormContext';
 import FilterValueInput from './FilterValueInput';
 
-const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnInfo }) => {
+const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnInfo, tableColumns }) => {
     const MAX_FILTERS = 6;
     const MAX_ORDERBYS = 5;
     const { reportFormContext, updateReportFormData } = useReportForm();
@@ -100,10 +100,14 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
         const updatedFilters = reportFormContext.filters.map(filter => {
             if (filter.id === id) {
                 const updatedFilter = { ...filter, [field]: value };
+
                 if (field === 'column') {
-                    const columnInfo = getColumnInfo(reportFormContext.tableColumns, filter.table, value);
-                    updatedFilter.dataType = columnInfo?.dataType || '';
+                    const selectedColumn = tableColumns[filter.table]?.find(
+                        column => column.columnName === value
+                    );
+                    updatedFilter.dataType = selectedColumn?.dataType || '';
                 }
+
                 return updatedFilter;
             }
             return filter;

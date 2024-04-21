@@ -88,7 +88,7 @@ namespace ReportManager.API
         }
 
         [HttpGet("FetchServerConnection")]
-        public ActionResult FetchServerConnection(string connectionId, string ownerId, string ownerType)
+        public ActionResult<ServerConnectionDTO> FetchServerConnection(string connectionId, string ownerId, string ownerType)
         {
             if (!ObjectId.TryParse(connectionId, out var objectId))
             {
@@ -103,11 +103,17 @@ namespace ReportManager.API
             var serverConnections = _connectionService.GetServerConnections(ownerId, parsedOwnerType);
             var serverConnection = _connectionService.FetchServerConnection(serverConnections, objectId);
 
-            return serverConnection != null ? Ok(serverConnection) : NotFound("Server connection not found.");
+            if (serverConnection == null)
+            {
+                return NotFound("Server connection not found.");
+            }
+
+            var dto = new ServerConnectionDTO(serverConnection, "");
+            return Ok(dto);
         }
 
         [HttpGet("FetchDBConnection")]
-        public ActionResult FetchDBConnection(string connectionId, string ownerId, string ownerType)
+        public ActionResult<DBConnectionDTO> FetchDBConnection(string connectionId, string ownerId, string ownerType)
         {
             if (!ObjectId.TryParse(connectionId, out var objectId))
             {
@@ -122,7 +128,13 @@ namespace ReportManager.API
             var dbConnections = _connectionService.GetDBConnections(ownerId, parsedOwnerType);
             var dbConnection = _connectionService.FetchDBConnection(dbConnections, objectId);
 
-            return dbConnection != null ? Ok(dbConnection) : NotFound("Database connection not found.");
+            if (dbConnection == null)
+            {
+                return NotFound("Database connection not found.");
+            }
+
+            var dto = new DBConnectionDTO(dbConnection, "");
+            return Ok(dto);
         }
 
         [HttpGet("GetAllConnections")]
@@ -136,20 +148,66 @@ namespace ReportManager.API
         [HttpGet("GetAllConnectionsForUserAndGroups")]
         public ActionResult GetAllConnectionsForUserAndGroups(string userId, string username)
         {
-            var allConnections = new List<object>();
+            var allConnections = new List<SimpleConnectionDTO>();
             var userGroups = _groupManagementService.GetGroupsByUser(username);
-            var userConnections = _connectionService.FetchConnectionsForOwner(userId, "Personal", "server", username)
-                                   .ToList();
+            var userServerConnections = _connectionService.FetchConnectionsForOwner(userId, "Personal", "server", username)
+                .Select(c => new SimpleConnectionDTO
+                {
+                    Id = c.Id,
+                    ServerName = c.ServerName,
+                    OwnerName = c.OwnerName,
+                    OwnerId = userId,
+                    OwnerType = c.OwnerType,
+                    ConnectionType = "Server",
+                    DbType = c.DbType
+                })
+                .ToList();
+            allConnections.AddRange(userServerConnections);
+            var userDatabaseConnections = _connectionService.FetchConnectionsForOwner(userId, "Personal", "database", username)
+                .Select(c => new SimpleConnectionDTO
+                {
+                    Id = c.Id,
+                    ServerName = c.ServerName,
+                    OwnerName = c.OwnerName,
+                    OwnerId = userId,
+                    OwnerType = c.OwnerType,
+                    ConnectionType = "Database",
+                    DbType = c.DbType
+                })
+                .ToList();
+            allConnections.AddRange(userDatabaseConnections);
 
-            allConnections.AddRange(userConnections);
             foreach (var group in userGroups)
             {
                 var groupName = _groupManagementService.GetGroup(group.Id)?.GroupName;
-                var groupConnections = _connectionService.FetchConnectionsForOwner(group.Id.ToString(), "Group", "server", groupName)
-                                       .ToList();
-                allConnections.AddRange(groupConnections);
+                var groupId = group.Id.ToString();
+                var groupServerConnections = _connectionService.FetchConnectionsForOwner(groupId, "Group", "server", groupName)
+                    .Select(c => new SimpleConnectionDTO
+                    {
+                        Id = c.Id,
+                        ServerName = c.ServerName,
+                        OwnerName = c.OwnerName,
+                        OwnerId = groupId,
+                        OwnerType = c.OwnerType,
+                        ConnectionType = "Server",
+                        DbType = c.DbType
+                    })
+                    .ToList();
+                allConnections.AddRange(groupServerConnections);
+                var groupDatabaseConnections = _connectionService.FetchConnectionsForOwner(groupId, "Group", "database", groupName)
+                    .Select(c => new SimpleConnectionDTO
+                    {
+                        Id = c.Id,
+                        ServerName = c.ServerName,
+                        OwnerName = c.OwnerName,
+                        OwnerId = groupId,
+                        OwnerType = c.OwnerType,
+                        ConnectionType = "Database",
+                        DbType = c.DbType
+                    })
+                    .ToList();
+                allConnections.AddRange(groupDatabaseConnections);
             }
-
             return Ok(allConnections);
         }
 
