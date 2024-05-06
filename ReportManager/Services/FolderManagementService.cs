@@ -1,10 +1,9 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using Org.BouncyCastle.Asn1.X509;
 using ReportManager.Models;
 using System.Collections.Generic;
-using ReportManager.Models;
 using System.Configuration;
+using System.Net;
 
 namespace ReportManager.Services
 {
@@ -248,6 +247,44 @@ namespace ReportManager.Services
             {
                 return false;
             }
+        }
+
+        public async Task<string> BuildFolderPath(ObjectId folderId, bool isPersonal)
+        {
+            var currentFolder = await GetFolderById(folderId, isPersonal);
+            string serverName = Dns.GetHostName();
+            string path = currentFolder.FolderPath.Replace("C:/", $"//{serverName}/");
+            return path;
+        }
+
+        public string GetContentType(string filePath)
+        {
+            string contentType = "application/octet-stream";
+            string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
+            if (!string.IsNullOrEmpty(fileExtension))
+            {
+                switch (fileExtension)
+                {
+                    case ".pdf":
+                        contentType = "application/pdf";
+                        break;
+                    case ".txt":
+                        contentType = "text/plain";
+                        break;
+                    case ".csv":
+                        contentType = "text/csv";
+                        break;
+                    case ".xlsx":
+                        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        break;
+                    case ".json":
+                        contentType = "application/json";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return contentType;
         }
     }
 }

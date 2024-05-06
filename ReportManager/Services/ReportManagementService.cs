@@ -74,6 +74,14 @@ namespace ReportManager.Services
             return GetReportCollection(reportType).Find(filter).ToList();
         }
 
+        public List<ReportConfigurationModel> GetAllReports()
+        {
+            List<ReportConfigurationModel> allReports = new List<ReportConfigurationModel>();
+            allReports.AddRange(_reports.Find(report => true).ToList());
+            allReports.AddRange(_personalreports.Find(report => true).ToList());
+            return allReports;
+        }
+
         public List<ReportConfigurationModel> GetReportsByGroup(ObjectId groupId)
         {
             var filter = Builders<ReportConfigurationModel>.Filter.And(
@@ -118,6 +126,16 @@ namespace ReportManager.Services
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
             var result = GetReportCollection(reportType).DeleteOne(filter);
             return result.IsAcknowledged && result.DeletedCount > 0;
+        }
+
+        public async Task<bool> HasReportsWithConnectionString(ObjectId connectionStringId)
+        {
+            var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.ConnectionStringId, connectionStringId);
+
+            var groupReportCount = await _reports.CountDocumentsAsync(filter);
+            var personalReportCount = await _personalreports.CountDocumentsAsync(filter);
+
+            return groupReportCount > 0 || personalReportCount > 0;
         }
 
         public byte[] GenerateCsv(List<Dictionary<string, object>> data)

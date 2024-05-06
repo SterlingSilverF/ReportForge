@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFile, faCaretLeft, faPeopleRoof, faPencil } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 
-const Reports = ({ username, userID, makeApiRequest, goBack, navigate }) => {
+const Reports = ({ userID, makeApiRequest, goBack, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [reports, setReports] = useState([]);
 
@@ -12,20 +12,30 @@ const Reports = ({ username, userID, makeApiRequest, goBack, navigate }) => {
     const folderId = searchParams.get('folderId');
 
     useEffect(() => {
-        // Fetch subfolders
-        makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${isPersonal}`)
-            .then((folderRes) => {
-                setFolders(folderRes.data);
-            })
-            .catch((err) => console.error('There was an error fetching folders!', err));
+        if (userID) {
+            if (folderId) {
+                // Fetch subfolders and reports for a specific folder
+                makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${isPersonal}`)
+                    .then(folderRes => {
+                        setFolders(folderRes.data);
+                    })
+                    .catch(err => console.error('There was an error fetching folders!', err));
 
-        // Fetch reports
-        makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
-            .then((reportRes) => {
-                setReports(reportRes.data);
-            })
-            .catch((err) => console.error('There was an error fetching reports!', err));
-    }, [folderId, isPersonal, makeApiRequest]);
+                makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
+                    .then(reportRes => {
+                        setReports(reportRes.data);
+                    })
+                    .catch(err => console.error('There was an error fetching reports!', err));
+            } else {
+                // Fetch all user-related reports when no specific folder is selected
+                makeApiRequest('get', `/api/report/getAllUserRelatedReports?userId=${userID}`)
+                    .then(reportRes => {
+                        setReports(reportRes.data);
+                    })
+                    .catch(err => console.error('There was an error fetching reports!', err));
+            }
+        }
+    }, [userID, folderId, isPersonal, makeApiRequest]);
 
     return (
         <div className="sub-container padding-medium">
@@ -54,12 +64,8 @@ const Reports = ({ username, userID, makeApiRequest, goBack, navigate }) => {
                         <label className={folder.isGroupFolder ? '' : 'rpf-red'}>{folder.folderName}</label>
                     </div>
                 ))}
-
                 {reports.map((report, index) => (
-                    <div
-                        key={index}
-                        className="image-label-pair clickable"
-                        onClick={() => navigate(`/reportinformation?reportId=${report.id}&isPersonal=${isPersonal}`)}>
+                    <div key={index} className="image-label-pair clickable" onClick={() => navigate(`/reportinformation?reportId=${report.id}&isPersonal=${isPersonal}`)}>
                         <FontAwesomeIcon icon={faFile} size="3x" className="rpf-silverblue report" />
                         <label>{report.reportName}</label>
                     </div>

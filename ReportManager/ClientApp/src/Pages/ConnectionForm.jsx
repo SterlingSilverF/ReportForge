@@ -1,13 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import HOC from '../components/HOC';
-import { decryptData } from '../components/Cryptonator';
 import MessageDisplay from '../components/MessageDisplay';
 import LoadingComponent from '../components/loading';
 import { useConnectionForm } from '../contexts/ConnectionFormContext';
 // TODO: ConnectionForm tooltips
 
-const ConnectionForm = ({ makeApiRequest, username, userID }) => {
+const ConnectionForm = ({ makeApiRequest, username, userID, navigate }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const connectionId = queryParams.get('connectionId');
@@ -15,7 +14,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     const ownerId = queryParams.get('ownerId');
     const ownerType = queryParams.get('ownerType');
 
-    const { connectionFormData, updateConnectionFormData } = useConnectionForm();
+    const { connectionFormData, updateConnectionFormData, clearConnectionFormData } = useConnectionForm();
     const [isEditMode, setIsEditMode] = useState(!!connectionId);
     const [title, setTitle] = useState(isEditMode ? 'Edit Connection' : 'Create New Connection');
 
@@ -60,11 +59,39 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         DB2: ['Credentials'],
     };
 
-    const serverValidationRules = ['ServerName', 'Port', 'DbType', 'AuthType', 'OwnerID', 'OwnerType'];
+    const serverValidationRules = ['serverName', 'port', 'dbType', 'authType', 'ownerID', 'ownerType'];
     const dbValidationRules = [
-        'FriendlyName',
-        'DatabaseName'
+        'friendlyName',
+        'databaseName'
     ];
+
+    useEffect(() => {
+        return () => {
+            // Clear the form data when the component unmounts or the location changes
+            clearConnectionFormData();
+        };
+    }, [location, clearConnectionFormData]);
+
+    const fetchUserGroups = async () => {
+        try {
+            const data = await makeApiRequest('get', `/api/group/GetUserGroups?username=${username}`);
+            updateConnectionFormData({
+                userGroups: data.data,
+            });
+        } catch (error) {
+            console.error('Could not fetch user groups:', error.response ? error.response.data : error);
+        }
+    };
+
+    useEffect(() => {
+        if (username !== '') {
+            updateConnectionFormData({
+                ownerID: userID,
+            });
+
+            fetchUserGroups();
+        }
+    }, [makeApiRequest, username, userID, updateConnectionFormData]);
 
     useEffect(() => {
         if (connectionId) {
@@ -112,7 +139,6 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                             selectedServerConnection: data.selectedServerConnection,
                             userGroups: data.userGroups || [],
                             serverConnections: data.serverConnections || [],
-                            collectionCategory: data.collectionCategory,
                             friendlyName: data.friendlyName,
                             databaseName: data.databaseName,
                             schema: data.schema,
@@ -168,28 +194,6 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         }
     }, [connectionFormData.existingServer, connectionFormData.selectedServerConnection]);
 
-    // Load user groups
-    useEffect(() => {
-        if (username !== '') {
-            updateConnectionFormData({
-                ownerID: userID,
-            });
-
-            const fetchUserGroups = async () => {
-                try {
-                    const data = await makeApiRequest('get', `/api/group/GetUserGroups?username=${username}`);
-                    updateConnectionFormData({
-                        userGroups: data.data,
-                    });
-                } catch (error) {
-                    console.error('Could not fetch user groups:', error.response ? error.response.data : error);
-                }
-            };
-
-            fetchUserGroups();
-        }
-    }, [makeApiRequest, username, userID, updateConnectionFormData]);
-
     // Verify connection
     const testConnection = async () => {
         try {
@@ -223,41 +227,42 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
     };
 
     useEffect(() => {
-        let url = `/api/connection/`;
+        if (userID !== "" && username !== "") {
+            let url = `/api/connection/`;
 
-        if (connectionFormData.showConnections === 'OnlyUserOrGroup') {
-            let filter = `ownerTypeString=${connectionFormData.ownerType}&connectionType=server`;
+            if (connectionFormData.showConnections === 'OnlyUserOrGroup') {
+                let filter = `ownerTypeString=${connectionFormData.ownerType}&connectionType=server`;
+                const ownerId = connectionFormData.ownerType === 'Personal' ? userID : connectionFormData.ownerID;
 
-            const ownerId = connectionFormData.ownerType === 'Personal' ? userID : connectionFormData.ownerID;
+                if (!ownerId || ownerId == "--Select a Group--") {
+                    updateConnectionFormData({
+                        serverConnections: [],
+                    });
+                    return;
+                }
 
-            if (!ownerId || ownerId == "--Select a Group--") {
-                updateConnectionFormData({
-                    serverConnections: [],
-                });
+                filter += `&ownerId=${ownerId}`;
+                url += `GetAllConnections?${filter}`;
+            } else if (connectionFormData.showConnections === 'All') {
+                url += `GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`;
+            } else {
                 return;
             }
 
-            filter += `&ownerId=${ownerId}`;
-            url += `GetAllConnections?${filter}`;
-        } else if (connectionFormData.showConnections === 'All') {
-            url += `GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`;
-        } else {
-            return;
+            const fetchConnections = async () => {
+                try {
+                    const response = await makeApiRequest('get', url);
+                    updateConnectionFormData({
+                        serverConnections: response.data,
+                    });
+                } catch (error) {
+                    console.error('Could not fetch connections:', error.response ? error.response.data : error);
+                }
+            };
+
+            fetchConnections();
         }
-
-        const fetchConnections = async () => {
-            try {
-                const response = await makeApiRequest('get', url);
-                updateConnectionFormData({
-                    serverConnections: response.data,
-                });
-            } catch (error) {
-                console.error('Could not fetch connections:', error.response ? error.response.data : error);
-            }
-        };
-
-        fetchConnections();
-    }, [connectionFormData, userID, username, makeApiRequest, updateConnectionFormData]);
+    }, [connectionFormData.showConnections, userID, username, makeApiRequest, updateConnectionFormData]);
 
     const validateConnectionData = (data, rules, useExistingServer = false) => {
         const effectiveRules = useExistingServer ? ['id'] : [...rules];
@@ -280,7 +285,8 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         const isServerConfig = connectionFormData.configType === 'Server';
         let endpoint = '';
         let serverId = null;
-        const isDuplicatingToNewOwner = connectionFormData.showConnections === 'All' && connectionFormData.id && connectionFormData.existingServer;
+        const httpMethod = isEditMode ? 'put' : 'post';
+        const isDuplicatingToNewOwner = connectionFormData.id && connectionFormData.existingServer && !isEditMode;
 
         const connectionRequest = {
             id: connectionFormData.id,
@@ -300,10 +306,30 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
 
         const dbConnectionRequest = {
             id: connectionFormData.id,
-            collectionCategory: connectionFormData.collectionCategory,
+            ownerId: connectionFormData.ownerID,
+            collectionCategory: connectionFormData.ownerType,
             friendlyName: connectionFormData.friendlyName,
             schema: connectionFormData.schema,
             databaseName: connectionFormData.databaseName,
+        };
+
+        const updateDbConnectionRequest = {
+            id: connectionFormData.id,
+            serverName: connectionFormData.serverName,
+            port: connectionFormData.port,
+            instance: connectionFormData.instance,
+            dbType: connectionFormData.dbType,
+            username: connectionFormData.username,
+            password: connectionFormData.password,
+            authType: connectionFormData.authType,
+            ownerID: connectionFormData.ownerID,
+            collectionCategory: connectionFormData.ownerType,
+            friendlyName: connectionFormData.friendlyName,
+            schema: connectionFormData.schema,
+            databaseName: connectionFormData.databaseName,
+            authSource: connectionFormData.authSource,
+            replicaSet: connectionFormData.replicaSet,
+            useTLS: connectionFormData.useTLS,
         };
 
         if (connectionFormData.ownerType === 'Personal') {
@@ -349,8 +375,11 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                     : '/api/connection/AddDBConnection');
         }
 
-        const validationRules = isServerConfig ? serverValidationRules : dbValidationRules;
-        const { isValid, missingFields } = validateConnectionData(connectionRequest, validationRules);
+        let validationRules = isServerConfig ? serverValidationRules : dbValidationRules;
+        const requestData = isEditMode
+            ? (connectionFormData.configType === 'Server' ? connectionRequest : updateDbConnectionRequest)
+            : (connectionFormData.configType === 'Server' ? connectionRequest : dbConnectionRequest);
+        const { isValid, missingFields } = validateConnectionData(requestData, validationRules, connectionFormData.existingServer);
 
         if (!isValid) {
             setMessage(`Missing required fields: ${missingFields.join(', ')}`);
@@ -362,7 +391,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
             try {
                 const serverResponse = await makeApiRequest('post', '/api/connection/AddServerConnection', connectionRequest);
                 serverId = serverResponse.data;
-                dbConnectionRequest.id = serverId;
+                dbConnectionRequest.id = serverId.id;
             } catch (error) {
                 setIsSuccess(false);
                 setMessage("Server connection creation failed.");
@@ -371,7 +400,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
         }
 
         try {
-            const saveResponse = await makeApiRequest('post', endpoint, connectionFormData.configType === 'Server' ? connectionRequest : dbConnectionRequest);
+            const saveResponse = await makeApiRequest(httpMethod, endpoint, requestData);
             if (saveResponse.data && saveResponse.data.id) {
                 serverId = saveResponse.data.id;
                 setMessage("Server connection already exists under this owner.");
@@ -381,28 +410,33 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
             }
         } catch (error) {
             setIsSuccess(false);
-            console.log(connectionFormData.configType === 'Server' ? connectionRequest : dbConnectionRequest);
+            console.log(requestData);
             console.log(error);
-            setMessage("Saving failed.");
+
+            const errorMessage = error.message ? `Saving failed: ${error.message}` : "Saving failed with an unknown error.";
+            setMessage(errorMessage);
         }
     };
 
-    const deleteConnection = async (connectionId, connectionType) => {
-        let deleteEndpoint = '';
-        if (connectionType === 'Server') {
-            deleteEndpoint = `/api/connection/DeleteServerConnection/${connectionId}`;
-        } else if (connectionType === 'Database') {
-            deleteEndpoint = `/api/connection/DeleteDBConnection/${connectionId}`;
-        }
-
-        try {
-            await makeApiRequest('delete', deleteEndpoint);
-            return true;
-        } catch (error) {
-            console.error("Error deleting connection: ", error);
-            return false;
+    const deleteConnection = async (connectionId, ownerType) => {
+        const userConfirmed = window.confirm('Are you sure you want to delete this connection? This may affect reports using this connection if not updated.');
+        if (userConfirmed) {
+            makeApiRequest('delete', `/api/connection/DeleteConnection?connectionId=${connectionId}&ownerType=${ownerType}`)
+                .then(() => {
+                    alert('Connection deleted successfully.');
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 2000);
+                })
+                .catch((error) => {
+                    alert('Error deleting connection. Please try again later.');
+                    console.error('Error deleting connection:', error);
+                });
+        } else {
+            console.log('Deletion cancelled.');
         }
     };
+
 
     return (
         <div className='sub-container outer'>
@@ -417,7 +451,11 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                         <label>Select Configuration Type</label>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%', alignItems: 'center' }}>
-                        <select className='input-style-default standard-select' name='configType' onChange={handleChange}>
+                        <select
+                            className='input-style-default standard-select'
+                            name='configType'
+                            value={connectionFormData.configType}
+                            onChange={handleChange}>
                             <option value='Server'>Server Configuration</option>
                             <option value='Database'>DB Configuration</option>
                         </select>
@@ -550,6 +588,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                                         name='password'
                                         value={connectionFormData.password}
                                         onChange={(e) => updateConnectionFormData({ password: e.target.value })}
+                                        onCopy={(e) => e.preventDefault()}
                                         className='input-style-default'
                                     />
                                 </div>
@@ -648,7 +687,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID }) => {
                 <button type="button" onClick={handleSave} className="btn-three">{isEditMode ? 'Update' : 'Save'}</button>
                 <br />
                 {isEditMode && (
-                    <button type="button" onClick={() => deleteConnection(connectionFormData.id, connectionFormData.configType)} className="btn-three">
+                    <button type="button" onClick={() => deleteConnection(connectionFormData.id, ownerType)} className="btn-three">
                         Delete
                     </button>
                 )}

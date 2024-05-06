@@ -10,7 +10,7 @@ namespace ReportManager.Models
         public string? Instance { get; set; }
         public string DbType { get; set; }
         public string? Username { get; set; }
-        private string? _encryptedPassword;
+        public string? _encryptedPassword;
 
         public string? Password
         {

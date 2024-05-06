@@ -112,6 +112,7 @@
         public string LastModifiedByName { get; set; }
         public string OwnerName { get; set; }
         public string OwnerType { get; set; }
+        public string FolderPath { get; set; }
     }
 
     // Retain reportconfig enum but allow easy json deserialization

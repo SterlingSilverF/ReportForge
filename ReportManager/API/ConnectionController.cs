@@ -53,18 +53,50 @@ namespace ReportManager.API
             public string OldOwnerType { get; set; }
         }
 
+
+
+        public class UpdateDBConnectionRequest
+        {
+            [Required]
+            public string Id { get; set; }
+            [Required]
+            public string ServerName { get; set; }
+            [Required]
+            public int Port { get; set; }
+            public string? Instance { get; set; }
+            [Required]
+            public string DbType { get; set; }
+            public string? Username { get; set; }
+            public string? Password { get; set; }
+            [Required]
+            public string AuthType { get; set; }
+            [Required]
+            public string OwnerID { get; set; }
+            public string CollectionCategory { get; set; }
+            public string FriendlyName { get; set; }
+            public string? Schema { get; set; }
+            [Required]
+            public string DatabaseName { get; set; }
+            public string? AuthSource { get; set; }
+            public string? ReplicaSet { get; set; }
+            public bool UseTLS { get; set; }
+        }
+
         public class DBConnectionRequest
         {
             [Required]
             public string Id { get; set; }
+            [Required]
+            public string OwnerID { get; set; }
             public string CollectionCategory { get; set; }
             public string FriendlyName { get; set; }
-            public string? Schema {  get; set; }
+            public string? Schema { get; set; }
             [Required]
             public string DatabaseName { get; set; }
         }
 
-        public ConnectionController(ConnectionService connectionService, SharedService sharedService, GroupManagementService groupManagementService)
+        public ConnectionController(ConnectionService connectionService, SharedService sharedService, 
+            GroupManagementService groupManagementService)
         {
             _connectionService = connectionService;
             _sharedService = sharedService;
@@ -285,9 +317,15 @@ namespace ReportManager.API
         public async Task<IActionResult> AddDBConnection(DBConnectionRequest data)
         {
             OwnerType _ownertype = (OwnerType)Enum.Parse(typeof(OwnerType), data.CollectionCategory);
-            BaseConnectionModel? serverConnection = _connectionService.GetServerConnectionById(_sharedService.StringToObjectId(data.Id), _ownertype);
-            if (serverConnection == null) return BadRequest("Server does not exist.");
+            ObjectId connectionId = _sharedService.StringToObjectId(data.Id);
+            BaseConnectionModel serverConnection = _connectionService.GetServerConnectionById(connectionId, Enum.Parse<OwnerType>("Group"))
+                ?? _connectionService.GetServerConnectionById(connectionId, Enum.Parse<OwnerType>("Personal"));
 
+            if (serverConnection == null)
+            {
+                return NotFound("Server does not exist.");
+            }
+            
             // TODO: Duplicate check
             DBConnectionModel newDB = new DBConnectionModel()
             {
@@ -298,8 +336,8 @@ namespace ReportManager.API
                 Username = serverConnection.Username,
                 Password = serverConnection.Password,
                 AuthType = serverConnection.AuthType,
-                OwnerID = serverConnection.OwnerID,
-                OwnerType = serverConnection.OwnerType,
+                OwnerID = _sharedService.StringToObjectId(data.OwnerID),
+                OwnerType = _ownertype,
                 /*AuthSource = serverConnection.AuthSource,
                 ReplicaSet = serverConnection.ReplicaSet,
                 UseTLS = serverConnection.UseTLS,*/
@@ -324,29 +362,91 @@ namespace ReportManager.API
             return Ok(newId.ToString());
         }
 
-        [HttpPut("UpdateServer")]
-        public IActionResult UpdateServerConnection([FromBody] BaseConnectionModel updatedServer)
+        [HttpPut("UpdateServerConnection")]
+        public async Task<IActionResult> UpdateServerConnection(ConnectionRequest updatedServer)
         {
-            bool isUpdated = _connectionService.UpdateServerConnection(updatedServer);
-            if (!isUpdated) return BadRequest("Failed to update.");
+            BaseConnectionModel connection = new BaseConnectionModel
+            {
+                Id = _sharedService.StringToObjectId(updatedServer.Id),
+                ServerName = updatedServer.ServerName,
+                Port = updatedServer.Port,
+                Instance = updatedServer.Instance,
+                DbType = updatedServer.DbType,
+                Username = updatedServer.Username,
+                Password = updatedServer.Password,
+                AuthType = updatedServer.AuthType,
+                OwnerID = _sharedService.StringToObjectId(updatedServer.OwnerID),
+                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), updatedServer.OwnerType),
+                /*AuthSource = updatedServer.AuthSource,
+                ReplicaSet = updatedServer.ReplicaSet,
+                UseTLS = updatedServer.UseTLS*/
+            };
+
+            bool isUpdated = _connectionService.UpdateServerConnection(connection);
+
+            if (!isUpdated)
+            {
+                var existingConnection = _connectionService.GetServerConnectionById(connection.Id, connection.OwnerType);
+                if (existingConnection != null && _connectionService.AreConnectionsEqual(existingConnection, connection))
+                {
+                    return Ok("No changes detected. Connection already up to date.");
+                }
+                else
+                {
+                    return BadRequest("Failed to update.");
+                }
+            }
+
             return Ok("Updated successfully");
         }
 
-        public async Task<IActionResult> UpdateDBConnection([FromBody] DBConnectionModel updatedDB)
+        [HttpPut("UpdateDBConnection")]
+        public async Task<IActionResult> UpdateDBConnection(UpdateDBConnectionRequest updatedDB)
         {
-            bool isUpdated = _connectionService.UpdateDBConnection(updatedDB);
-            if (!isUpdated) return BadRequest("Failed to update.");
+            DBConnectionModel connection = new DBConnectionModel
+            {
+                Id = _sharedService.StringToObjectId(updatedDB.Id),
+                ServerName = updatedDB.ServerName,
+                Port = updatedDB.Port,
+                Instance = updatedDB.Instance,
+                DbType = updatedDB.DbType,
+                Username = updatedDB.Username,
+                Password = updatedDB.Password,
+                AuthType = updatedDB.AuthType,
+                OwnerID = _sharedService.StringToObjectId(updatedDB.OwnerID),
+                OwnerType = (OwnerType)Enum.Parse(typeof(OwnerType), updatedDB.CollectionCategory),
+                DatabaseName = updatedDB.DatabaseName,
+                FriendlyName = updatedDB.FriendlyName,
+                Schema = updatedDB.Schema
+            };
 
-            string builtConnectionString = ConnectionService.BuildConnectionString(updatedDB);
-            ObjectId? connStrId = await _connectionService.GetBuiltConnectionStringId(updatedDB.Id);
+            bool isUpdated = _connectionService.UpdateDBConnection(connection);
+
+            if (!isUpdated)
+            {
+                var existingConnection = _connectionService.GetDBConnectionById(connection.Id, connection.OwnerType);
+                if (existingConnection != null && _connectionService.AreDBConnectionsEqual(existingConnection, connection))
+                {
+                    return Ok("No changes detected. Connection already up to date.");
+                }
+                else
+                {
+                    return BadRequest("Failed to update.");
+                }
+            }
+
+            string builtConnectionString = ConnectionService.BuildConnectionString(connection);
+            ObjectId? connStrId = await _connectionService.GetBuiltConnectionStringId(connection.Id);
+
             if (!connStrId.HasValue)
             {
                 return BadRequest("Associated connection string not found.");
             }
+
             BuiltConnectionString connStr = new BuiltConnectionString
             {
                 Id = connStrId.Value,
-                ConnectionId = updatedDB.Id,
+                ConnectionId = connection.Id,
             };
             connStr.SetEncryptedConnectionString(builtConnectionString);
             await _connectionService.UpdateBuiltConnectionString(connStr);
@@ -354,13 +454,9 @@ namespace ReportManager.API
             return Ok("Updated successfully");
         }
 
-        [HttpDelete("DeleteConnection/{connectionId}")]
+        [HttpDelete("DeleteConnection")]
         public async Task<ActionResult> DeleteConnection(string connectionId, string ownerType)
         {
-            if (string.IsNullOrWhiteSpace(connectionId))
-            {
-                return BadRequest("Connection ID is required.");
-            }
             if (!Enum.TryParse(ownerType, true, out OwnerType _ownerType))
             {
                 return BadRequest("Invalid owner type.");
@@ -369,15 +465,21 @@ namespace ReportManager.API
             try
             {
                 ObjectId id = _sharedService.StringToObjectId(connectionId);
-
                 bool isSuccess = await _connectionService.DeleteServerOrDBConnection(id, _ownerType);
+
                 if (isSuccess)
                 {
-                    return Ok("Server connection deleted successfully.");
+                    ObjectId? builtConnectionStringId = await _connectionService.GetBuiltConnectionStringId(id);
+                    if (builtConnectionStringId.HasValue)
+                    {
+                        await _connectionService.DeleteBuiltConnectionString(builtConnectionStringId.Value);
+                    }
+
+                    return Ok("Connection deleted successfully.");
                 }
                 else
                 {
-                    return NotFound("Server connection not found.");
+                    return StatusCode(500, "An error occurred while deleting the connection.");
                 }
             }
             catch (FormatException)
@@ -386,7 +488,7 @@ namespace ReportManager.API
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while deleting the server connection.");
+                return StatusCode(500, "An error occurred while deleting the connection.");
             }
         }
 

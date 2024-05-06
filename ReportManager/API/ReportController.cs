@@ -234,7 +234,7 @@ namespace ReportManager.API
         }
 
         [HttpGet("GetReportById")]
-        public IActionResult GetReportById(string reportId, string type, bool fullDataset = false)
+        public async Task<IActionResult> GetReportById(string reportId, string type, bool fullDataset = false)
         {
             try
             {
@@ -245,6 +245,8 @@ namespace ReportManager.API
                 {
                     return NotFound();
                 }
+                bool isPersonal = type == "Personal";
+                var folderPath = await _folderManagementService.BuildFolderPath(report.FolderId, isPersonal);
 
                 if (fullDataset)
                 {
@@ -253,8 +255,8 @@ namespace ReportManager.API
                 }
                 else
                 {
-                    bool isPersonal = type == "Personal";
                     ReportInfoDTO reportInfoDTO = MapReportToDTO(report, isPersonal);
+                    reportInfoDTO.FolderPath = folderPath;
                     return Ok(reportInfoDTO);
                 }
             }
@@ -300,6 +302,34 @@ namespace ReportManager.API
                 return BadRequest($"An error occurred: {ex.ToString()}");
             }
             return Ok(reportSummaries);
+        }
+
+        [HttpGet("GetAllUserRelatedReports")]
+        public IActionResult GetAllUserRelatedReports(string userId)
+        {
+            try
+            {
+                ObjectId userIdObj = _sharedService.StringToObjectId(userId);
+                var personalReports = _reportManagementService.GetPersonalReportsByCreatorId(userIdObj);
+                var userGroups = _groupManagementService.GetGroupsByUser(userId);
+
+                var groupReports = new List<ReportConfigurationModel>();
+                foreach (var group in userGroups)
+                {
+                    var reportsForGroup = _reportManagementService.GetReportsByGroup(group.Id);
+                    groupReports.AddRange(reportsForGroup);
+                }
+
+                var combinedReports = personalReports.Concat(groupReports).ToList();
+                var reportDTOs = combinedReports.Select(report => MapReportToDTO(report, report.OwnerType == OwnerType.Personal)).ToList();
+
+                return Ok(reportDTOs);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log the exception
+                return StatusCode(500, "An internal server error occurred while fetching all related reports.");
+            }
         }
     }
 }

@@ -1,0 +1,2 @@
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon\obj\Debug\ReportDaemon.csproj.AssemblyReference.cache
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon\obj\Debug\ReportDaemon.csproj.CoreCompileInputs.cache

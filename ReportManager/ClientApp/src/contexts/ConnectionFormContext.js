@@ -1,9 +1,9 @@
-﻿import React, { createContext, useContext, useState, useCallback } from 'react';
+﻿import React, { createContext, useContext, useState, useCallback, use } from 'react';
 const ConnectionFormContext = createContext();
 export const useConnectionForm = () => useContext(ConnectionFormContext);
 
 export const ConnectionFormProvider = ({ children }) => {
-    const [connectionFormData, setConnectionFormData] = useState({
+    const initialFormData = {
         id: '',
         serverName: '',
         port: '',
@@ -21,17 +21,22 @@ export const ConnectionFormProvider = ({ children }) => {
         selectedServerConnection: '',
         userGroups: [],
         serverConnections: [],
-        collectionCategory: '',
         friendlyName: '',
         databaseName: '',
-    });
+    };
+
+    const [connectionFormData, setConnectionFormData] = useState(initialFormData);
 
     const updateConnectionFormData = useCallback((newData) => {
         setConnectionFormData(prevFormData => ({ ...prevFormData, ...newData }));
     }, []);
 
+    const clearConnectionFormData = useCallback(() => {
+        setConnectionFormData(initialFormData);
+    }, []);
+
     return (
-        <ConnectionFormContext.Provider value={{ connectionFormData, updateConnectionFormData }}>
+        <ConnectionFormContext.Provider value={{ connectionFormData, updateConnectionFormData, clearConnectionFormData }}>
             {children}
         </ConnectionFormContext.Provider>
     );

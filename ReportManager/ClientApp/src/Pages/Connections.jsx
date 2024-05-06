@@ -12,7 +12,7 @@ const Connections = ({ dbIcons, username, userID, makeApiRequest, goBack, naviga
     const dbConnections = connections.filter(conn => conn.connectionType === 'Database');
 
     useEffect(() => {
-        if (userID && username)
+        if (userID !== "" && username !== "") {
             setIsLoading(true);
             setLoadingMessage('Fetching connections...');
             makeApiRequest('get', `/api/connection/GetAllConnectionsForUserAndGroups?userId=${userID}&username=${username}`)
@@ -26,6 +26,7 @@ const Connections = ({ dbIcons, username, userID, makeApiRequest, goBack, naviga
                     setLoadingMessage('Failed to load connections.');
                     setIsLoading(false);
                 });
+        }
     }, [makeApiRequest, userID, username]);
 
     const getIconByConnectionType = (connection) => {

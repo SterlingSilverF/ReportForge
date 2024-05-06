@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     const location = useLocation();
@@ -19,8 +21,14 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
         lastModifiedDate: '',
         lastModifiedByName: '',
         ownerName: '',
-        ownerType: ''
+        ownerType: '',
+        folderPath: ''
     });
+
+    const [reportFiles, setReportFiles] = useState([]);
+    const [selectedFile, setSelectedFile] = useState('');
+    const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+
 
     const handleEditClick = () => {
         const type = reportInfo.ownerType;
@@ -28,26 +36,102 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     };
 
     const processReportData = async () => {
-        if (username) {
-            try {
-                const rawData = await makeApiRequest('get', `/api/report/GetReportById?reportId=${reportId}&type=${type}`);
+        if (username && reportId) {
+            let data = null;
+            const isPersonalParam = queryParams.get('isPersonal');
 
-                const transformedData = {
-                    id: rawData.data.id,
-                    reportName: rawData.data.reportName,
-                    description: rawData.data.description,
-                    creatorName: rawData.data.creatorName,
-                    createdDate: rawData.data.createdDate,
-                    lastModifiedDate: rawData.data.lastModifiedDate,
-                    lastModifiedByName: rawData.data.lastModifiedByName,
-                    ownerName: rawData.data.ownerName,
-                    ownerType: rawData.data.ownerType
-                };
+            const fetchReportData = async (type) => {
+                try {
+                    const response = await makeApiRequest('get', `/api/report/GetReportById?reportId=${reportId}&type=${type}`);
+                    if (response.data && Object.keys(response.data).length > 0) {
+                        return response.data;
+                    }
+                    return null;
+                } catch (error) {
+                    if (error.response && error.response.status === 404) {
+                        console.log(`${type} report not found, ignoring 404 error.`);
+                        return null;
+                    } else {
+                        console.error('Could not fetch report info:', error);
+                        return null;
+                    }
+                }
+            };
 
-                setReportInfo(transformedData);
-            } catch (error) {
-                console.error('Could not fetch report info:', error);
+            if (isPersonalParam == "null") {
+                data = await fetchReportData('Group') || await fetchReportData('Personal');
+            } else {
+                const type = isPersonalParam === 'true' ? 'Personal' : 'Group';
+                data = await fetchReportData(type);
             }
+
+            if (data) {
+                const transformedData = {
+                    id: data.id,
+                    reportName: data.reportName,
+                    description: data.description,
+                    creatorName: data.creatorName,
+                    createdDate: data.createdDate,
+                    lastModifiedDate: data.lastModifiedDate,
+                    lastModifiedByName: data.lastModifiedByName,
+                    ownerName: data.ownerName,
+                    ownerType: data.ownerType,
+                    folderPath: data.folderPath
+                };
+                setReportInfo(transformedData);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const fetchFilesInFolder = async () => {
+            try {
+                const response = await makeApiRequest('get', `/api/folder/GetFilesInFolder?folderPath=${reportInfo.folderPath}`);
+                if (response.data && response.data.length > 0) {
+                    setReportFiles(response.data);
+                }
+            } catch (error) {
+                console.error('Could not fetch files in folder:', error);
+            }
+        };
+
+        if (reportInfo.folderPath) {
+            fetchFilesInFolder();
+        }
+    }, [reportInfo.folderPath]);
+
+    const downloadReport = async (fileId) => {
+        const file = reportFiles.find(f => f.id === fileId);
+        if (file) {
+            try {
+                const response = await fetch(`/api/folder/DownloadFile?filePath=${file.filePath}`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    console.error('Failed to download the file:', response.status);
+                }
+            } catch (error) {
+                console.error('An error occurred while downloading the file:', error);
+            }
+        } else {
+            console.error('File not found');
+        }
+    };
+
+    const applyDateFilter = () => {
+        if (dateRange.startDate && dateRange.endDate) {
+            const filteredFiles = reportFiles.filter(file =>
+                new Date(file.date) >= dateRange.startDate && new Date(file.date) <= dateRange.endDate
+            );
+            setReportFiles(filteredFiles);
         }
     };
 
@@ -99,6 +183,42 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                 <div className="report-info-item">
                     <p className="report-info-label">Owner:</p>
                     <p className="report-info-value">{reportInfo.ownerName}</p>
+                </div>
+            </div>
+            <div className="info-two">
+                {reportInfo.folderPath && (
+                    <h5>Report Storage Path: <a href={`file://${reportInfo.folderPath}`} target="_blank">{reportInfo.folderPath}</a></h5>
+                )}
+                <br/>
+                <div className="file-download-section">
+                   <h5>Download Report</h5>
+                    <div className="date-range-filter">
+                        <DatePicker
+                            selected={dateRange.startDate}
+                            onChange={date => setDateRange(prev => ({ ...prev, startDate: date }))}
+                            selectsStart
+                            startDate={dateRange.startDate}
+                            endDate={dateRange.endDate}
+                            placeholderText="Start Date"
+                        />
+                        <DatePicker
+                            selected={dateRange.endDate}
+                            onChange={date => setDateRange(prev => ({ ...prev, endDate: date }))}
+                            selectsEnd
+                            startDate={dateRange.startDate}
+                            endDate={dateRange.endDate}
+                            placeholderText="End Date"
+                        />
+                        <button onClick={applyDateFilter} className="btn-eight">Filter</button>
+                        <br /><br/>
+                        <p>Saved Ran Reports</p>
+                        <select value={selectedFile} onChange={e => setSelectedFile(e.target.value)} className="input-style-default standard-select" style={{ marginRight: '20px' }}>
+                            {reportFiles.map(file => (
+                                <option key={file.id} value={file.id}>{file.name}</option>
+                            ))}
+                        </select>
+                        <button onClick={() => downloadReport(selectedFile)} className="btn-six">Download</button>
+                    </div>
                 </div>
             </div>
         </div>

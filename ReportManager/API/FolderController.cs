@@ -6,6 +6,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using MongoDB.Driver;
 using Microsoft.IdentityModel.Tokens;
+using static ReportManager.API.ReportController;
+using System.Text;
 
 namespace ReportManager.API
 {
@@ -155,6 +157,15 @@ namespace ReportManager.API
             return Ok(personalFolderDTOs);
         }
 
+        [HttpGet("getPersonalFolder")]
+        public IActionResult GetPersonalFolder(string username)
+        {
+            var user = _userManagementService.GetUserByUsername(username);
+            var personalFolder = _folderManagementService.GetUserFolder(username);
+            var personalFolderDTO = new FolderDTO(personalFolder);
+            return Ok(personalFolderDTO);
+        }
+
         [HttpGet("getFoldersByGroupId")]
         public IActionResult GetFoldersByGroupId(string groupId)
         {
@@ -231,6 +242,56 @@ namespace ReportManager.API
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetFilesInFolder")]
+        public ActionResult<List<string>> GetFilesListInFolder(string folderPath, DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                if (folderPath.StartsWith(@"//"))
+                {
+                    string serverName = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                    folderPath = folderPath.Replace($"//{serverName}", @"C:\");
+                }
+
+                if (!Directory.Exists(folderPath))
+                {
+                    return NotFound("Folder does not exist.");
+                }
+
+                string[] filePaths = Directory.GetFiles(folderPath);
+                List<string> filteredFileNames = new List<string>();
+                foreach (string filePath in filePaths)
+                {
+                    DateTime fileEditDate = System.IO.File.GetLastWriteTime(filePath);
+                    if ((!startDate.HasValue || fileEditDate >= startDate.Value) && (!endDate.HasValue || fileEditDate <= endDate.Value))
+                    {
+                        filteredFileNames.Add(Path.GetFileName(filePath));
+                    }
+                }
+
+                return Ok(filteredFileNames);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error occurred while retrieving files: {ex.Message}");
+            }
+        }
+
+        [HttpGet("DownloadFile")]
+        public IActionResult DownloadFile(string filePath)
+        {
+            if (System.IO.File.Exists(filePath))
+            {
+                byte[] fileContents = System.IO.File.ReadAllBytes(filePath);
+                string contentType = _folderManagementService.GetContentType(filePath);
+                return File(fileContents, contentType, Path.GetFileName(filePath));
+            }
+            else
+            {
+                return NotFound("File not found");
             }
         }
     }

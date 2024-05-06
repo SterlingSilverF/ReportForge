@@ -15,6 +15,7 @@ using System.Collections;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using ReportManager.Services;
+using MongoDB.Driver.Core.Connections;
 
 public class ConnectionService
 {
@@ -521,6 +522,35 @@ public class ConnectionService
         return dbConnection;
     }
 
+    public bool AreConnectionsEqual(BaseConnectionModel connection1, BaseConnectionModel connection2)
+    {
+        return connection1.ServerName == connection2.ServerName &&
+               connection1.Port == connection2.Port &&
+               connection1.Instance == connection2.Instance &&
+               connection1.DbType == connection2.DbType &&
+               connection1.Username == connection2.Username &&
+               connection1._encryptedPassword == connection2._encryptedPassword &&
+               connection1.AuthType == connection2.AuthType &&
+               connection1.OwnerID == connection2.OwnerID &&
+               connection1.OwnerType == connection2.OwnerType;
+    }
+
+    public bool AreDBConnectionsEqual(DBConnectionModel connection1, DBConnectionModel connection2)
+    {
+        return connection1.ServerName == connection2.ServerName &&
+               connection1.Port == connection2.Port &&
+               connection1.Instance == connection2.Instance &&
+               connection1.DbType == connection2.DbType &&
+               connection1.Username == connection2.Username &&
+               connection1._encryptedPassword == connection2._encryptedPassword &&
+               connection1.AuthType == connection2.AuthType &&
+               connection1.OwnerID == connection2.OwnerID &&
+               connection1.OwnerType == connection2.OwnerType &&
+               connection1.DatabaseName == connection2.DatabaseName &&
+               connection1.FriendlyName == connection2.FriendlyName &&
+               connection1.Schema == connection2.Schema;
+    }
+
     public bool UpdateServerConnection(BaseConnectionModel updatedServer)
     {
         var collection = GetServerCollection(updatedServer.OwnerType);
@@ -533,5 +563,12 @@ public class ConnectionService
         var collection = GetDBCollection(updatedDB.OwnerType);
         var result = collection.ReplaceOne(x => x.Id == updatedDB.Id, updatedDB);
         return result.IsAcknowledged && result.ModifiedCount > 0;
+    }
+
+    public async Task DeleteBuiltConnectionString(ObjectId builtConnectionStringId)
+    {
+        var collection = _database.GetCollection<BuiltConnectionString>("ConnectionStrings");
+        var filter = Builders<BuiltConnectionString>.Filter.Eq(x => x.ConnectionId, builtConnectionStringId);
+        await collection.DeleteOneAsync(filter);
     }
 }
