@@ -74,17 +74,17 @@ namespace ReportManager.API
         [HttpPost("HandleSql")]
         public async Task<ActionResult> HandleSQL(string dbType, string SQL, string connectionId)
         {
-            bool safe = DatabaseService.SqlSanitizationChecks(SQL);
-            if (safe)
+            ObjectId _connectionId = _sharedService.StringToObjectId(connectionId);
+            string connectionstring = await _connectionService.FetchAndDecryptConnectionString(_connectionId);
+
+            try
             {
-                ObjectId _connectionId = _sharedService.StringToObjectId(connectionId);
-                string connectionstring = await _connectionService.FetchAndDecryptConnectionString(_connectionId);
-                var result = await _databaseService.ExecuteQueryAsync(dbType, connectionstring, SQL);
+                var result = await _databaseService.ExecuteSanitizedQuery(dbType, connectionstring, SQL);
                 return Ok(result);
             }
-            else
+            catch (InvalidOperationException ex)
             {
-                return BadRequest("SQL safety verification failed.");
+                return BadRequest(ex.Message);
             }
         }
     }

@@ -91,11 +91,11 @@ namespace ReportManager.Services
             return _reports.Find(filter).ToList();
         }
 
-        public ReportConfigurationModel GetReportById(ObjectId reportId, string type)
+        public async Task<ReportConfigurationModel> GetReportById(ObjectId reportId, string type)
         {
             var reportType = ParseReportType(type);
             var filter = Builders<ReportConfigurationModel>.Filter.Eq(r => r.Id, reportId);
-            return GetReportCollection(reportType).Find(filter).FirstOrDefault();
+            return await GetReportCollection(reportType).Find(filter).FirstOrDefaultAsync();
         }
 
         public List<ReportConfigurationModel> GetPersonalReportsByCreatorId(ObjectId userId)
@@ -136,6 +136,121 @@ namespace ReportManager.Services
             var personalReportCount = await _personalreports.CountDocumentsAsync(filter);
 
             return groupReportCount > 0 || personalReportCount > 0;
+        }
+
+        private DateTime CalculateNextRunTime(ReportConfigurationModel report, DateTime currentTime)
+        {
+            var lastRunTime = report.LastGenerated ?? report.CreatedDate;
+
+            foreach (var schedule in report.Schedules)
+            {
+                DateTime nextRunTime;
+
+                switch (schedule.ScheduleType)
+                {
+                    case ScheduleType.Daily:
+                        nextRunTime = lastRunTime.Date.AddDays(schedule.Iteration);
+                        break;
+                    case ScheduleType.Weekly:
+                        nextRunTime = lastRunTime.Date.AddDays((int)DayOfWeek.Sunday - (int)lastRunTime.DayOfWeek).AddDays(7 * schedule.Iteration);
+                        break;
+                    case ScheduleType.Monthly:
+                        nextRunTime = new DateTime(lastRunTime.Year, lastRunTime.Month, 1).AddMonths(schedule.Iteration);
+                        break;
+                    case ScheduleType.Quarterly:
+                        nextRunTime = new DateTime(lastRunTime.Year, ((lastRunTime.Month - 1) / 3) * 3 + 1, 1).AddMonths(3 * schedule.Iteration);
+                        break;
+                    case ScheduleType.Yearly:
+                        nextRunTime = new DateTime(lastRunTime.Year, 1, 1).AddYears(schedule.Iteration);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(schedule.ScheduleType), schedule.ScheduleType, "Invalid schedule type");
+                }
+
+                nextRunTime = nextRunTime.Date + schedule.ExecuteTime.ToTimeSpan();
+
+                if (nextRunTime > lastRunTime && nextRunTime <= currentTime)
+                {
+                    return nextRunTime;
+                }
+            }
+
+            return DateTime.MaxValue;
+        }
+
+        public async Task<List<ReportConfigurationModel>> GetScheduledReports(DateTime currentTime, CancellationToken cancellationToken)
+        {
+            var scheduledReports = await _reports.Find(report => report.LastGenerated == null || report.LastGenerated < currentTime).ToListAsync(cancellationToken);
+
+            var reportsToUpdate = new List<ReportConfigurationModel>();
+
+            foreach (var report in scheduledReports)
+            {
+                var nextRunTime = CalculateNextRunTime(report, currentTime);
+
+                if (currentTime >= nextRunTime)
+                {
+                    report.LastGenerated = currentTime;
+                    reportsToUpdate.Add(report);
+                }
+            }
+
+            if (reportsToUpdate.Any())
+            {
+                var updateDefinition = Builders<ReportConfigurationModel>.Update.Set(r => r.LastGenerated, currentTime);
+                var filter = Builders<ReportConfigurationModel>.Filter.In(r => r.Id, reportsToUpdate.Select(r => r.Id));
+                await _reports.UpdateManyAsync(filter, updateDefinition, cancellationToken: cancellationToken);
+            }
+
+            return reportsToUpdate;
+        }
+
+        public async Task<(byte[] fileBytes, string contentType, string fileName)> ExportReportAsync(ExportRequest request)
+        {
+            var reportName = request.ReportName;
+            var reportData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(request.Data);
+
+            if (reportData == null)
+            {
+                throw new ArgumentException("Invalid data format.");
+            }
+
+            byte[] fileBytes;
+            string contentType;
+            string fileName;
+
+            switch (request.Format.ToLower())
+            {
+                case "csv":
+                    fileBytes = GenerateCsv(reportData);
+                    contentType = "text/csv";
+                    fileName = $"{reportName}.csv";
+                    break;
+                case "excel":
+                    fileBytes = GenerateXlsx(reportData, reportName);
+                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    fileName = $"{reportName}.xlsx";
+                    break;
+                case "pdf":
+                    fileBytes = GeneratePdf(reportData, reportName);
+                    contentType = "application/pdf";
+                    fileName = $"{reportName}.pdf";
+                    break;
+                case "json":
+                    fileBytes = Encoding.UTF8.GetBytes(request.Data);
+                    contentType = "application/json";
+                    fileName = $"{reportName}.json";
+                    break;
+                case "txt":
+                    fileBytes = GenerateTxtPipeDelimited(reportData);
+                    contentType = "text/plain";
+                    fileName = $"{reportName}.txt";
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported format.");
+            }
+
+            return (fileBytes, contentType, fileName);
         }
 
         public byte[] GenerateCsv(List<Dictionary<string, object>> data)

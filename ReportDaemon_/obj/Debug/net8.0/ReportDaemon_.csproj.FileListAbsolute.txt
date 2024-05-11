@@ -1,0 +1,5 @@
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon_\obj\Debug\net8.0\ReportDaemon_.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon_\obj\Debug\net8.0\ReportDaemon_.AssemblyInfoInputs.cache
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon_\obj\Debug\net8.0\ReportDaemon_.AssemblyInfo.cs
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon_\obj\Debug\net8.0\ReportDaemon_.csproj.CoreCompileInputs.cache
+C:\Users\Silver\source\repos\ReportManager\ReportDaemon_\obj\Debug\net8.0\ReportDaemon_.sourcelink.json

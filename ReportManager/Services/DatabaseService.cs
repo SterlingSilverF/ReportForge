@@ -549,6 +549,17 @@ public class DatabaseService
         return true;
     }
 
+    public async Task<dynamic> ExecuteSanitizedQuery(string dbType, string connectionString, string SQL)
+    {
+        bool safe = SqlSanitizationChecks(SQL);
+        if (!safe)
+        {
+            throw new InvalidOperationException("SQL safety verification failed.");
+        }
+
+        return await ExecuteQueryAsync(dbType, connectionString, SQL);
+    }
+
     public async Task<List<Dictionary<string, object>>> ExecuteQueryAsync(string dbType, string connectionString, string query)
     {
         var results = new List<Dictionary<string, object>>();

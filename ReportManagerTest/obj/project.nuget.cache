@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "YOCyeTYf2SkSeZbDCjpPTJyCAIHV+QOKvzqcS5wgtzhK/NEtY9ElxCM2S6vUxGXnm3EaXYKRlfOr4+U16MVYTw==",
+  "dgSpecHash": "CnR6B3rg7zpomnv1glMYBSccCp7k8mUA8rse/9HnRG3bj3jNsMBHlMx4qJSMmVrvmiRDiyrJHq9I5CNY81HjmA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManagerTest\\ReportManagerTest.csproj",
   "expectedPackageFiles": [
@@ -73,7 +73,7 @@
     "C:\\Users\\Silver\\.nuget\\packages\\mysql.data\\8.3.0\\mysql.data.8.3.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
-    "C:\\Users\\Silver\\.nuget\\packages\\npgsql\\8.0.1\\npgsql.8.0.1.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\npgsql\\8.0.3\\npgsql.8.0.3.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\nuget.frameworks\\6.5.0\\nuget.frameworks.6.5.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\nunit\\4.1.0\\nunit.4.1.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\oracle.manageddataaccess.core\\3.21.130\\oracle.manageddataaccess.core.3.21.130.nupkg.sha512",

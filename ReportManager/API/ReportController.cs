@@ -173,49 +173,15 @@ namespace ReportManager.API
         [HttpPost("ExportReport")]
         public async Task<IActionResult> ExportReport([FromBody] ExportRequest request)
         {
-            var reportName = request.ReportName;
-            var reportData = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(request.Data);
-            if (reportData == null)
+            try
             {
-                return BadRequest("Invalid data format.");
+                var (fileBytes, contentType, fileName) = await _reportManagementService.ExportReportAsync(request);
+                return File(fileBytes, contentType, fileName);
             }
-
-            byte[] fileBytes;
-            string contentType;
-            string fileName;
-
-            switch (request.Format.ToLower())
+            catch (ArgumentException ex)
             {
-                case "csv":
-                    fileBytes = _reportManagementService.GenerateCsv(reportData);
-                    contentType = "text/csv";
-                    fileName = $"{reportName}.csv";
-                    break;
-                case "excel":
-                    fileBytes = _reportManagementService.GenerateXlsx(reportData, reportName);
-                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    fileName = $"{reportName}.xlsx";
-                    break;
-                case "pdf":
-                    fileBytes = _reportManagementService.GeneratePdf(reportData, reportName);
-                    contentType = "application/pdf";
-                    fileName = $"{reportName}.pdf";
-                    break;
-                case "json":
-                    fileBytes = Encoding.UTF8.GetBytes(request.Data);
-                    contentType = "application/json";
-                    fileName = $"{reportName}.json";
-                    break;
-                case "txt":
-                    fileBytes = _reportManagementService.GenerateTxtPipeDelimited(reportData);
-                    contentType = "text/plain";
-                    fileName = $"{reportName}.txt";
-                    break;
-                default:
-                    return BadRequest("Unsupported format.");
+                return BadRequest(ex.Message);
             }
-
-            return File(fileBytes, contentType, fileName);
         }
 
         [HttpGet("GetUserReports")]
@@ -239,7 +205,7 @@ namespace ReportManager.API
             try
             {
                 var reportObjectId = _sharedService.StringToObjectId(reportId);
-                var report = _reportManagementService.GetReportById(reportObjectId, type);
+                var report = await _reportManagementService.GetReportById(reportObjectId, type);
 
                 if (report == null)
                 {

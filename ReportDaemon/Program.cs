@@ -1,30 +1,12 @@
-﻿using System;
-using System.ServiceProcess;
-
-namespace ReportDaemon
-{
-    internal static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        static void Main()
-        {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new ReportDaemonService(/* Inject dependencies here */)
-            };
-
-            try
-            {
-                ServiceBase.Run(ServicesToRun);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                // ...
-            }
-        }
-    }
-}
+using ReportDaemon;
+using ReportManager.Services;
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddSingleton<ConnectionService>();
+builder.Services.AddScoped<ReportManagementService>();
+builder.Services.AddScoped<FolderManagementService>();
+builder.Services.AddScoped<DatabaseService>();
+builder.Services.AddScoped<SharedService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddHostedService<Worker>();
+var host = builder.Build();
+host.Run();

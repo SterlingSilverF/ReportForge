@@ -53,8 +53,6 @@ namespace ReportManager.API
             public string OldOwnerType { get; set; }
         }
 
-
-
         public class UpdateDBConnectionRequest
         {
             [Required]

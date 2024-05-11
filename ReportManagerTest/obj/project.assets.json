@@ -1540,7 +1540,7 @@
           }
         }
       },
-      "Npgsql/8.0.1": {
+      "Npgsql/8.0.3": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0"
@@ -3726,7 +3726,7 @@
           "MongoDB.Driver": "2.23.1",
           "MySql.Data": "8.3.0",
           "Newtonsoft.Json": "13.0.3",
-          "Npgsql": "8.0.1",
+          "Npgsql": "8.0.3",
           "Oracle.ManagedDataAccess.Core": "3.21.130",
           "Serilog.AspNetCore": "8.0.1",
           "System.Data.SqlClient": "4.8.6",
@@ -5866,10 +5866,10 @@
         "packageIcon.png"
       ]
     },
-    "Npgsql/8.0.1": {
-      "sha512": "/XQX6n2gKQPnRoP5AhOnz33qL5V6CEY2vqluHPIvK4VZqY/sE/dHOFj+/8Ok7Y5Cbkj6/OZOFLZCiaKcryhS9A==",
+    "Npgsql/8.0.3": {
+      "sha512": "6WEmzsQJCZAlUG1pThKg/RmeF6V+I0DmBBBE/8YzpRtEzhyZzKcK7ulMANDm5CkxrALBEC8H+5plxHWtIL7xnA==",
       "type": "package",
-      "path": "npgsql/8.0.1",
+      "path": "npgsql/8.0.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -5884,7 +5884,7 @@
         "lib/netstandard2.0/Npgsql.xml",
         "lib/netstandard2.1/Npgsql.dll",
         "lib/netstandard2.1/Npgsql.xml",
-        "npgsql.8.0.1.nupkg.sha512",
+        "npgsql.8.0.3.nupkg.sha512",
         "npgsql.nuspec",
         "postgresql.png"
       ]
