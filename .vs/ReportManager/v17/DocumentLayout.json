@@ -3,19 +3,19 @@
   "WorkspaceRootPath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportdaemon\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\services\\foldermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\foldermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportmanager\\clientapp\\src\\pages\\guides\\databaseguides.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|C:\\Users\\Silver\\source\\repos\\ReportManager\\reportmanager\\clientapp\\src\\pages\\guides\\databaseguides.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\guides\\databaseguides.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     }
   ],
@@ -26,49 +26,49 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "FolderManagementService.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\FolderManagementService.cs",
-              "RelativeDocumentMoniker": "ReportManager\\Services\\FolderManagementService.cs",
-              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\FolderManagementService.cs",
-              "RelativeToolTip": "ReportManager\\Services\\FolderManagementService.cs",
-              "ViewState": "AQIAAPMAAAAAAAAAAAAAAAEBAAAJAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T02:29:30.213Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Worker.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Worker.cs",
-              "RelativeDocumentMoniker": "ReportDaemon\\Worker.cs",
-              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Worker.cs",
-              "RelativeToolTip": "ReportDaemon\\Worker.cs",
-              "ViewState": "AQIAABUAAAAAAAAAAAAAACwAAABIAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T02:15:07.543Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ReportManagementService.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\ReportManagementService.cs",
-              "RelativeDocumentMoniker": "ReportManager\\Services\\ReportManagementService.cs",
-              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\Services\\ReportManagementService.cs",
-              "RelativeToolTip": "ReportManager\\Services\\ReportManagementService.cs",
-              "ViewState": "AQIAAK4AAAAAAAAAAAAuwLUAAAAJAAAA",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\appsettings.json",
+              "RelativeDocumentMoniker": "ReportDaemon\\appsettings.json",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\appsettings.json",
+              "RelativeToolTip": "ReportDaemon\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAOAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2024-05-11T19:35:40.258Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Program.cs",
+              "RelativeDocumentMoniker": "ReportDaemon\\Program.cs",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Program.cs",
+              "RelativeToolTip": "ReportDaemon\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T02:25:53.308Z",
+              "WhenOpened": "2024-05-11T18:55:15.466Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Worker.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Worker.cs",
+              "RelativeDocumentMoniker": "ReportDaemon\\Worker.cs",
+              "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Worker.cs",
+              "RelativeToolTip": "ReportDaemon\\Worker.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-11T18:38:51.417Z",
               "EditorCaption": ""
             },
             {
