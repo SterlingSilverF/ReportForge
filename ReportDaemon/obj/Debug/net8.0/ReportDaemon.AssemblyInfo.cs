@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReportDaemon")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ba73ac6bba0432c7da7da7ea6d768364de7a136")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+643e1ef585456430c892e2cd3c0f46f3d90ca6dc")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReportDaemon")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReportDaemon")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

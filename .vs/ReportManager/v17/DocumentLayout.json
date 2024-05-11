@@ -7,11 +7,11 @@
       "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportdaemon\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|C:\\Users\\Silver\\source\\repos\\ReportManager\\reportdaemon\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\source\\repos\\reportmanager\\reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|C:\\Users\\Silver\\source\\repos\\ReportManager\\reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -42,8 +42,7 @@
               "RelativeToolTip": "ReportDaemon\\appsettings.json",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-05-11T19:35:40.258Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T19:35:40.258Z"
             },
             {
               "$type": "Document",
@@ -53,7 +52,7 @@
               "RelativeDocumentMoniker": "ReportDaemon\\Program.cs",
               "ToolTip": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\Program.cs",
               "RelativeToolTip": "ReportDaemon\\Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAmAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-11T18:55:15.466Z",
               "EditorCaption": ""
@@ -68,8 +67,7 @@
               "RelativeToolTip": "ReportDaemon\\Worker.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAXAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-11T18:38:51.417Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T18:38:51.417Z"
             },
             {
               "$type": "Document",
@@ -81,8 +79,7 @@
               "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\guides\\DatabaseGuides.jsx",
               "ViewState": "AQIAACAAAAAAAAAAAAAYwCUAAAAxAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-05-11T01:03:26.98Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-11T01:03:26.98Z"
             }
           ]
         }
