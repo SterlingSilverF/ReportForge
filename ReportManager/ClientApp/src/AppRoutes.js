@@ -179,7 +179,7 @@ const AppRoutes = [
     },
     {
         path: '/guides/databases',
-        element: <DatabasesGuides />,
+        element: <DatabasesGuides dbIcons={dbIcons} />,
         includeNavbar: true
     },
     {

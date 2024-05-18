@@ -1,14 +1,11 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import HOC from '../components/HOC';
 import { useReportForm } from '../contexts/ReportFormContext';
-import LoadingComponent from '../components/loading';
 import { useLocation } from 'react-router-dom';
 
 const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
     const { reportFormContext, updateReportFormData } = useReportForm();
     const [isEditMode, setIsEditMode] = useState(false);
-    const [status, setStatus] = useState('loading'); // loading, ready, error
-    const [action, setAction] = useState('create');
     const [message, setMessage] = useState('');
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -31,7 +28,7 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
         updateReportFormData({ [name]: value });
     };
 
-    const toPascalCase = (str) => str.charAt(0).toUpperCase() + str.slice(1)
+    const toPascalCase = (str) => str.charAt(0).toUpperCase() + str.slice(1);
     const keysToPascalCase = (obj) => {
         return Object.entries(obj).reduce((acc, [key, value]) => {
             if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -53,17 +50,36 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
         }, {});
     };
 
+    const calculateRetentionDays = () => {
+        const { retentionPeriodValue, retentionPeriodType } = reportFormContext;
+        if (!retentionPeriodValue || !retentionPeriodType) return 0;
+
+        switch (retentionPeriodType) {
+            case 'days':
+                return retentionPeriodValue;
+            case 'weeks':
+                return retentionPeriodValue * 7;
+            case 'months':
+                return retentionPeriodValue * 30;
+            case 'years':
+                return retentionPeriodValue * 365;
+            default:
+                return 0;
+        }
+    };
+
     const handleSave = () => {
         const body = keysToPascalCase(reportFormContext);
+        const retentionDays = calculateRetentionDays();
+
         const requestBody = {
             ...body,
             Filters: body.Filters.map(filter => omitKeys(filter, ['ColumnOptions'])),
             OrderBys: body.OrderBys.map(orderBy => omitKeys(orderBy, ['ColumnOptions'])),
-            UserId: userID
+            UserId: userID,
+            RetentionDays: retentionDays
         };
 
-        const formattedString = JSON.stringify(requestBody, null, 2);
-        console.log(formattedString);
         const httpMethod = isEditMode && reportId !== null ? 'put' : 'post';
         const apiEndpoint = isEditMode && reportId !== null ? '/api/report/updateReport' : '/api/report/createReport';
 
@@ -83,13 +99,13 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
                 <h1>Edit Report Configuration</h1>
             </div>
             <section className="report-form-box small-div">
-            <hr/>
+                <hr />
                 <div>
                     <h5>Report Name:</h5>
                     <p>{reportFormContext.reportName}</p>
                     <label>Description:</label><br />
                     <p>{reportFormContext.reportDescription}</p>
-                    <br/>
+                    <br />
                     <h5>Automatic Report Creation</h5>
                     <label>Select Output Format:</label>
                     <select name="outputFormat" value={reportFormContext.outputFormat} onChange={handleInputChange}>
@@ -116,6 +132,18 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
                     <label>At</label>
                     <input type="time" name="reportGenerationTime" value={reportFormContext.reportGenerationTime || ''} onChange={handleInputChange} />
                     <br /><br /><br />
+                    <h5>Retention Period</h5>
+                    <label>Delete Reports Older Than: </label>
+                    <input type="number" name="retentionPeriodValue" min="1" value={reportFormContext.retentionPeriodValue || ''} className="input-style-mini" onChange={handleInputChange} />
+
+                    <select name="retentionPeriodType" value={reportFormContext.retentionPeriodType} onChange={handleInputChange}>
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                        <option value="years">Years</option>
+                    </select>
+
+                    <br /><br /><br />
 
                     <h5>Emailing</h5>
                     <label>Automatically email reports?</label>
@@ -128,9 +156,10 @@ const ReportConfig = ({ makeApiRequest, navigate, userID }) => {
                     <label htmlFor="recipients">Recipients (separate each by a semicolon):</label>
                     <input type="text" id="recipients" name="emailRecipients" value={reportFormContext.emailRecipients || ''} className="input-style-long" onChange={handleInputChange} />
                     <br /><br />
+
                     <a>{message}</a>
                 </div>
-                <hr/>
+                <hr />
             </section>
             <div style={{ textAlign: "center" }}>
                 <button onClick={handleBackToDesigner} className="btn-six large-font">Report Designer</button>

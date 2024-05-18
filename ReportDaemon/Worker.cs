@@ -1,7 +1,6 @@
 using MongoDB.Driver.Core.Connections;
 using ReportManager.Services;
 using static ReportManager.API.ReportController;
-using System.Timers;
 using System.Collections.Concurrent;
 using MongoDB.Bson;
 using ReportManager.Models;
@@ -35,7 +34,7 @@ namespace ReportDaemon
             _reportQueue = new ConcurrentQueue<ReportRequest>();
         }
 
-        public async Task TriggerWorker(CancellationToken cancellationToken)
+        public async Task TriggerWorker(string taskType, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
@@ -50,8 +49,18 @@ namespace ReportDaemon
             try
             {
                 _logger.LogInformation("Worker triggered at: {time}", DateTimeOffset.Now);
-                await ProcessReportQueueAsync(cancellationToken); // Corrected method name
-                await ProcessScheduledReportsAsync(cancellationToken); // Corrected method name
+
+                if (taskType == "report" || taskType == "both")
+                {
+                    await ProcessReportQueue(cancellationToken);
+                    await ProcessScheduledReports(cancellationToken);
+                }
+
+                if (taskType == "cleanup" || taskType == "both")
+                {
+                    await RunRetentionCleanup(cancellationToken);
+                }
+
                 _logger.LogInformation("Worker completed at: {time}", DateTimeOffset.Now);
             }
             finally
@@ -62,7 +71,6 @@ namespace ReportDaemon
                 }
             }
         }
-        // TODO: Retry on certain error codes, network connectivity etc.
 
         public void EnqueueReportRequest(ReportRequest request)
         {
@@ -70,7 +78,7 @@ namespace ReportDaemon
             _logger.LogInformation("Enqueued report request: {reportId}", request.reportId);
         }
 
-        private async Task ProcessReportQueueAsync(CancellationToken stoppingToken)
+        private async Task ProcessReportQueue(CancellationToken stoppingToken)
         {
             while (_reportQueue.TryDequeue(out var request))
             {
@@ -134,7 +142,7 @@ namespace ReportDaemon
             }
         }
 
-        public async Task ProcessScheduledReportsAsync(CancellationToken cancellationToken)
+        public async Task ProcessScheduledReports(CancellationToken cancellationToken)
         {
             var currentTime = DateTime.UtcNow;
             var scheduledReports = await _reportManagementService.GetScheduledReports(currentTime, cancellationToken);
@@ -179,6 +187,61 @@ namespace ReportDaemon
 
             return reportRequest;
         }
+
+        public async Task RunRetentionCleanup(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Starting retention scan at: {time}", DateTimeOffset.Now);
+
+            try
+            {
+                var personalReportsTask = _reportManagementService.GetAllReports("Personal");
+                var groupReportsTask = _reportManagementService.GetAllReports("Group");
+
+                var personalReports = personalReportsTask;
+                var groupReports = groupReportsTask;
+                var allReports = personalReports.Concat(groupReports);
+
+                foreach (var report in allReports)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        _logger.LogInformation("Cancellation requested. Exiting retention cleanup.");
+                        break;
+                    }
+
+                    var creationDate = report.CreatedDate;
+                    var retentionDays = report.RetentionDays;
+
+                    if (retentionDays > 0 && (DateTime.UtcNow - creationDate).TotalDays > retentionDays)
+                    {
+                        _logger.LogInformation("Deleting report file for reportId {reportId} due to retention policy", report.Id);
+                        var folderPath = await _folderManagementService.BuildFolderPath(report.FolderId, report.OwnerType == OwnerType.Personal);
+                        var files = _folderManagementService.GetFilesInFolder(folderPath, null, null);
+                        var fileToDelete = files.FirstOrDefault(f => f.Name.Equals($"{report.ReportName}.{report.Format.ToString().ToLower()}", StringComparison.OrdinalIgnoreCase));
+
+                        if (fileToDelete != null)
+                        {
+                            File.Delete(fileToDelete.FilePath);
+                            _logger.LogInformation("Deleted report file: {filePath}", fileToDelete.FilePath);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Report file not found: {filePath}", Path.Combine(folderPath, $"{report.ReportName}.{report.Format.ToString().ToLower()}"));
+                        }
+                    }
+                }
+
+                _logger.LogInformation("Retention scan completed at: {time}", DateTimeOffset.Now);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Retention cleanup operation was canceled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during retention cleanup");
+            }
+        }
     }
 
     public class ReportRequest
@@ -187,7 +250,7 @@ namespace ReportDaemon
         public string reportName { get; set; }
         public string connectionId { get; set; }
         public string reportType { get; set; }
-        public string folderPath {  get; set; }
+        public string folderPath { get; set; }
         public string semicolonSeparatedEmails { get; set; }
         public BuildSQLRequest buildSqlRequest { get; set; }
     }

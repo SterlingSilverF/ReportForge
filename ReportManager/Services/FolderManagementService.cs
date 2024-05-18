@@ -4,6 +4,7 @@ using ReportManager.Models;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
+using static ReportManager.API.FolderController;
 
 namespace ReportManager.Services
 {
@@ -285,6 +286,40 @@ namespace ReportManager.Services
                 }
             }
             return contentType;
+        }
+
+        public List<FileDetails> GetFilesInFolder(string folderPath, DateTime? startDate, DateTime? endDate)
+        {
+            if (folderPath.StartsWith(@"//"))
+            {
+                string serverName = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
+                folderPath = folderPath.Replace($"//{serverName}", @"C:\");
+            }
+
+            if (!Directory.Exists(folderPath))
+            {
+                throw new DirectoryNotFoundException("Folder does not exist.");
+            }
+
+            string[] filePaths = Directory.GetFiles(folderPath);
+            List<FileDetails> filteredFiles = new List<FileDetails>();
+
+            foreach (string filePath in filePaths)
+            {
+                DateTime fileEditDate = System.IO.File.GetLastWriteTime(filePath);
+                if ((!startDate.HasValue || fileEditDate >= startDate.Value) && (!endDate.HasValue || fileEditDate <= endDate.Value))
+                {
+                    filteredFiles.Add(new FileDetails
+                    {
+                        Id = Path.GetFileNameWithoutExtension(filePath),
+                        Name = Path.GetFileName(filePath),
+                        FilePath = filePath,
+                        Date = fileEditDate
+                    });
+                }
+            }
+
+            return filteredFiles;
         }
     }
 }

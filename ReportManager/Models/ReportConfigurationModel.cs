@@ -17,6 +17,7 @@ namespace ReportManager.Models
         public DateTime LastModifiedDate { get; set; }
         public ObjectId LastModifiedBy { get; set; }
         public DateTime? LastGenerated {  get; set; }
+        public int RetentionDays { get; set; }
         public ObjectId OwnerID { get; set; }
         public OwnerType OwnerType { get; set; }
         public string CompiledSQL { get; set; }

@@ -345,6 +345,8 @@ const ConnectionForm = ({ makeApiRequest, username, userID, navigate }) => {
                 oldOwnerType: oldOwnerType,
             };
 
+            console.log('Duplicate Connection Request Payload:', duplicateConnectionRequest);
+
             try {
                 const duplicateResponse = await makeApiRequest('post', '/api/connection/DuplicateServerConnection', duplicateConnectionRequest);
                 connectionRequest.id = duplicateResponse.data;
@@ -352,6 +354,7 @@ const ConnectionForm = ({ makeApiRequest, username, userID, navigate }) => {
 
                 if (connectionFormData.configType === "Database") {
                     endpoint = "/api/connection/AddDBConnection";
+                    console.log('DB Connection Request Payload:', dbConnectionRequest);
                     const dbCreationResponse = await makeApiRequest('post', endpoint, dbConnectionRequest);
                     setMessage("Database connection created successfully.");
                     setIsSuccess(true);
@@ -389,15 +392,18 @@ const ConnectionForm = ({ makeApiRequest, username, userID, navigate }) => {
 
         if (connectionFormData.configType === 'Database' && (!connectionRequest.id || connectionRequest.id.trim() === '')) {
             try {
+                console.log('Server Connection Request Payload (Creating new server for DB connection):', connectionRequest);
                 const serverResponse = await makeApiRequest('post', '/api/connection/AddServerConnection', connectionRequest);
                 serverId = serverResponse.data;
-                dbConnectionRequest.id = serverId.id;
+                dbConnectionRequest.id = serverId;
             } catch (error) {
                 setIsSuccess(false);
                 setMessage("Server connection creation failed.");
                 return;
             }
         }
+
+        console.log('Save Connection Request Payload:', requestData);
 
         try {
             const saveResponse = await makeApiRequest(httpMethod, endpoint, requestData);

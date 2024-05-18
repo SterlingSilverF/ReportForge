@@ -30,10 +30,18 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate
     .AddNegotiate();
 
 var host = builder.Build();
+
 using (var scope = host.Services.CreateScope())
 {
     var worker = scope.ServiceProvider.GetRequiredService<Worker>();
-    await worker.TriggerWorker(CancellationToken.None);
+
+    string taskType = "both";
+    if (args.Length > 0)
+    {
+        taskType = args[0].ToLower();
+    }
+
+    await worker.TriggerWorker(taskType, CancellationToken.None);
 }
 
 await host.RunAsync();

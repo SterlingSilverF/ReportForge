@@ -23,7 +23,9 @@ const initialReportFormData = {
     reportFrequencyType: 'monthly',
     reportGenerationTime: '00:00',
     emailReports: 'no',
-    emailRecipients: ''
+    emailRecipients: '',
+    retentionPeriodValue: 30,
+    retentionPeriodType: 'days'
 };
 
 export const ReportFormProvider = ({ children }) => {

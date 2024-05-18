@@ -50,6 +50,14 @@ namespace ReportManager.API
             public string OwnerId { get; set; }
         }
 
+        public class FileDetails
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string FilePath { get; set; }
+            public DateTime Date { get; set; }
+        }
+
         public FolderController(FolderManagementService folderManagementService, UserManagementService userManagementService,
             SharedService sharedService, GroupManagementService groupManagementService)
         {
@@ -246,33 +254,16 @@ namespace ReportManager.API
         }
 
         [HttpGet("GetFilesInFolder")]
-        public ActionResult<List<string>> GetFilesListInFolder(string folderPath, DateTime? startDate, DateTime? endDate)
+        public ActionResult<List<FileDetails>> GetFilesInFolder(string folderPath, DateTime? startDate, DateTime? endDate)
         {
             try
             {
-                if (folderPath.StartsWith(@"//"))
-                {
-                    string serverName = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries)[0];
-                    folderPath = folderPath.Replace($"//{serverName}", @"C:\");
-                }
-
-                if (!Directory.Exists(folderPath))
-                {
-                    return NotFound("Folder does not exist.");
-                }
-
-                string[] filePaths = Directory.GetFiles(folderPath);
-                List<string> filteredFileNames = new List<string>();
-                foreach (string filePath in filePaths)
-                {
-                    DateTime fileEditDate = System.IO.File.GetLastWriteTime(filePath);
-                    if ((!startDate.HasValue || fileEditDate >= startDate.Value) && (!endDate.HasValue || fileEditDate <= endDate.Value))
-                    {
-                        filteredFileNames.Add(Path.GetFileName(filePath));
-                    }
-                }
-
-                return Ok(filteredFileNames);
+                List<FileDetails> files = _folderManagementService.GetFilesInFolder(folderPath, startDate, endDate);
+                return Ok(files);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

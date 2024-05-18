@@ -30,7 +30,8 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
                 reportname: reportFormContext.reportName,
                 data: serializedData
             };
-            
+
+            // For some reason, using HOC breaks this so we do it directly instead
             axios.post('/api/report/exportReport', requestBody, {
                 headers: {
                     'Authorization': `Bearer ${token}`

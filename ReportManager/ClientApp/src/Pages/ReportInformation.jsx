@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 import DatePicker from "react-datepicker";
+import axios from 'axios';
 import "react-datepicker/dist/react-datepicker.css";
 
 const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
@@ -86,35 +87,57 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     useEffect(() => {
         const fetchFilesInFolder = async () => {
             try {
-                const response = await makeApiRequest('get', `/api/folder/GetFilesInFolder?folderPath=${reportInfo.folderPath}`);
+                const startDate = dateRange.startDate ? dateRange.startDate.toISOString() : '';
+                const endDate = dateRange.endDate ? dateRange.endDate.toISOString() : '';
+                const url = `/api/folder/GetFilesInFolder?folderPath=${reportInfo.folderPath}&startDate=${startDate}&endDate=${endDate}`;
+                console.log("Requesting:", url);
+                const response = await makeApiRequest('get', url);
                 if (response.data && response.data.length > 0) {
                     setReportFiles(response.data);
+                } else {
+                    console.log("No files found.");
                 }
             } catch (error) {
                 console.error('Could not fetch files in folder:', error);
             }
         };
 
-        if (reportInfo.folderPath) {
+        if (reportInfo.folderPath && dateRange) {
             fetchFilesInFolder();
         }
-    }, [reportInfo.folderPath]);
+    }, [reportInfo.folderPath, dateRange]);
 
     const downloadReport = async (fileId) => {
+        if (!fileId) {
+            console.error('No file selected');
+            return;
+        }
+
         const file = reportFiles.find(f => f.id === fileId);
         if (file) {
             try {
-                const response = await fetch(`/api/folder/DownloadFile?filePath=${file.filePath}`);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = file.fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
+                // For some reason, using HOC breaks this so we do it directly instead
+                const url = `/api/folder/DownloadFile`;
+                const requestBody = {
+                    filePath: file.filePath
+                };
+
+                const response = await axios.get(url, {
+                    params: requestBody,
+                    responseType: 'blob'
+                });
+
+                if (response.status === 200) {
+                    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const hiddenLink = document.createElement('a');
+                    hiddenLink.href = downloadUrl;
+                    hiddenLink.download = file.name;
+                    hiddenLink.style.display = 'none';
+                    document.body.appendChild(hiddenLink);
+                    hiddenLink.click();
+                    window.URL.revokeObjectURL(downloadUrl);
+                    document.body.removeChild(hiddenLink);
                 } else {
                     console.error('Failed to download the file:', response.status);
                 }
@@ -212,7 +235,12 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                         <button onClick={applyDateFilter} className="btn-eight">Filter</button>
                         <br /><br/>
                         <p>Saved Ran Reports</p>
-                        <select value={selectedFile} onChange={e => setSelectedFile(e.target.value)} className="input-style-default standard-select" style={{ marginRight: '20px' }}>
+                        <select
+                            value={selectedFile}
+                            onChange={e => setSelectedFile(e.target.value)}
+                            className="input-style-default standard-select"
+                            style={{ marginRight: '20px' }}>
+                            <option value="" disabled>--Select a file--</option>
                             {reportFiles.map(file => (
                                 <option key={file.id} value={file.id}>{file.name}</option>
                             ))}

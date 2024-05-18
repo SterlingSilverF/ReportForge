@@ -50,6 +50,7 @@ namespace ReportManager.API
             public string ReportGenerationTime { get; set; }
             public string EmailReports { get; set; }
             public string EmailRecipients { get; set; }
+            public int RetentionDays { get; set; }
         }
 
         public class ReportSubsetRequest

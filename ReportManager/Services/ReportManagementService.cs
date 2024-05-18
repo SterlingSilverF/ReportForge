@@ -482,14 +482,14 @@ namespace ReportManager.Services
                     : _sharedService.StringToObjectId(request.SelectedGroup);
 
                 var schedules = new List<ScheduleInfo>
-                {
-                    new ScheduleInfo
-                    {
-                        ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
-                        Iteration = request.ReportFrequencyValue,
-                        ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
-                    }
-                };
+        {
+            new ScheduleInfo
+            {
+                ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                Iteration = request.ReportFrequencyValue,
+                ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+            }
+        };
 
                 var selectedColumns = request.SelectedColumns
                     .Select(columnDto => new ColumnDefinition
@@ -565,7 +565,8 @@ namespace ReportManager.Services
                     Format = Enum.Parse<ReportFormat>(request.OutputFormat),
                     JoinConfig = joinConfigItems,
                     Filters = filterItems,
-                    OrderBys = orderByItems
+                    OrderBys = orderByItems,
+                    RetentionDays = request.RetentionDays
                 };
 
                 // I know these could be an if else but it seems safer to leave them as is

@@ -1,6 +1,25 @@
 ﻿import React from 'react';
 
-const DatabasesGuides = () => {
+const DatabasesGuides = ({ dbIcons }) => {
+    const getIconByConnectionType = (connection) => {
+        switch (connection.dbType) {
+            case 'MSSQL':
+                return dbIcons.mssql;
+            case 'Oracle':
+                return dbIcons.oracle;
+            case 'MySQL':
+                return dbIcons.mysql;
+            case 'Postgres':
+                return dbIcons.postgres;
+            case 'MongoDB':
+                return dbIcons.mongodb;
+            case 'DB2':
+                return dbIcons.DB2;
+            default:
+                return '';
+        };
+    };
+
     return (
         <div className="report-form-style">
             <div className="report-form-header">
@@ -21,6 +40,14 @@ const DatabasesGuides = () => {
                         <ul>
                             <li><b>Definition and Importance:</b> A database is an organized collection of data stored electronically, designed to be easily accessed, managed, and updated. Nearly every business today utilizes databases to store information ranging from customer data to inventory, which is essential for efficient operations and strategic decision-making.</li>
                             <li><b>Database Providers:</b> Database providers offer the technology to store and manage data. Each provider may have unique strengths, such as speed, scalability, or ease of use, making some better suited for specific types of applications than others. Common choices include Oracle, SQL Server, and MySQL.</li>
+                            <div className="database-icons">
+                                <img src={getIconByConnectionType({ dbType: 'MSSQL' })} alt="SQL Server" title="SQL Server" />
+                                <img src={getIconByConnectionType({ dbType: 'Oracle' })} alt="Oracle" title="Oracle" />
+                                <img src={getIconByConnectionType({ dbType: 'MySQL' })} alt="MySQL" title="MySQL" />
+                                <img src={getIconByConnectionType({ dbType: 'Postgres' })} alt="Postgres" title="Postgres" />
+                                <img src={getIconByConnectionType({ dbType: 'MongoDB' })} alt="MongoDB" title="MongoDB" />
+                                <img src={getIconByConnectionType({ dbType: 'DB2' })} alt="DB2" title="DB2" />
+                            </div>
                             <li><b>ReportForge Integration:</b> To simplify data management across multiple platforms, ReportForge can integrate data from various database providers, allowing businesses to centralize their data analysis and reporting in one powerful tool.</li>
                         </ul>
                     </section>
