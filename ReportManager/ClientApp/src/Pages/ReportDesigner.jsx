@@ -122,29 +122,21 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
         );
         setJoinsInfo(updatedJoinsInfo);
 
+        // Remove columns related to the unselected table
+        const updatedSelectedColumns = reportFormContext.selectedColumns.filter(col => col.table !== tableName);
+        updateReportFormData({ selectedColumns: updatedSelectedColumns });
+
+        // Update filters by removing any filter related to the unselected table
+        const updatedFilters = reportFormContext.filters.filter(filter => filter.table !== tableName);
+        updateReportFormData({ filters: updatedFilters });
+
+        // Update order bys by removing any order by related to the unselected table
+        const updatedOrderBys = reportFormContext.orderBys.filter(orderBy => orderBy.table !== tableName);
+        updateReportFormData({ orderBys: updatedOrderBys });
+
         // Reorder tables based on updated joins
         const orderedTables = reorderTables(newSelectedTables, updatedJoinsInfo);
         setOrderedTables(orderedTables);
-
-        // Update filters
-        const updatedFilters = reportFormContext.filters.map(filter => {
-            if (filter.table === tableName) {
-                const columnOptions = tableColumns[tableName]?.map(column => column.columnName) || [];
-                return { ...filter, table: tableName, column: '', dataType: '', columnOptions };
-            }
-            return filter;
-        });
-        updateReportFormData({ filters: updatedFilters });
-
-        // Update order bys
-        const updatedOrderBys = reportFormContext.orderBys.map(orderBy => {
-            if (orderBy.table === tableName) {
-                const columnOptions = tableColumns[tableName]?.map(column => column.columnName) || [];
-                return { ...orderBy, table: tableName, column: '', columnOptions };
-            }
-            return orderBy;
-        });
-        updateReportFormData({ orderBys: updatedOrderBys });
     };
 
     // When a column is selected from "Availible Tables"
@@ -454,12 +446,7 @@ const ReportDesigner = ({ makeApiRequest, navigate }) => {
     // Final function
     const triggerSubmit = async () => {
         // triggered by updateReportFormContextWithJoins(); finishing
-        const filterValues = Object.values(inputValues);
         const dynamicFilters = reportFormContext.filters
-            .map((filter, index) => ({
-                ...filter,
-                value: filterValues[index] || ''
-            }))
             .filter(filter =>
                 !Object.keys(filter)
                     .filter(key => key !== 'value' && key !== 'andOr')

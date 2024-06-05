@@ -164,6 +164,41 @@ namespace ReportManager.API
             }
         }
 
+        [HttpDelete("DeleteReport")]
+        public async Task<IActionResult> DeleteReport(string reportId, string type)
+        {
+            try
+            {
+                var reportObjectId = _sharedService.StringToObjectId(reportId);
+                var report = await _reportManagementService.GetReportById(reportObjectId, type);
+
+                if (report == null)
+                {
+                    return NotFound();
+                }
+
+                bool isPersonal = type == "Personal";
+                var folderPath = await _folderManagementService.BuildFolderPath(report.FolderId, isPersonal, false);
+
+                // Delete all report files under this config
+                var directoryInfo = new DirectoryInfo(folderPath);
+                var reportFiles = directoryInfo.GetFiles($"{report.ReportName}_*.{report.Format.ToString()}");
+                foreach (var file in reportFiles)
+                {
+                    file.Delete();
+                }
+
+                // Delete the report configuration itself
+                _reportManagementService.DeleteReport(reportObjectId, type);
+                return Ok("Report configuration and related files deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                // TODO: Logging
+                return StatusCode(500, "An internal server error occurred.");
+            }
+        }
+
         [HttpPost("BuildAndVerifySQL")]
         public IActionResult BuildSQL([FromBody] BuildSQLRequest request)
         {

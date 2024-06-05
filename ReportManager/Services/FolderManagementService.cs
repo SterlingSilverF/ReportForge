@@ -250,11 +250,17 @@ namespace ReportManager.Services
             }
         }
 
-        public async Task<string> BuildFolderPath(ObjectId folderId, bool isPersonal)
+        public async Task<string> BuildFolderPath(ObjectId folderId, bool isPersonal, bool replaceDrive = true)
         {
             var currentFolder = await GetFolderById(folderId, isPersonal);
             string serverName = Dns.GetHostName();
-            string path = currentFolder.FolderPath.Replace("C:/", $"//{serverName}/");
+            string path = currentFolder.FolderPath;
+
+            if (replaceDrive)
+            {
+                path = path.Replace("C:/", $"//{serverName}/");
+            }
+
             return path;
         }
 

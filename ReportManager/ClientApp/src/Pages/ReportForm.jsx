@@ -65,7 +65,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                     console.error('Could not fetch user groups:', error);
                 }
             };
-            fetchUserGroups().then(() => setHasFetchedGroups(true));;
+            fetchUserGroups().then(() => setHasFetchedGroups(true));
         }
     }, [reportFormContext.reportType, makeApiRequest, username]);
 
@@ -73,8 +73,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
     useEffect(() => {
         if (reportFormContext.reportType === 'Personal' && userID) {
             fetchConnections(userID, 'Personal');
-        }
-        else if (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup) {
+        } else if (reportFormContext.reportType === 'Group' && reportFormContext.selectedGroup) {
             fetchConnections(reportFormContext.selectedGroup, 'Group');
         }
     }, [reportFormContext.reportType, reportFormContext.selectedGroup, userID]);
@@ -153,7 +152,6 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         navigate(url);
     };
 
-
     const handleSaveUpdates = async () => {
         if (!validateForm()) {
             return;
@@ -170,6 +168,27 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
         }
     };
 
+    const handleDelete = async () => {
+        const confirmed = window.confirm("Are you sure you want to delete this report configuration? All reports generated with it will also be deleted.");
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await makeApiRequest('delete', `/api/report/DeleteReport?reportId=${reportId}&type=${type}`);
+            setMessage('Report configuration deleted successfully.');
+            setMessageSuccess(true);
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+        } catch (error) {
+            console.error('Error deleting report configuration:', error);
+            setMessage('An error occurred while deleting the report configuration.');
+            setMessageSuccess(false);
+        }
+    };
+
+
     return (
         <div className="report-form-style">
             <div className="report-form-header">
@@ -178,7 +197,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
             </div>
             <section className="report-form-box">
                 <h3>Basic Report Information</h3>
-            <br/>
+                <br />
                 {/* Name of Report */}
                 <div className="form-element">
                     <label>Name of Report:</label><br />
@@ -201,7 +220,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                 </div>
                 <br />
                 <h3>Report Setup</h3>
-                <br/>
+                <br />
                 <div className='form-element' style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
                         {/* Report Type */}
@@ -250,7 +269,7 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                 </div>
 
                 <small>The below are updated based on report type selection</small>
-                <br/>
+                <br />
                 {/* Connection Selection */}
                 <div className="form-element">
                     <label>Connection:</label><br />
@@ -289,6 +308,9 @@ const ReportForm = ({ makeApiRequest, username, userID, navigate }) => {
                             </button>
                             <button onClick={handleSaveUpdates} className="btn-three btn-restrict">
                                 Save Updates
+                            </button>
+                            <button onClick={handleDelete} className="btn-three btn-restrict">
+                                Delete
                             </button>
                         </>
                     )}

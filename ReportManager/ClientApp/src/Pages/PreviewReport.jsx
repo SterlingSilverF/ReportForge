@@ -192,7 +192,7 @@ const PreviewReport = ({ makeApiRequest, navigate, token }) => {
                             <div className="search-bar-con">
                                 <select defaultValue="">
                                     <option value="csv">CSV</option>
-                                    <option value="excel">Excel</option>
+                                    <option value="xlsx">Excel</option>
                                     <option value="json">JSON</option>
                                     <option value="txt">Text</option>
                                     <option value="pdf">PDF</option>

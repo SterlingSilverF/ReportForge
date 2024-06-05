@@ -111,9 +111,9 @@ namespace ReportDaemon
                     };
 
                     var (fileBytes, contentType, fileName) = await _reportManagementService.ExportReportAsync(exportRequest);
-
                     var folderPath = request.folderPath;
-                    var filePath = Path.Combine(folderPath, fileName);
+                    var dateSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                    var filePath = Path.Combine(folderPath, $"{Path.GetFileNameWithoutExtension(fileName)}_{dateSuffix}{Path.GetExtension(fileName)}");
                     await File.WriteAllBytesAsync(filePath, fileBytes);
                     _logger.LogInformation("Saved report file successfully: {filePath}", filePath);
 

@@ -1126,6 +1126,7 @@ input[type="radio"] {
     max-width: 650px;
     margin: 0 auto;
 }
+
 /* Report Information */
 .report-info {
     display: grid;
@@ -1204,8 +1205,6 @@ input[type="radio"] {
     }
 
 
-
-
 .input-style-number {
     border: none;
     border-bottom: 1px solid black;
@@ -1225,3 +1224,10 @@ input[type="radio"] {
         right: 0;
         height: 100%;
     }
+
+.join-img {
+    width: 80%;
+    max-width: 400px;
+    height: auto;
+    margin: 10px 0;
+}

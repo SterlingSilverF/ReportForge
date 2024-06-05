@@ -2,37 +2,52 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFile, faCaretLeft, faPeopleRoof, faPencil } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
+import LoadingComponent from '../components/loading';
 
 const Reports = ({ userID, makeApiRequest, goBack, navigate }) => {
     const [folders, setFolders] = useState([]);
     const [reports, setReports] = useState([]);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const searchParams = new URLSearchParams(window.location.search);
     const isPersonal = searchParams.get('isPersonal');
     const folderId = searchParams.get('folderId');
 
     useEffect(() => {
         if (userID) {
+            setIsLoading(true);
+            setLoadingMessage('Fetching reports...');
+
             if (folderId) {
                 // Fetch subfolders and reports for a specific folder
-                makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${isPersonal}`)
-                    .then(folderRes => {
+                Promise.all([
+                    makeApiRequest('get', `/api/folder/getSubFoldersByParentId?parentId=${folderId}&type=${isPersonal}`),
+                    makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
+                ])
+                    .then(([folderRes, reportRes]) => {
                         setFolders(folderRes.data);
-                    })
-                    .catch(err => console.error('There was an error fetching folders!', err));
-
-                makeApiRequest('get', `/api/report/getFolderReports?folderId=${folderId}&type=${isPersonal}`)
-                    .then(reportRes => {
                         setReports(reportRes.data);
+                        setIsLoading(false);
+                        setLoadingMessage('');
                     })
-                    .catch(err => console.error('There was an error fetching reports!', err));
+                    .catch(err => {
+                        console.error('There was an error fetching folders and reports!', err);
+                        setLoadingMessage('Failed to load folders and reports.');
+                        setIsLoading(false);
+                    });
             } else {
                 // Fetch all user-related reports when no specific folder is selected
                 makeApiRequest('get', `/api/report/getAllUserRelatedReports?userId=${userID}`)
                     .then(reportRes => {
                         setReports(reportRes.data);
+                        setIsLoading(false);
+                        setLoadingMessage('');
                     })
-                    .catch(err => console.error('There was an error fetching reports!', err));
+                    .catch(err => {
+                        console.error('There was an error fetching reports!', err);
+                        setLoadingMessage('Failed to load reports.');
+                        setIsLoading(false);
+                    });
             }
         }
     }, [userID, folderId, isPersonal, makeApiRequest]);
@@ -40,6 +55,7 @@ const Reports = ({ userID, makeApiRequest, goBack, navigate }) => {
     return (
         <div className="sub-container padding-medium">
             <div className="title-style-one">Report Explorer</div>
+            <LoadingComponent isLoading={isLoading} message={loadingMessage} />
             <button className="btn-three back" onClick={goBack}>
                 <FontAwesomeIcon icon={faCaretLeft} /> Back
             </button>

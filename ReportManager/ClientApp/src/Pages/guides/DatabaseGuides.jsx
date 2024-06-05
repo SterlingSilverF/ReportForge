@@ -1,4 +1,8 @@
 ﻿import React from 'react';
+import spreadsheet_example from '../../components/Images/spreadsheet_example.PNG';
+import inner_join from '../../components/Images/full_join.png';
+import left_outer_join from '../../components/Images/left_outer_join.png';
+import full_join from '../../components/Images/full_join.png';
 
 const DatabasesGuides = ({ dbIcons }) => {
     const getIconByConnectionType = (connection) => {
@@ -38,8 +42,9 @@ const DatabasesGuides = ({ dbIcons }) => {
                     <section id="what-is-a-database">
                         <h2>What is a Database?</h2>
                         <ul>
-                            <li><b>Definition and Importance:</b> A database is an organized collection of data stored electronically, designed to be easily accessed, managed, and updated. Nearly every business today utilizes databases to store information ranging from customer data to inventory, which is essential for efficient operations and strategic decision-making.</li>
-                            <li><b>Database Providers:</b> Database providers offer the technology to store and manage data. Each provider may have unique strengths, such as speed, scalability, or ease of use, making some better suited for specific types of applications than others. Common choices include Oracle, SQL Server, and MySQL.</li>
+                            <li><b>Definition and Importance:</b><br/> A database is an organized collection of data stored electronically, designed to be easily accessed, managed, and updated. Nearly every business today utilizes databases to store information ranging from customer data, employee information and statistics, to inventory, which is essential for efficient operations and strategic decision-making.</li>
+                            <br/>
+                            <li><b>Database Providers:</b><br/> Database providers offer the technology to store and manage data. Each provider may have unique strengths, such as speed, scalability, or ease of use, making some better suited for specific types of applications than others. Common choices include Oracle, SQL Server, and MySQL.</li>
                             <div className="database-icons">
                                 <img src={getIconByConnectionType({ dbType: 'MSSQL' })} alt="SQL Server" title="SQL Server" />
                                 <img src={getIconByConnectionType({ dbType: 'Oracle' })} alt="Oracle" title="Oracle" />
@@ -47,35 +52,52 @@ const DatabasesGuides = ({ dbIcons }) => {
                                 <img src={getIconByConnectionType({ dbType: 'Postgres' })} alt="Postgres" title="Postgres" />
                                 <img src={getIconByConnectionType({ dbType: 'MongoDB' })} alt="MongoDB" title="MongoDB" />
                                 <img src={getIconByConnectionType({ dbType: 'DB2' })} alt="DB2" title="DB2" />
+                                <br/>
+                                <i>The above are the icons for MSSQL, Oracle DB, MySQL, PostgreSQL, MongoDB, and IBM DB respectively.</i>
                             </div>
-                            <li><b>ReportForge Integration:</b> To simplify data management across multiple platforms, ReportForge can integrate data from various database providers, allowing businesses to centralize their data analysis and reporting in one powerful tool.</li>
+                            <br/><br/>
+                            <li><b>ReportForge Integration:</b><br/> To simplify data analysis across multiple platforms, ReportForge is designed to access data from all database providers, allowing businesses to centralize their reporting in one central tool.</li>
                         </ul>
                     </section>
                     {/* Details on Tables, Columns, and Datatypes */}
                     <section id="about-tables-columns-and-datatypes">
                         <h2>About Tables, Columns, and Datatypes</h2>
                         <ul>
-                            <li><b>Spreadsheet Analogy:</b> Think of a database table like a spreadsheet with rows and columns, where each row represents a record and each column represents a field in the record. For instance, a customer database may have columns for name, address, and phone number.</li>
-                            <li><b>Database Tables:</b> A table in a database holds data about a specific topic, structured in rows and columns. Normalization is a design approach used to minimize redundancy and dependency by organizing fields and table relations.</li>
-                            <li><b>Columns and Datatypes:</b> Columns in a database table describe the data each element holds, with datatypes specifying the kind of data, such as text (VARCHAR), numbers (INTEGER), and dates (DATE). More complex types include BLOB for storing binary data like images.</li>
-                            <li><b>Table Relationships:</b> Tables relate to one another through keys. A primary key is a unique identifier for each record in a table, while foreign keys link two tables together by referring back to a primary key in another table.</li>
+                            <li><b>Spreadsheet Analogy:</b><br/>One can conceptualize a database table like a spreadsheet, where each row represents a record and each column stores a specific set of data for that record. For example, a customer database may have columns for name, address, and phone number. Subsequently, each individual name, address, or phone number is a single value (field).</li>
+                            <br/>
+                            <img src={spreadsheet_example} /><br/><br/>
+                            <i>In the above, the column names are highlighted in yellow and a single record/row is highlighted in blue. A, B and C are columns and 2-10 are the individual records.</i>
+                            <br /><br/>
+                            <li><b>Database Tables:</b><br />Database servers typically host multiple databases. Some databases are designed for the hosting server itself, each individual database is usually used for a single app or purpose. Databases contain several different objects: tables, views, and procedures, among other things. A single table should be self contained data without duplicating information that is already present in another table.
+                                This process of ensuring data integrity and minimizing redundancy is called "normalization".</li>
+                            <br/>
+                            <li><b>Columns and Datatypes:</b><br /> Columns in a database table define the attributes of the data they hold, such as maximum length and specific formatting requirements. Datatypes specify the kind of data, such as text (VARCHAR), numbers (Ex. INTEGER, DECIMAL, MONEY), and dates (DATE or DATETIME). For more complex data, like images or large documents, special types such as BLOB are used to handle this information effectively.</li>
+                            <br/>
+                            <li><b>Table Relationships:</b><br />Tables can connect to each other using keys. A primary key is a unique identifier for each record in a table, ensuring each entry is distinct. A foreign key links two tables by referring to a primary key in one table, which helps organize related information between the two tables.</li>
                         </ul>
                     </section>
                     {/* Explanation of Joins */}
                     <section id="what-are-joins">
                         <h2>What are Joins?</h2>
                         <ul>
-                            <li><b>Purpose of Joins:</b> Joins are used to combine rows from two or more tables based on a related column between them, essential for deriving meaningful information across different data segments.</li>
-                            <li><b>Types of Joins:</b> There are several types of joins:
-                                <ul>
-                                    <li>INNER JOIN returns rows when there is a match in both tables.</li>
-                                    <li>LEFT JOIN returns all rows from the left table, and the matched rows from the right table.</li>
-                                    <li>RIGHT JOIN and FULL JOIN work similarly by focusing on one side or both sides respectively.</li>
-                                </ul>
-                            </li>
-                            <li><b>Join Conditions:</b> Joins are defined by conditions that specify which columns from each table should match. ReportForge typically uses INNER joins by default, ensuring only matching data from both tables is combined.</li>
-                            <li><a href="https://learnsql.com/blog/sql-joins/">Image Credit & Futher Info</a></li>
+                            <li><b>Purpose of Joins:</b> Joins are used to combine rows from two or more tables based on a related column between them. They help us get a more complete picture by connecting pieces of information that are spread across different tables.</li>
+                            <br/>
+                            <li><b>Types of Joins:</b> There are several types of joins:</li>
+                            <br/>
+                            <ul>
+                                <li><b>INNER JOIN:</b><br /> Returns rows when there is matching data in both tables based on a common column. It only includes data where there is a match in both the first and second table specified.</li>
+                                <img src={inner_join} className="join-img" /><br/><br/><br/>
+                                <li><b>LEFT JOIN:</b><br /> Returns all rows from the first table (left) and the matched rows from the second table (right). If there is no matching data in the second table, the result will still include the rows from the first table with empty (NULL) values for the second table's columns.</li>
+                                <li><b>RIGHT JOIN:</b><br /> Similar to left join except applied on the second table in the query (right).</li>
+                                <img src={left_outer_join} className="join-img"/><br/><br/>
+                                <li><b>FULL JOIN:</b><br /> Returns all rows from both the first and second tables, whether there is matching data or not. Unmatched rows will have empty (NULL) values for the columns from the table without a match.</li>
+                                <img src={full_join} className="join-img" /><br/><br/>
+                            </ul>
+                            <br/>
+                            <li><b>Join Conditions:</b> Joins are defined by conditions that specify which columns from each table should match. For example, you might join a customer table and an orders table where the customer ID is the same in both tables.</li>
                         </ul>
+                        <a href="https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/">Image Credit & Further Info</a>
+                        <br/><br/>
                     </section>
                     {/* Using Filters, Conditionals, and Sorting */}
                     <section id="filters-conditionals-and-order-by">
@@ -83,7 +105,7 @@ const DatabasesGuides = ({ dbIcons }) => {
                         <ul>
                             <li><b>Using WHERE Clauses:</b> The WHERE clause is used in SQL to filter records, allowing users to specify conditions such as customer_age &gt; 30 to retrieve data that meet certain criteria.</li>
                             <li><b>Comparison Operators:</b> These operators, including equals (=), greater than (&gt;), less than (&lt;), are used in WHERE clauses to filter data based on conditions.</li>
-                            <li><b>Order By:</b> Similar to sorting in a spreadsheet, the ORDER BY clause is used in SQL to sort data in ascending or descending order based on one or more columns, such as sorting by the last name or date of birth.</li>
+                            <li><b>Order By:</b> Similar to sorting in a spreadsheet, the ORDER BY clause is used in SQL to sort data in ascending or descending order based on one or more columns.</li>
                         </ul>
                     </section>
                     {/* Conclusion and Overview of SQL Queries */}

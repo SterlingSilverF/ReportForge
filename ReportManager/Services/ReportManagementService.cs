@@ -226,7 +226,7 @@ namespace ReportManager.Services
                     contentType = "text/csv";
                     fileName = $"{reportName}.csv";
                     break;
-                case "excel":
+                case "xlsx":
                     fileBytes = GenerateXlsx(reportData, reportName);
                     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                     fileName = $"{reportName}.xlsx";
@@ -482,14 +482,14 @@ namespace ReportManager.Services
                     : _sharedService.StringToObjectId(request.SelectedGroup);
 
                 var schedules = new List<ScheduleInfo>
-        {
-            new ScheduleInfo
-            {
-                ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
-                Iteration = request.ReportFrequencyValue,
-                ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
-            }
-        };
+                {
+                    new ScheduleInfo
+                    {
+                        ScheduleType = ConvertToScheduleType(request.ReportFrequencyType),
+                        Iteration = request.ReportFrequencyValue,
+                        ExecuteTime = TimeOnly.Parse(request.ReportGenerationTime)
+                    }
+                };
 
                 var selectedColumns = request.SelectedColumns
                     .Select(columnDto => new ColumnDefinition

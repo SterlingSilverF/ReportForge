@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, forwardRef } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useReportForm } from '../contexts/ReportFormContext';
 import FilterValueInput from './FilterValueInput';
 
@@ -24,11 +24,6 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
             updateReportFormData({
                 filters: [...reportFormContext.filters, newFilter]
             });
-
-            setInputValues(prevState => ({
-                ...prevState,
-                [`filter-value-${newFilter.id}`]: ''
-            }));
 
             setFilterId(filterId + 1);
         }
@@ -72,10 +67,16 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
     };
 
     const handleValueChange = (id, value) => {
-        setInputValues(prevState => ({
-            ...prevState,
-            [id]: value
-        }));
+        const updatedFilters = reportFormContext.filters.map(filter => {
+            if (filter.id === id) {
+                return { ...filter, value };
+            }
+            return filter;
+        });
+
+        updateReportFormData({
+            filters: updatedFilters
+        });
     };
 
     const removeFilter = (id) => {
@@ -117,6 +118,8 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
             filters: updatedFilters
         });
 
+        console.log('Updated filters:', updatedFilters);
+
         if (field === 'table') {
             await updateColumnOptions(id, true, value);
         }
@@ -129,6 +132,7 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
                 if (field === 'column') {
                     const columnInfo = getColumnInfo(orderBy.table, value);
                     updatedOrderBy.dataType = columnInfo?.dataType || '';
+                    updatedOrderBy.column = value;
                 }
                 return updatedOrderBy;
             }
@@ -167,8 +171,6 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
             <option value=">=">Greater Than or Equal To</option>
             <option value="<">Less Than</option>
             <option value="<=">Less Than or Equal To</option>
-            {/*<option value="Between">Between</option>
-            <option value="In">Contained in List</option>*/}
         </select>
     );
 
@@ -274,7 +276,6 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
                         key={orderBy.id}
                         value={orderBy.direction}
                         onChange={(value) => handleOrderByChange(orderBy.id, 'direction', value)}
-                        options={[{ label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }]}
                     />
                 ))}
             </div>
@@ -285,8 +286,8 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
                         <div key={`filter-value-${filter.id}`}>
                             <FilterValueInput
                                 dataType={filter.dataType}
-                                value={inputValues[`filter-value-${filter.id}`] || ''}
-                                onChange={(value) => handleValueChange(`filter-value-${filter.id}`, value)}
+                                value={filter.value || ''}
+                                onChange={(value) => handleValueChange(filter.id, value)}
                             />
                         </div>
                     ))}
@@ -296,7 +297,7 @@ const DynamicInputs = ({ inputValues, setInputValues, getColumnNames, getColumnI
                 <div>
                     <label style={{ marginBottom: '7px' }}>Operator</label>
                     {reportFormContext.filters.map((filter, index) => (
-                        index < reportFormContext.filters.length - 1 && (
+                        index > 0 && (
                             <AndOrSelect
                                 key={filter.id}
                                 value={filter.andOr}

@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faArrowLeft, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import HOC from '../components/HOC';
 import DatePicker from "react-datepicker";
-import axios from 'axios';
 import "react-datepicker/dist/react-datepicker.css";
+import axios from 'axios';
 
 const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     const location = useLocation();
@@ -29,7 +29,7 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
     const [reportFiles, setReportFiles] = useState([]);
     const [selectedFile, setSelectedFile] = useState('');
     const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
-
+    const [copySuccess, setCopySuccess] = useState('');
 
     const handleEditClick = () => {
         const type = reportInfo.ownerType;
@@ -90,7 +90,7 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                 const startDate = dateRange.startDate ? dateRange.startDate.toISOString() : '';
                 const endDate = dateRange.endDate ? dateRange.endDate.toISOString() : '';
                 const url = `/api/folder/GetFilesInFolder?folderPath=${reportInfo.folderPath}&startDate=${startDate}&endDate=${endDate}`;
-                console.log("Requesting:", url);
+                //console.log("Requesting:", url);
                 const response = await makeApiRequest('get', url);
                 if (response.data && response.data.length > 0) {
                     setReportFiles(response.data);
@@ -106,6 +106,15 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
             fetchFilesInFolder();
         }
     }, [reportInfo.folderPath, dateRange]);
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopySuccess('Copied to clipboard!');
+            setTimeout(() => setCopySuccess(''), 3000);
+        }, (err) => {
+            console.error('Failed to copy: ', err);
+        });
+    };
 
     const downloadReport = async (fileId) => {
         if (!fileId) {
@@ -210,11 +219,22 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
             </div>
             <div className="info-two">
                 {reportInfo.folderPath && (
-                    <h5>Report Storage Path: <a href={`file://${reportInfo.folderPath}`} target="_blank">{reportInfo.folderPath}</a></h5>
+                    <div>
+                        <h5>
+                            Report Storage Path:
+                            <span
+                                style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                                onClick={() => copyToClipboard(`${reportInfo.folderPath}`)}>
+                                {reportInfo.folderPath}
+                            </span>
+                        </h5>
+                        {copySuccess && <p style={{ color: 'green' }}>{copySuccess}</p>}
+                    </div>
                 )}
-                <br/>
+
+                <br />
                 <div className="file-download-section">
-                   <h5>Download Report</h5>
+                    <h5>Download Report</h5>
                     <div className="date-range-filter">
                         <DatePicker
                             selected={dateRange.startDate}
@@ -233,7 +253,7 @@ const ReportInformation = ({ makeApiRequest, goBack, navigate, username }) => {
                             placeholderText="End Date"
                         />
                         <button onClick={applyDateFilter} className="btn-eight">Filter</button>
-                        <br /><br/>
+                        <br /><br />
                         <p>Saved Ran Reports</p>
                         <select
                             value={selectedFile}
