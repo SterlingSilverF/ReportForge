@@ -41,13 +41,13 @@ const WorkspaceGuides = () => {
                         <p>The reports tab is designed to allow you to browse all reports you have created, regardless of ownership (group or personal).
                             It is a flat list of reports you have made, ignoring the location they are stored.</p>
                         <p>You can click on any report on this page to view information on it and view any saved report files connected to the configuration.</p>
-                        <img src={reportinfo}></img>
+                        <img src={reportinfo} style={{ width: '95%', height: '95%' }} ></img>
                         <br/><br/>
                         <p>You can also edit the report configuration itself from here.</p>
                         <p>The groups tab is for viewing and editing group configuration. Only group owners can edit them and manage access keys.
                             Similar to reports, groups are a "flat" list.</p>
                         <p>The connections tab displays connections divided into two categories:</p>
-                        <img src={connections}></img>
+                        <img src={connections} style={{ width: '80%', height: '80%' }} ></img>
                         <br/><br/>
                         <p>The database provider is identified using the icon next to a connection, followed by the owner - server name
                             OR the friendly display name in the case of a full database connection.</p>

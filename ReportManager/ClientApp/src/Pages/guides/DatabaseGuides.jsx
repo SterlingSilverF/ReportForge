@@ -103,19 +103,27 @@ const DatabasesGuides = ({ dbIcons }) => {
                     <section id="filters-conditionals-and-order-by">
                         <h2>Filters, Conditionals, and Order By</h2>
                         <ul>
-                            <li><b>Using WHERE Clauses:</b> The WHERE clause is used in SQL to filter records, allowing users to specify conditions such as customer_age &gt; 30 to retrieve data that meet certain criteria.</li>
-                            <li><b>Comparison Operators:</b> These operators, including equals (=), greater than (&gt;), less than (&lt;), are used in WHERE clauses to filter data based on conditions.</li>
-                            <li><b>Order By:</b> Similar to sorting in a spreadsheet, the ORDER BY clause is used in SQL to sort data in ascending or descending order based on one or more columns.</li>
+                            <li><b>Using WHERE Clauses:</b><br /> The WHERE clause is used in SQL to filter records, allowing users to specify conditions to include only the records needed. With WHERE clauses, you can:</li>
+                            <ul>
+                                <li>Filter data to focus on what matters, like certain customers or date ranges</li>
+                                <li>Combine conditions with AND/OR for more precise filtering</li>
+                                <li>Use comparison operators to define conditions:</li>
+                                <ul>
+                                    <li>Equals (=) for exact matches</li>
+                                    <li>Greater than (&gt;) and less than (&lt;)</li>
+                                    <li>Greater than or equal to (&gt;=) and less than or equal to (&lt;=)</li>
+                                    <li>BETWEEN for a range of values</li>
+                                    <li>IN to match a set of values</li>
+                                </ul>
+                            </ul>
+                            <li><b>Order By:</b><br /> The ORDER BY clause is your sorting methodology in SQL queries. You can have multiple ORDER BY clauses, which will display the data according to the specified priority.</li>
                         </ul>
                     </section>
                     {/* Conclusion and Overview of SQL Queries */}
                     <section id="conclusion-and-queries-overview">
                         <h2>Conclusion and Queries Overview</h2>
-                        <ul>
-                            <li><b>Basic SQL Queries:</b> Basic SQL queries include SELECT for retrieving data, INSERT for adding new records, UPDATE for modifying existing records, and DELETE for removing records. These commands form the foundation of interacting with databases.</li>
-                            <li><b>Generating Insights with SQL:</b> Through careful query design, SQL can be used to create valuable insights from data, supporting business decision-making.</li>
-                            <li><b>Learning More:</b> For those interested in deepening their understanding of SQL and database management, further resources and detailed guides are available online.</li>
-                        </ul>
+                        <span>Basic SQL queries include SELECT for retrieving data, INSERT for adding new records, UPDATE for modifying existing records, and DELETE for removing records. These commands form the foundation of interacting with databases. Through careful query design, SQL can be used to create valuable insights from data, supporting business decision-making. For those interested in deepening their understanding of SQL and database management, further resources and detailed guides are available online.</span>
+                        <br /><br />
                     </section>
                 </div>
             </div>

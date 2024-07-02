@@ -2,6 +2,14 @@
 import groupform from '../../components/Images/groupform.PNG';
 import folderform from '../../components/Images/folderform.PNG';
 import connectionform from '../../components/Images/connectionform.PNG';
+import reportform_one from '../../components/Images/reportform1.PNG';
+import reportform_two from '../../components/Images/reportform2.PNG';
+import reportform_three from '../../components/Images/reportform3.PNG';
+import reportform_four from '../../components/Images/reportform4.PNG';
+import reportform_five from '../../components/Images/reportform5.PNG';
+import reportform_six from '../../components/Images/reportform6.PNG';
+import join_chart_one from '../../components/Images/join_chart1.png';
+import join_chart_two from '../../components/Images/join_chart2.png';
 
 const AddingNewContentGuides = () => {
     return (
@@ -77,11 +85,59 @@ const AddingNewContentGuides = () => {
                         <h2>Creating a Report</h2>
                         <p>To create a new report:</p>
                         <ol>
-                            <li>Click on the "Reports" tab.</li>
-                            <li>Click the "New Report" button.</li>
-                            <li>Select the data source for the report.</li>
-                            <li>Design the report layout and add necessary components (charts, tables, etc.).</li>
-                            <li>Save the report when finished.</li>
+                            <li>First, select the create new report form from the dashboard. You will need a valid database connection.</li>
+                            <br/>
+                            <img src={reportform_one} style={{width: '95%'}} />
+                            <br/>
+                            <span>This is page 1 of 6 of the report form. Here, you fill in the basic details of the report you are making. Make sure to name it something distinct and give it a proper description.</span>
+                            <br /><br />
+                            <span>While you can choose to store reports in a group or user folder, it is recommended you create a separate folder for them first to keep reports separate.</span>
+                            <br /><br />
+                            <li>Page 2 of the report form is named the Report Designer.</li>
+                            <br />
+                            <img src={reportform_two} style={{ width: '95%' }} />
+                            <br />
+                            <span>One must select tables before selecting columns in them. Columns from selected tables will appear in the righthand box. The columns are displayed with first the column name followed by the datatype and length (where applicable).</span>
+                            <br />
+                            <img src={reportform_three} style={{ width: '95%' }} />
+                            <br /><br />
+                            <span>When creating your report configuration, you will almost always want to include data from two or more tables. When more than one table is selected, the join configuration section appears on the page. All included tables must be joined to the query (signified by green check marks). Any red X's will result in the form rejecting the configuration.</span>
+                            <br /><br />
+                            <span>To do this, you need to specify in the query how the tables are related to each other. Each table must be joined once, and it can be done a couple of different ways: </span>
+                            <br />
+                            <img src={join_chart_one} style={{ width: '30%' }} />
+                            <img src={join_chart_two} style={{ width: '40%' }} />
+                            <br />
+                            <span>In image one, we see one way of joining tables. In this example, we are able to create a join between A and B, and then with B and C, given there is no direct shared column in tables A and C. In the scenario for image 2, Table A contains a shared column with both B and C. Notably, the shared column for A and C are named differently, but hypothetically hold the same type of data.</span>
+                            <br /><br />
+                            <span>Below is shown the modifiers section of the report designer:</span>
+                            <img src={reportform_four} style={{ width: '95%' }} />
+                            <br />
+                            <span>Any number of filters and order bys can be added here. Filters are integral to returning the data you want in your report. When adding more than one filter, the operator dropdown will appear; it is important to consider whether AND or OR is the proper selection.</span>
+                            <br /><br />
+                            <span>In version 1.0 of reportforge, multiple AND and OR clauses are assumed to be evaluated as such: (A AND B) OR C where the AND would be applied to A and B, rather than A AND (B OR C).</span>
+                            <br /><br />
+                            <li>Page 3 of the report form is the Report Preview.</li>
+                            <img src={reportform_five} style={{ width: '95%' }} />
+                            <br />
+                            <span>Within this page, one can rearrange the order of their selected columns, search the data, and download it if they wish.</span>
+                            <br />
+                            <span>In addition, this page has an option to display the constructed SQL query for convenient access, tweaking, or troubleshooting.</span>
+                            <br />
+                            <span>Once these adjustments are complete, we proceed to the final form page.</span>
+                            <br /><br />
+                            <li>Page 4 of the report form is the Report Configuration.</li>
+                            <img src={reportform_six} style={{ width: '60%' }} />
+                            <br />
+                            <span>Here you can review the name and description of the report once more before saving it.</span>
+                            <br /><br />
+                            <span>Along with those aspects, the output attributes are set here.</span>
+                            <br />
+                            <span>The output format is the format for automatically ran reports. The time displayed is relative to the system time of the server.</span>
+                            <br />
+                            <span>Automatic emails for each generated report can be set as well.</span>
+                            <br />
+                            <span>Finally, the configuration can be saved. A message will display at the bottom confirming the action.</span>
                         </ol>
                     </section>
                 </div>

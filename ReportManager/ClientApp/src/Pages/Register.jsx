@@ -1,9 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import HOC from '../components/HOC';
 
 const Register = ({ navigate, makeApiRequest }) => {
-
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -16,21 +14,21 @@ const Register = ({ navigate, makeApiRequest }) => {
         e.preventDefault();
 
         if (canSubmit) {
-            makeApiRequest('post', '/api/auth/register', {
-                username,
-                password,
-                email,
-                permission_key: permissionKey
-            })
-                .then(response => {
-                    setMessage("Registration successful.")
-                })
-                .catch(error => {
-                    console.log(error);
-                    setMessage("An error was encountered during registration. Please try again or contact your administrator.")
+            try {
+                const response = await makeApiRequest('post', '/api/auth/register', {
+                    username,
+                    password,
+                    email,
+                    permission_key: permissionKey
                 });
+                console.log('Registration response:', response);
+                setMessage('Registration successful.');
+            } catch (error) {
+                console.error('Registration error:', error);
+                setMessage('An error was encountered during registration. Please try again or contact your administrator.');
+            }
         } else {
-            console.log("Invalid form data");
+            console.log('Invalid form data');
         }
     };
 

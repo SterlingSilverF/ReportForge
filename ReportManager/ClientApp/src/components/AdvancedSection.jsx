@@ -132,7 +132,7 @@ const AdvancedSection = ({ rowData }) => {
 
     return (
         <div>
-            <h4>Advanced Column Settings</h4>
+            <h4>Advanced Column Settings (Gamma)</h4>
             <br/>
             <table className="advanced-table">
                 <thead>
