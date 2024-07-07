@@ -10,20 +10,6 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-build/
-bld/
-bin/
-Bin/
-obj/
-Obj/
-
 # Visual Studio 2015 cache/options directory
 .vs/
 /wwwroot/dist/
@@ -65,9 +51,6 @@ dlldata.c
 *.pidb
 *.svclog
 *.scc
-
-# Chutzpah Test files
-_Chutzpah*
 
 # Visual C++ cache files
 ipch/
@@ -135,8 +118,6 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# TODO: Comment the next line if you want to checkin your web deploy settings
-# but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
 
@@ -179,8 +160,6 @@ ClientBin/
 *.pfx
 *.publishsettings
 orleans.codegen.cs
-
-/node_modules
 
 # RIA/Silverlight projects
 Generated_Code/

@@ -1,0 +1,8 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:44462",
+"LaunchCommand": "npm start",
+"WorkingDirectory": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\",
+"MaxTimeoutInSeconds": "120"
+}
+}
