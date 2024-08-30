@@ -47,8 +47,8 @@ builder.Services.AddScoped<ReportManagementService>();
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<GroupManagementService>();
 builder.Services.AddScoped<DatabaseService>();
-builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
-    .AddNegotiate();
+//builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
+//    .AddNegotiate();
 
 var app = builder.Build();
 Log.Information("Application Starting");

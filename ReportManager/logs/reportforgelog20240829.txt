@@ -1,0 +1,23 @@
+2024-08-29 18:01:20.165 -07:00 [INF] Application Starting
+2024-08-29 18:01:20.731 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:01:21.056 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:01:25.090 -07:00 [ERR] Failed to launch the SPA development server 'npm start'.
+System.ComponentModel.Win32Exception (2): An error occurred trying to start process 'npm.cmd' with working directory 'C:\Users\Silver\REPOS\ReportForge\ReportManager\ClientApp\'. The system cannot find the file specified.
+   at System.Diagnostics.Process.StartWithShellExecuteEx(ProcessStartInfo startInfo)
+   at System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   at Microsoft.AspNetCore.SpaProxy.SpaProxyLaunchManager.LaunchDevelopmentProxy()
+2024-08-29 18:01:25.092 -07:00 [ERR] Couldn't start the SPA development server with command 'npm start'.
+2024-08-29 18:06:18.954 -07:00 [INF] Application Starting
+2024-08-29 18:06:19.420 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:06:19.687 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:11:29.964 -07:00 [INF] Application Starting
+2024-08-29 18:11:30.401 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:11:30.567 -07:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-08-29 18:11:40.788 -07:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Authorization.Policy.AuthorizationMiddlewareResultHandler.<>c__DisplayClass0_0.<<HandleAsync>g__Handle|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)

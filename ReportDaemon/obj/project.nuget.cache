@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "x9d/8fz5HXYqk5GHVhhdHDrcVXpr0f3iqOvzGxR2H2Eo+ZZsXW1Om5F765Yr1hCW2Za+CGGKgmN0F0L2wVkQkQ==",
+  "dgSpecHash": "fQbOrbDEBIk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportDaemon\\ReportDaemon.csproj",
+  "projectFilePath": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportDaemon\\ReportDaemon.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Silver\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\awssdk.securitytoken\\3.7.100.14\\awssdk.securitytoken.3.7.100.14.nupkg.sha512",

@@ -3,7 +3,7 @@
 "ServerUrl": "https://localhost:44462",
 "RedirectUrl": "",
 "LaunchCommand": "npm start",
-"WorkingDirectory": "C:\\Users\\Silver\\source\\repos\\ReportManager\\ReportManager\\ClientApp\\",
+"WorkingDirectory": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\",
 "MaxTimeoutInSeconds": "120",
 "KeepRunning": "false"
 }
