@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 
 /* 
 HOC (Higher Order Component)
-Last Updated on 1/16/2024
+Last Updated on 9/30/2024
 */
 const HOC = (WrappedComponent, requireAuth = true) => {
     return function Shared(props) {
         // Common state variables
         const [env, setEnv] = useState('Development');
         const navigate = useNavigate();
-        axios.defaults.baseURL = 'https://www.reportforgedemo.com';
+        axios.defaults.baseURL = 'https://reportforgedemo.com';
         const [token, setToken] = useState(localStorage.getItem('token'));
         const [username, setUsername] = useState('');
         const [userID, setUserID] = useState('');
