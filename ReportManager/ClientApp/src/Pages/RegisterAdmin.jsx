@@ -33,7 +33,7 @@ const FirstTimeAdminSetup = () => {
     };
 
     // No HOC because that would require signing in
-    axios.defaults.baseURL = 'https://localhost:7280';
+    axios.defaults.baseURL = 'https://reportforgedemo.com';
 
     const handleAdminSetup = async (e) => {
         e.preventDefault();

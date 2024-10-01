@@ -1,0 +1,14 @@
+2024-09-30 18:53:35.195 -05:00 [INF] Application Starting
+2024-09-30 18:53:35.784 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-09-30 18:53:35.980 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-09-30 18:56:28.693 -05:00 [INF] Application Starting
+2024-09-30 18:56:28.883 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-09-30 18:56:29.039 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2024-09-30 18:56:40.384 -05:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ChallengeAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Authorization.Policy.AuthorizationMiddlewareResultHandler.<>c__DisplayClass0_0.<<HandleAsync>g__Handle|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)

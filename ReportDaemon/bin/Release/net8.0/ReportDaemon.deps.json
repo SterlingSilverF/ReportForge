@@ -2013,7 +2013,10 @@
           "log4net": "2.0.15"
         },
         "runtime": {
-          "ReportManager.dll": {}
+          "ReportManager.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }

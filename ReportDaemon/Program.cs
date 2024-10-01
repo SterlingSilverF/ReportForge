@@ -4,6 +4,8 @@ using ReportManager.Services;
 using Serilog;
 using Serilog.Events;
 
+Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -11,7 +13,18 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/ReportDaemon_log_.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.ReportDaemon.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .Build();
+
 var builder = Host.CreateApplicationBuilder(args);
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.ReportDaemon.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 

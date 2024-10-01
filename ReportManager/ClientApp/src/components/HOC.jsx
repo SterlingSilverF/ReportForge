@@ -12,7 +12,7 @@ const HOC = (WrappedComponent, requireAuth = true) => {
         // Common state variables
         const [env, setEnv] = useState('Development');
         const navigate = useNavigate();
-        axios.defaults.baseURL = 'https://reportforgedemo.com';
+        axios.defaults.baseURL = 'https://localhost:7280';
         const [token, setToken] = useState(localStorage.getItem('token'));
         const [username, setUsername] = useState('');
         const [userID, setUserID] = useState('');
