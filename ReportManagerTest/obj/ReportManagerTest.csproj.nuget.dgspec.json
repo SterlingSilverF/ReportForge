@@ -58,14 +58,6 @@
               "target": "Package",
               "version": "[17.8.0, )"
             },
-            "NUnit": {
-              "target": "Package",
-              "version": "[4.1.0, )"
-            },
-            "Newtonsoft.Json": {
-              "target": "Package",
-              "version": "[13.0.3, )"
-            },
             "coverlet.collector": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
@@ -79,16 +71,6 @@
             "itext7.bouncy-castle-adapter": {
               "target": "Package",
               "version": "[8.0.3, )"
-            },
-            "xunit": {
-              "target": "Package",
-              "version": "[2.6.6, )"
-            },
-            "xunit.runner.visualstudio": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.5.6, )"
             }
           },
           "imports": [

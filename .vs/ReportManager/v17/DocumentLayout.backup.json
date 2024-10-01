@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Silver\\REPOS\\ReportForge\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\repos\\reportforge\\reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanagertest\\ut_sql_builder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\ut_sql_builder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|c:\\users\\silver\\repos\\reportforge\\reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanagertest\\ut_sql_sanitization.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\ut_sql_sanitization.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanagertest\\ut_object_mapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\ut_object_mapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanagertest\\ut_connectionstring.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\ut_connectionstring.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -31,27 +39,53 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Worker.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportDaemon\\Worker.cs",
-              "RelativeDocumentMoniker": "ReportDaemon\\Worker.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportDaemon\\Worker.cs",
-              "RelativeToolTip": "ReportDaemon\\Worker.cs",
-              "ViewState": "AgIAAN8AAAAAAAAAAAAIwPUAAAAAAAAAAAAAAA==",
+              "Title": "UT_SQL_Sanitization.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_SQL_Sanitization.cs",
+              "RelativeDocumentMoniker": "ReportManagerTest\\UT_SQL_Sanitization.cs",
+              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_SQL_Sanitization.cs",
+              "RelativeToolTip": "ReportManagerTest\\UT_SQL_Sanitization.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-01T03:01:03.463Z",
+              "WhenOpened": "2024-10-01T05:47:46.254Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
-              "RelativeDocumentMoniker": "ReportDaemon\\Program.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
-              "RelativeToolTip": "ReportDaemon\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAyAAAAAAAAAA==",
+              "Title": "UT_SQL_Builder.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_SQL_Builder.cs",
+              "RelativeDocumentMoniker": "ReportManagerTest\\UT_SQL_Builder.cs",
+              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_SQL_Builder.cs*",
+              "RelativeToolTip": "ReportManagerTest\\UT_SQL_Builder.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-01T03:00:57.507Z",
+              "WhenOpened": "2024-10-01T05:47:45.288Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UT_Object_Mapper.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_Object_Mapper.cs",
+              "RelativeDocumentMoniker": "ReportManagerTest\\UT_Object_Mapper.cs",
+              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_Object_Mapper.cs",
+              "RelativeToolTip": "ReportManagerTest\\UT_Object_Mapper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-01T05:47:40.227Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UT_ConnectionString.cs",
+              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_ConnectionString.cs",
+              "RelativeDocumentMoniker": "ReportManagerTest\\UT_ConnectionString.cs",
+              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_ConnectionString.cs",
+              "RelativeToolTip": "ReportManagerTest\\UT_ConnectionString.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-01T05:47:39.565Z",
               "EditorCaption": ""
             }
           ]

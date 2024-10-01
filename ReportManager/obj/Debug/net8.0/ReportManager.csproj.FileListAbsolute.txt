@@ -244,6 +244,7 @@ C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net8.0\refint
 C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net8.0\ReportManager.pdb
 C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net8.0\ReportManager.genruntimeconfig.cache
 C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net8.0\ref\ReportManager.dll
+C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\spa.proxy.json
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\appsettings.json
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\clidriver\bin\db2app64.dll
@@ -358,7 +359,6 @@ C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\clidriver\msg\e
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\clidriver\msg\en_US\db2stt.mo
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\clidriver\msg\en_US\db2supp.mo
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\clidriver\properties\version\ibm.com_IBM_Data_Server_Driver_for_ODBC_and_CLI-11.5.0.swidtag
-C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\spa.proxy.json
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\ReportManager.exe
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\ReportManager.deps.json
 C:\Users\Silver\REPOS\ReportForge\ReportManager\bin\Debug\net8.0\ReportManager.runtimeconfig.json

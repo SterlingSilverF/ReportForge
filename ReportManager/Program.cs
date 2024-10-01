@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("https://localhost:44462")
+        builder.WithOrigins("https://reportforgedemo.com")
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
