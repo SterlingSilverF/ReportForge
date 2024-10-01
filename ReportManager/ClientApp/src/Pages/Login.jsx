@@ -38,7 +38,7 @@ const Login = ({ navigate, makeApiRequest, token }) => {
                     setLoginError('Username and password combination not found.');
                 }
                 else {
-                    setLoginError('Something went wrong. Check server logs.');
+                    setLoginError('Login failed.');
                 }
             });
     };
