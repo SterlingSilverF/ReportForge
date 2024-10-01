@@ -30,10 +30,8 @@ const AllGuides = () => {
             { title: "Setting Up Automated Tasks", url: "/guides/reports#setting-up-automated-tasks" },
         ],
         "Capstone Materials": [
-            { title: "Application Design Document", url: "/guides/capstone-materials#application-design-document" },
+            { title: "Application Design Document", url: "https://www.figma.com/design/U2jQG4fA2o0608XDrRbBJ6/ReportForge-Class-Diagram?node-id=0-1&t=SblfWmNhrCyJhTQB-1" },
             { title: "Test Plan", url: "/guides/capstone-materials#test-plan" },
-            { title: "Admin Setup Guide", url: "/guides/capstone-materials#admin-setup-guide" },
-            { title: "User Guide", url: "/guides/capstone-materials#user-guide" },
         ],
     };
 
