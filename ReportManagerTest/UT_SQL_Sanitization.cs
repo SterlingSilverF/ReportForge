@@ -17,7 +17,7 @@ namespace ReportManagerTest
         [DataRow("DELETE FROM Users WHERE UserID = 123; SELECT * FROM Users", true, false)]
         [DataRow("SELECT * FROM Users; DROP TABLE Users", true, false)]
         [DataRow("SELECT * FROM Users WHERE Name = 'John' --DROP TABLE Users", true, false)]
-        [DataRow("SELECT * FROM Users WHERE UserID = 123", false, true)] // Read-only query, but isReadOnly is false
+        [DataRow("SELECT * FROM Users WHERE UserID = 123", false, true)]
         [DataRow("ALTER TABLE Users ADD Email VARCHAR(255)", false, false)]
         public void TestPerformSqlSanitizationChecks(string sqlStatement, bool isReadOnly, bool expectedResult)
         {

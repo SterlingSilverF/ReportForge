@@ -11,6 +11,13 @@ namespace ReportManagerTest
     [TestClass]
     public class ConnectionServiceTests
     {
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Environment.SetEnvironmentVariable("ReportManager_ENCRYPTION_KEY", "2flkCJqIvrPsNwjE4GULKarlM5nv3h6imIxefR0S0JA=");
+            Environment.SetEnvironmentVariable("ReportManager_ENCRYPTION_IV", "Vfeo5SGD8S1muxsy+UKb8Q==");
+        }
+
         [TestMethod]
         public void BuildConnectionString_WithMSSQL()
         {
@@ -42,14 +49,14 @@ namespace ReportManagerTest
                 Password = "your_password",
                 DatabaseName = "TestDB"
             };
-            var expectedConnectionString = "Server=localhost;Port=3306;User Id=root;Password=your_password;Database=TestDB;";
+            var expectedConnectionString = "server=localhost;port=3306;database=TestDB;uid=root;pwd=your_password;";
             string actualConnectionString = ConnectionService.BuildConnectionString(dbConnection);
             Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(expectedConnectionString, actualConnectionString);
         }
 
         // PostgreSQL
         [TestMethod]
-        public void BuildConnectionString_WithPostgres() 
+        public void BuildConnectionString_WithPostgres()
         {
             var dbConnection = new DBConnectionModel
             {
@@ -60,14 +67,30 @@ namespace ReportManagerTest
                 Password = "your_password",
                 DatabaseName = "TestDB"
             };
-            var expectedConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=your_password;Database=TestDB;";
+            var expectedConnectionString = "Host=localhost;Port=5432;Database=TestDB;Username=postgres;Password=your_password;";
             string actualConnectionString = ConnectionService.BuildConnectionString(dbConnection);
             Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(expectedConnectionString, actualConnectionString);
         }
 
         // Oracle
         [TestMethod]
-        public void BuildConnectionString_WithOracle()
+        public void BuildConnectionString_WithOracle_UsernamePassword()
+        {
+            var dbConnection = new DBConnectionModel
+            {
+                DbType = "Oracle",
+                ServerName = "localhost",
+                Username = "user",
+                Password = "your_password",
+                AuthType = "UsernamePassword"
+            };
+            var expectedConnectionString = "Data Source=localhost;User Id=user;Password=your_password;Integrated Security=no;";
+            string actualConnectionString = ConnectionService.BuildConnectionString(dbConnection);
+            Assert.AreEqual(expectedConnectionString, actualConnectionString);
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_WithOracle_TNSNamesOra()
         {
             var dbConnection = new DBConnectionModel
             {
@@ -76,11 +99,12 @@ namespace ReportManagerTest
                 Port = 1521,
                 Username = "user",
                 Password = "your_password",
-                DatabaseName = "TestDB"
+                Instance = "TestDB",
+                AuthType = "TNSNamesOra"
             };
-            var expectedConnectionString = "User Id=user;Password=your_password;Data Source=localhost:1521/TestDB;";
+            var expectedConnectionString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=TestDB)));User Id=user;Password=your_password;";
             string actualConnectionString = ConnectionService.BuildConnectionString(dbConnection);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(expectedConnectionString, actualConnectionString);
+            Assert.AreEqual(expectedConnectionString, actualConnectionString);
         }
 
         // MongoDB

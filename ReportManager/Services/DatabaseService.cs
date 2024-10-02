@@ -514,8 +514,7 @@ public class DatabaseService
     {
         var forbiddenCharacters = new[] { ";", "--", "/*", "*/", "@@", "@" };
         var alwaysForbiddenKeywords = new[] { "CURSOR", "KILL", "SYS", "SYSTABLES", "SYSOBJECTS", "SYSVIEWS", "SYSUSERS" };
-        var conditionalForbiddenKeywords = isReadOnly ? new string[] { } : new[] { "ALTER", "BEGIN", "CREATE", "DELETE", "DROP", "END", "EXEC", "EXECUTE", "INSERT", "UPDATE" };
-
+        var readOnlyForbiddenKeywords = new[] { "ALTER", "BEGIN", "CREATE", "DELETE", "DROP", "END", "EXEC", "EXECUTE", "INSERT", "UPDATE" };
 
         foreach (var charPattern in forbiddenCharacters)
         {
@@ -527,22 +526,29 @@ public class DatabaseService
             if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
         }
 
-        foreach (var kw in conditionalForbiddenKeywords)
-        {
-            if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
-        }
-
         if (isReadOnly)
         {
+            foreach (var kw in readOnlyForbiddenKeywords)
+            {
+                if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
+            }
+
             var disallowedPostEqualsKeywords = new[] { "DELETE", "DROP", "CREATE", "UPDATE" };
             var substringsAfterEquals = sqlStatement.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries).Skip(1);
-
             foreach (var substring in substringsAfterEquals)
             {
                 foreach (var kw in disallowedPostEqualsKeywords)
                 {
                     if (substring.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
                 }
+            }
+        }
+        else
+        {
+            var nonReadOnlyForbiddenKeywords = new[] { "DROP", "TRUNCATE", "ALTER", "EXEC", "EXECUTE" };
+            foreach (var kw in nonReadOnlyForbiddenKeywords)
+            {
+                if (sqlStatement.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0) return false;
             }
         }
 

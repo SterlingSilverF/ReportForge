@@ -11,20 +11,44 @@ public static class Encryptor
     private static readonly string Key = Environment.GetEnvironmentVariable("ReportManager_ENCRYPTION_KEY");
     private static readonly string IV = Environment.GetEnvironmentVariable("ReportManager_ENCRYPTION_IV");
     private static IMongoCollection<PermissionKeyModel> _permissionKeyDB;
+    public static int KeySize { get; set; } = 256;
+    public static int BlockSize { get; set; } = 128;
 
     public static void Initialize(IMongoCollection<PermissionKeyModel> permissionKeyDB)
     {
         _permissionKeyDB = permissionKeyDB;
     }
 
+    private static void ValidateKeyAndIV(byte[] byteKey, byte[] byteIV)
+    {
+        if (byteKey.Length != KeySize / 8)
+        {
+            throw new ArgumentException($"Key size is incorrect. Expected {KeySize / 8} bytes, but got {byteKey.Length} bytes.");
+        }
+
+        if (byteIV.Length != BlockSize / 8)
+        {
+            throw new ArgumentException($"IV size is incorrect. Expected {BlockSize / 8} bytes, but got {byteIV.Length} bytes.");
+        }
+    }
+
     public static string Encrypt(string input)
     {
-        byte[] byteKey = Encoding.UTF8.GetBytes(Key);
-        byte[] byteIV = Encoding.UTF8.GetBytes(IV);
+        if (string.IsNullOrEmpty(Key) || string.IsNullOrEmpty(IV))
+        {
+            throw new InvalidOperationException("Encryption key or IV is not set. Please check environment variables.");
+        }
+
+        byte[] byteKey = Convert.FromBase64String(Key);
+        byte[] byteIV = Convert.FromBase64String(IV);
         byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+
+        ValidateKeyAndIV(byteKey, byteIV);
 
         using (Aes aes = Aes.Create())
         {
+            aes.KeySize = KeySize;
+            aes.BlockSize = BlockSize;
             aes.Key = byteKey;
             aes.IV = byteIV;
 
@@ -32,7 +56,7 @@ public static class Encryptor
             using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
             {
                 cs.Write(inputBytes, 0, inputBytes.Length);
-                cs.Close();
+                cs.FlushFinalBlock();
                 return Convert.ToBase64String(ms.ToArray());
             }
         }
@@ -40,14 +64,23 @@ public static class Encryptor
 
     public static string Decrypt(string input)
     {
+        if (string.IsNullOrEmpty(Key) || string.IsNullOrEmpty(IV))
+        {
+            throw new InvalidOperationException("Encryption key or IV is not set. Please check environment variables.");
+        }
+
         try
         {
-            byte[] byteKey = Encoding.UTF8.GetBytes(Key);
-            byte[] byteIV = Encoding.UTF8.GetBytes(IV);
+            byte[] byteKey = Convert.FromBase64String(Key);
+            byte[] byteIV = Convert.FromBase64String(IV);
             byte[] inputBytes = Convert.FromBase64String(input);
+
+            ValidateKeyAndIV(byteKey, byteIV);
 
             using (Aes aes = Aes.Create())
             {
+                aes.KeySize = KeySize;
+                aes.BlockSize = BlockSize;
                 aes.Key = byteKey;
                 aes.IV = byteIV;
 
@@ -55,15 +88,22 @@ public static class Encryptor
                 using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
                 {
                     cs.Write(inputBytes, 0, inputBytes.Length);
-                    cs.Close();
+                    cs.FlushFinalBlock();
                     return Encoding.UTF8.GetString(ms.ToArray());
                 }
             }
         }
+        catch (CryptographicException ex)
+        {
+            throw new ApplicationException("Error decrypting data. The key or IV may be incorrect.", ex);
+        }
+        catch (FormatException ex)
+        {
+            throw new ApplicationException("Error decrypting data. The input string is not a valid Base64 string.", ex);
+        }
         catch (Exception ex)
         {
-            // TODO: Decrypt logging
-            throw new ApplicationException("Error decrypting data", ex);
+            throw new ApplicationException("Unexpected error during decryption", ex);
         }
     }
 
@@ -73,20 +113,28 @@ public static class Encryptor
         {
             using (var pbkdf2 = new Rfc2898DeriveBytes(password, Encoding.UTF8.GetBytes(salt), 100000, HashAlgorithmName.SHA256))
             {
-                return Convert.ToBase64String(pbkdf2.GetBytes(20));
+                return Convert.ToBase64String(pbkdf2.GetBytes(32));
             }
         }
 
         public static string GenerateSalt()
         {
             var saltBytes = new byte[16];
-            RandomNumberGenerator.Fill(saltBytes);
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(saltBytes);
+            }
             return Convert.ToBase64String(saltBytes);
         }
     }
 
     public static string GeneratePermissionKey(string username, string groupname, UserType userType, DateTime? expiration = null)
     {
+        if (_permissionKeyDB == null)
+        {
+            throw new InvalidOperationException("PermissionKey collection has not been initialized.");
+        }
+
         var permissionKey = new PermissionKeyModel
         {
             CreatedUsername = username,
@@ -101,11 +149,15 @@ public static class Encryptor
         return permissionKey.Id.ToString();
     }
 
-
     public static bool VerifyPermissionKey(string keyString, out string groupname, out UserType userType)
     {
         groupname = null;
         userType = UserType.InActive;
+
+        if (_permissionKeyDB == null)
+        {
+            throw new InvalidOperationException("PermissionKey collection has not been initialized.");
+        }
 
         if (!ObjectId.TryParse(keyString, out ObjectId keyId))
         {

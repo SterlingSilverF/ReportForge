@@ -50,9 +50,13 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "MSTest.TestAdapter": {
+              "target": "Package",
+              "version": "[3.6.0, )"
+            },
             "MSTest.TestFramework": {
               "target": "Package",
-              "version": "[3.2.2, )"
+              "version": "[3.6.0, )"
             },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",

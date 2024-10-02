@@ -15,6 +15,13 @@ namespace ReportManagerTest
     [TestClass]
     public class UTObjectMapperTests
     {
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Environment.SetEnvironmentVariable("ReportManager_ENCRYPTION_KEY", "2flkCJqIvrPsNwjE4GULKarlM5nv3h6imIxefR0S0JA=");
+            Environment.SetEnvironmentVariable("ReportManager_ENCRYPTION_IV", "Vfeo5SGD8S1muxsy+UKb8Q==");
+        }
+
         [TestMethod]
         public void TestObjectMapper()
         {
@@ -26,21 +33,30 @@ namespace ReportManagerTest
         public void TestObjectMapper_MapsUpdateFolderRequestToPersonalFolder()
         {
             var sharedService = new SharedService();
+            // static for more straightforward testing
+            var folderId = new ObjectId("66fca7e6ea0cb8b65a3e57c5");
+            var parentId = new ObjectId("66fca7e6ea0cb8b65a3e57c6");
+            var ownerId = new ObjectId("66fca7e6ea0cb8b65a3e57c7");
+
             var updateFolderRequest = new UpdateFolderRequest
             {
                 FolderName = "Test Folder",
                 FolderPath = "/test/path",
                 FolderType = "Personal",
-                Id = ObjectId.GenerateNewId().ToString(),
-                ParentId = ObjectId.GenerateNewId().ToString(),
+                Id = folderId.ToString(),
+                ParentId = parentId.ToString(),
                 IsGroupFolder = false,
-                OwnerId = ObjectId.GenerateNewId().ToString()
+                OwnerId = ownerId.ToString()
             };
+
             var result = sharedService.MapObjectToModel<PersonalFolder>(updateFolderRequest);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.IsNotNull(result);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(updateFolderRequest.FolderName, result.FolderName);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(updateFolderRequest.FolderPath, result.FolderPath);
-            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(new ObjectId(updateFolderRequest.OwnerId), result.Owner);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(updateFolderRequest.FolderName, result.FolderName);
+            Assert.AreEqual(updateFolderRequest.FolderPath, result.FolderPath);
+            Assert.AreEqual(folderId, result.Id);
+            Assert.AreEqual(parentId, result.ParentId);
+            Assert.AreEqual(ownerId, result.Owner);
         }
 
         [TestMethod]
