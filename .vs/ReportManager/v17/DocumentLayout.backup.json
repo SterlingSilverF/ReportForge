@@ -1,42 +1,54 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Silver\\REPOS\\ReportForge\\",
+  "WorkspaceRootPath": "T:\\REPOS\\ReportForge\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\clientapp\\src\\pages\\guides\\capstonematerials.jsx||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\guides\\capstonematerials.jsx||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\clientapp\\src\\pages\\guides\\allguides.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\guides\\allguides.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\railway.toml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\railway.toml||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\clientapp\\src\\components\\hoc.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\components\\hoc.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|t:\\repos\\reportforge\\reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|solutionrelative:reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\clientapp\\src\\pages\\login.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\login.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|t:\\repos\\reportforge\\reportmanagertest\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\clientapp\\src\\pages\\registeradmin.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\registeradmin.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanagertest\\ut_object_mapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DACCBE8F-59B6-437E-99F6-5EB79DD05A6B}|ReportManagerTest\\ReportManagerTest.csproj|solutionrelative:reportmanagertest\\ut_object_mapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\services\\sharedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\sharedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\api\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\api\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\reportmanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\clientapp\\src\\pages\\appearance.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\pages\\appearance.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|c:\\users\\silver\\repos\\reportforge\\reportmanager\\services\\appdatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\appdatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\clientapp\\src\\api_hook.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\clientapp\\src\\api_hook.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\api\\foldercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\api\\foldercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\models\\foldermodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\models\\foldermodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\services\\foldermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\foldermanagementservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,7 +58,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -58,117 +70,154 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "CapstoneMaterials.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\guides\\CapstoneMaterials.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\guides\\CapstoneMaterials.jsx",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\guides\\CapstoneMaterials.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\guides\\CapstoneMaterials.jsx",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-02T11:15:43.488Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "AllGuides.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\guides\\AllGuides.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\guides\\AllGuides.jsx",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\guides\\AllGuides.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\guides\\AllGuides.jsx",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAACMAAAAGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-02T11:12:25.87Z",
+              "Title": "Railway.toml",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Railway.toml",
+              "RelativeDocumentMoniker": "ReportManager\\Railway.toml",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Railway.toml",
+              "RelativeToolTip": "ReportManager\\Railway.toml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-06-22T22:36:28.62Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "HOC.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\components\\HOC.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\components\\HOC.jsx",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\components\\HOC.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\components\\HOC.jsx",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-02T11:05:49.841Z",
+              "DocumentIndex": 0,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
+              "RelativeDocumentMoniker": "ReportManager\\Dockerfile",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
+              "RelativeToolTip": "ReportManager\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-06-22T22:35:03.303Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "RegisterAdmin.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\RegisterAdmin.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\RegisterAdmin.jsx",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\RegisterAdmin.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\RegisterAdmin.jsx",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-02T11:05:25.509Z",
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "ReportManager\\Services\\EmailService.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\EmailService.cs",
+              "RelativeToolTip": "ReportManager\\Services\\EmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-22T21:56:36.801Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Login.jsx",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\Login.jsx",
-              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\Login.jsx",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\Login.jsx",
-              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\Login.jsx",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-02T11:05:17.543Z",
+              "Title": "appsettings.json",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManagerTest\\appsettings.json",
+              "RelativeDocumentMoniker": "ReportManagerTest\\appsettings.json",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManagerTest\\appsettings.json",
+              "RelativeToolTip": "ReportManagerTest\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-22T21:50:18.672Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
+              "RelativeDocumentMoniker": "ReportDaemon\\Program.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
+              "RelativeToolTip": "ReportDaemon\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-19T20:26:00.444Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "SharedService.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\SharedService.cs",
-              "RelativeDocumentMoniker": "ReportManager\\Services\\SharedService.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\SharedService.cs",
-              "RelativeToolTip": "ReportManager\\Services\\SharedService.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAAUwDcAAAAZAAAAAAAAAA==",
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\API\\AuthController.cs",
+              "RelativeDocumentMoniker": "ReportManager\\API\\AuthController.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\API\\AuthController.cs",
+              "RelativeToolTip": "ReportManager\\API\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T02:00:25.885Z"
+              "WhenOpened": "2025-04-15T00:50:12.745Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "UT_Object_Mapper.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_Object_Mapper.cs",
-              "RelativeDocumentMoniker": "ReportManagerTest\\UT_Object_Mapper.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\UT_Object_Mapper.cs",
-              "RelativeToolTip": "ReportManagerTest\\UT_Object_Mapper.cs",
-              "ViewState": "AgIAAGoAAAAAAAAAAAAuwIQAAAAOAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Program.cs",
+              "RelativeDocumentMoniker": "ReportManager\\Program.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Program.cs",
+              "RelativeToolTip": "ReportManager\\Program.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAACcAAABjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T01:53:23.137Z",
+              "WhenOpened": "2025-04-15T00:44:06.65Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 7,
-              "Title": "ReportManagementService.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\ReportManagementService.cs",
-              "RelativeDocumentMoniker": "ReportManager\\Services\\ReportManagementService.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\ReportManagementService.cs",
-              "RelativeToolTip": "ReportManager\\Services\\ReportManagementService.cs",
-              "ViewState": "AgIAAOICAAAAAAAAAAAQwAkDAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T01:31:25.192Z"
+              "Title": "Appearance.jsx",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
+              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
+              "RelativeToolTip": "ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABIAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-04-01T20:01:49.652Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "AppDatabaseService.cs",
-              "DocumentMoniker": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\AppDatabaseService.cs",
-              "RelativeDocumentMoniker": "ReportManager\\Services\\AppDatabaseService.cs",
-              "ToolTip": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManager\\Services\\AppDatabaseService.cs",
-              "RelativeToolTip": "ReportManager\\Services\\AppDatabaseService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Title": "API_Hook.js",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\API_Hook.js",
+              "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\API_Hook.js",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\API_Hook.js",
+              "RelativeToolTip": "ReportManager\\ClientApp\\src\\API_Hook.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-04-01T20:00:32.886Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "FolderManagementService.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\FolderManagementService.cs",
+              "RelativeDocumentMoniker": "ReportManager\\Services\\FolderManagementService.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\FolderManagementService.cs",
+              "RelativeToolTip": "ReportManager\\Services\\FolderManagementService.cs",
+              "ViewState": "AgIAAGMAAAAAAAAAAADgv20AAABMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-02T01:31:14.185Z"
+              "WhenOpened": "2024-10-13T01:16:59.975Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "FolderModel.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Models\\FolderModel.cs",
+              "RelativeDocumentMoniker": "ReportManager\\Models\\FolderModel.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Models\\FolderModel.cs",
+              "RelativeToolTip": "ReportManager\\Models\\FolderModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-13T01:04:54.028Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "FolderController.cs",
+              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\API\\FolderController.cs",
+              "RelativeDocumentMoniker": "ReportManager\\API\\FolderController.cs",
+              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\API\\FolderController.cs",
+              "RelativeToolTip": "ReportManager\\API\\FolderController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIIAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-13T00:57:00.054Z"
             }
           ]
         }

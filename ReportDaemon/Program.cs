@@ -39,8 +39,6 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<SharedService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddTransient<Worker>();
-builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
-    .AddNegotiate();
 
 var host = builder.Build();
 

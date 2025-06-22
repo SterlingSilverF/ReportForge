@@ -1,0 +1,6 @@
+2025-04-01 15:02:03.876 -05:00 [INF] Application Starting
+2025-04-01 15:02:04.426 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2025-04-01 15:02:04.643 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2025-04-01 15:04:31.034 -05:00 [INF] Application Starting
+2025-04-01 15:04:31.214 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.
+2025-04-01 15:04:31.359 -05:00 [WRN] The WebRootPath was not found: C:\Users\Silver\REPOS\ReportForge\ReportManager\wwwroot. Static files may be unavailable.

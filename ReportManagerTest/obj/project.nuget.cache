@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "eeEkiU9HfGk=",
+  "dgSpecHash": "Um7iYTwkLyc=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Silver\\REPOS\\ReportForge\\ReportManagerTest\\ReportManagerTest.csproj",
+  "projectFilePath": "T:\\REPOS\\ReportForge\\ReportManagerTest\\ReportManagerTest.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Silver\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\awssdk.securitytoken\\3.7.100.14\\awssdk.securitytoken.3.7.100.14.nupkg.sha512",
@@ -68,6 +68,7 @@
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.testing.platform.msbuild\\1.4.0\\microsoft.testing.platform.msbuild.1.4.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.testplatform.objectmodel\\17.11.0\\microsoft.testplatform.objectmodel.17.11.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.testplatform.testhost\\17.8.0\\microsoft.testplatform.testhost.17.8.0.nupkg.sha512",
+    "C:\\Users\\Silver\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.22.1-preview.1\\microsoft.visualstudio.azure.containers.tools.targets.1.22.1-preview.1.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.win32.registry\\5.0.0\\microsoft.win32.registry.5.0.0.nupkg.sha512",
     "C:\\Users\\Silver\\.nuget\\packages\\microsoft.win32.systemevents\\6.0.0\\microsoft.win32.systemevents.6.0.0.nupkg.sha512",

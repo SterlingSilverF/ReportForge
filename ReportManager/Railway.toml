@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "./ReportManager/Dockerfile"
+
+[deploy]
+startCommand = "./ReportForge"
+restartPolicyType = "always"
