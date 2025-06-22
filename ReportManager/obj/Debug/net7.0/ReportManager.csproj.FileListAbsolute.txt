@@ -1,8 +1,0 @@
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.csproj.AssemblyReference.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\spa.proxy.json
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.AssemblyInfoInputs.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.AssemblyInfo.cs
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.csproj.CoreCompileInputs.cache
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Silver\source\repos\ReportManager\ReportManager\obj\Debug\net7.0\ReportManager.MvcApplicationPartsAssemblyInfo.cache
