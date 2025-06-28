@@ -4,8 +4,6 @@ using ReportManager.Services;
 using Serilog;
 using Serilog.Events;
 
-Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)

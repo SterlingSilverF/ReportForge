@@ -3,12 +3,8 @@
   "WorkspaceRootPath": "T:\\REPOS\\ReportForge\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\railway.toml||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\railway.toml||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{033269FD-CB76-4E6F-A18F-19BDA51DD670}|ReportDaemon\\ReportDaemon.csproj|t:\\repos\\reportforge\\reportdaemon\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -21,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\api\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -58,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -70,33 +62,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Railway.toml",
-              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Railway.toml",
-              "RelativeDocumentMoniker": "ReportManager\\Railway.toml",
-              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Railway.toml",
-              "RelativeToolTip": "ReportManager\\Railway.toml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-06-22T22:36:28.62Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
-              "RelativeDocumentMoniker": "ReportManager\\Dockerfile",
-              "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
-              "RelativeToolTip": "ReportManager\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-06-22T22:35:03.303Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "EmailService.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\EmailService.cs",
               "RelativeDocumentMoniker": "ReportManager\\Services\\EmailService.cs",
@@ -104,12 +70,11 @@
               "RelativeToolTip": "ReportManager\\Services\\EmailService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-22T21:56:36.801Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-22T21:56:36.801Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManagerTest\\appsettings.json",
               "RelativeDocumentMoniker": "ReportManagerTest\\appsettings.json",
@@ -117,25 +82,24 @@
               "RelativeToolTip": "ReportManagerTest\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-22T21:50:18.672Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-22T21:50:18.672Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
               "RelativeDocumentMoniker": "ReportDaemon\\Program.cs",
               "ToolTip": "T:\\REPOS\\ReportForge\\ReportDaemon\\Program.cs",
               "RelativeToolTip": "ReportDaemon\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABHAAAAAAAAAA==",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAYwDkAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-19T20:26:00.444Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
               "Title": "AuthController.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\API\\AuthController.cs",
               "RelativeDocumentMoniker": "ReportManager\\API\\AuthController.cs",
@@ -148,20 +112,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Program.cs",
               "RelativeDocumentMoniker": "ReportManager\\Program.cs",
               "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Program.cs",
               "RelativeToolTip": "ReportManager\\Program.cs",
-              "ViewState": "AgIAABIAAAAAAAAAAAAAACcAAABjAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-15T00:44:06.65Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
               "Title": "Appearance.jsx",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\Pages\\Appearance.jsx",
@@ -173,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 6,
               "Title": "API_Hook.js",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\src\\API_Hook.js",
               "RelativeDocumentMoniker": "ReportManager\\ClientApp\\src\\API_Hook.js",
@@ -185,7 +149,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 9,
               "Title": "FolderManagementService.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\FolderManagementService.cs",
               "RelativeDocumentMoniker": "ReportManager\\Services\\FolderManagementService.cs",
@@ -197,7 +161,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 8,
               "Title": "FolderModel.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Models\\FolderModel.cs",
               "RelativeDocumentMoniker": "ReportManager\\Models\\FolderModel.cs",
@@ -209,7 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 7,
               "Title": "FolderController.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\API\\FolderController.cs",
               "RelativeDocumentMoniker": "ReportManager\\API\\FolderController.cs",

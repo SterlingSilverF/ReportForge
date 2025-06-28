@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:44462",
+"RedirectUrl": "",
+"LaunchCommand": "npm start",
+"WorkingDirectory": "T:\\REPOS\\ReportForge\\ReportManager\\ClientApp\\",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}
