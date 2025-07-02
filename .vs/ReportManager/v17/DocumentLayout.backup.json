@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "T:\\REPOS\\ReportForge\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\services\\appdatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\services\\appdatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -13,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|t:\\repos\\reportforge\\reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{F51C3A97-9ADA-416E-822C-0503AF9D74D6}|ReportManager\\ReportManager.csproj|solutionrelative:reportmanager\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,20 +38,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AppDatabaseService.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\AppDatabaseService.cs",
               "RelativeDocumentMoniker": "ReportManager\\Services\\AppDatabaseService.cs",
               "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Services\\AppDatabaseService.cs",
               "RelativeToolTip": "ReportManager\\Services\\AppDatabaseService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-01T23:03:29.119Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "DatabaseController.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\API\\DatabaseController.cs",
               "RelativeDocumentMoniker": "ReportManager\\API\\DatabaseController.cs",
@@ -64,20 +64,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "Dockerfile",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
               "RelativeDocumentMoniker": "ReportManager\\Dockerfile",
               "ToolTip": "T:\\REPOS\\ReportForge\\ReportManager\\Dockerfile",
               "RelativeToolTip": "ReportManager\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAB4AAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-06-28T01:01:57.305Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "T:\\REPOS\\ReportForge\\ReportManager\\Program.cs",
               "RelativeDocumentMoniker": "ReportManager\\Program.cs",

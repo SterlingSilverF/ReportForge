@@ -25,6 +25,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out .
 
-EXPOSE $PORT
-ENV ASPNETCORE_URLS=http://*:$PORT
+# Railway config & launch
+EXPOSE 8080
+ENV PORT=8080
+ENV ASPNETCORE_URLS=http://*:8080
 ENTRYPOINT ["dotnet", "ReportManager.dll"]
