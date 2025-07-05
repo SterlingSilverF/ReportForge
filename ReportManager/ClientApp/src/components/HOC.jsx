@@ -12,7 +12,7 @@ const HOC = (WrappedComponent, requireAuth = true) => {
         // Common state variables
         const [env, setEnv] = useState('Development');
         const navigate = useNavigate();
-        axios.defaults.baseURL = 'https://reportforgedemo.com';
+        axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://reportforge-production.up.railway.app';
         const [token, setToken] = useState(localStorage.getItem('token'));
         const [username, setUsername] = useState('');
         const [userID, setUserID] = useState('');
