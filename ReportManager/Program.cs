@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("https://reportforgedemo.com")
+        builder.WithOrigins("https://reportforge-production.up.railway.app")
                .AllowAnyHeader()
                .AllowAnyMethod();
     });

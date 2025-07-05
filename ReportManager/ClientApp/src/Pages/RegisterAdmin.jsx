@@ -33,7 +33,7 @@ const FirstTimeAdminSetup = () => {
     };
 
     // No HOC because that would require signing in
-    axios.defaults.baseURL = 'https://reportforgedemo.com';
+    axios.defaults.baseURL = 'https://reportforge-production.up.railway.app';
 
     const handleAdminSetup = async (e) => {
         e.preventDefault();
