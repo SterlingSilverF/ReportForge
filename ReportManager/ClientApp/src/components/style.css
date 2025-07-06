@@ -62,13 +62,14 @@ body, html {
     height: 100%;
     margin: 0;
     margin: 0;
-    font-family: 'Trebuchet MS', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
     background-color: var(--rpf-grey);
 }
 
-h1, h2, h3, h4, h5{
-    font-family: Calibri;
-    font-weight: bold;
+h1, h2, h3, h4, h5 {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-weight: 600;
 }
 
 p {
