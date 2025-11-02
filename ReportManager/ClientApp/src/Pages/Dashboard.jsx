@@ -38,7 +38,7 @@ const Dashboard = ({ dbIcons, env, makeApiRequest, userID, navigate }) => {
                         </div>
                         <hr></hr>
                     </section>
-                    <h3>Your Workspace</h3><br/>
+                    <h3>Workspace</h3><br/>
                     <section className="box">
                         <div className="browse-personal no-break double-split" onClick={() => navigate(`/browse?isPersonal=true`)}>
                             <h2>Personal Content</h2>
@@ -69,8 +69,6 @@ const Dashboard = ({ dbIcons, env, makeApiRequest, userID, navigate }) => {
                 <h3>Announcements</h3>
                 <hr />
                 <div className="item">
-                    <a>Capstone Submission</a>
-                    <p>This application is being used as a capstone project.</p>
                     <a>Settings Under Construction</a>
                     <p>Only some settings are currently availible in settings.</p>
                 </div>

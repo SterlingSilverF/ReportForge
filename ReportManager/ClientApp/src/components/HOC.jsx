@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 /* 
 HOC (Higher Order Component)
-Last Updated on 9/30/2024
+Last Updated on 10/30/2025
 */
 const HOC = (WrappedComponent, requireAuth = true) => {
     return function Shared(props) {
