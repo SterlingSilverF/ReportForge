@@ -31,7 +31,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("https://reportforge-production.up.railway.app")
+        builder.WithOrigins(
+                "https://reportforge-production.up.railway.app",
+                "https://localhost:44462"
+            )
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
