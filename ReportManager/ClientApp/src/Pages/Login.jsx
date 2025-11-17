@@ -74,6 +74,7 @@ const Login = ({ navigate, makeApiRequest, token }) => {
                         <a href="/register" className="rpf-silverblue">Register</a>
                         <a href="#" className="rpf-silverblue">Forgot Password</a>
                     </div>
+                    <i>Recruiters, please contact me directly for login credentials.</i>
                 </form>
             )}
         </div>
