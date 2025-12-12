@@ -741,10 +741,13 @@ input[type="checkbox"] {
 /* ========================================
    9. REPORT DESIGNER
    ======================================== */
+.report-form-style {
+    padding-left: calc(12vw + 10px);
+}
+
 .report-form-box {
     padding: 10px;
     margin: 0 auto;
-    margin-left: 20px;
     background-color: white;
     display: grid;
     text-align: left;
